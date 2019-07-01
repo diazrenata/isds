@@ -56,11 +56,11 @@ make_id_pipeline <- function(community_dat_pipeline, community_type = "sim") {
     }
   }
   id_pipeline <- drake_plan(
-    e = target(add_energy_sizeclass(community_dat),
+    e = target(replicatebecs::add_energy_sizeclass(community_dat),
                transform = map(community_dat = !!cd_targets)),
-    isd = target(make_isd(e),
+    isd = target(neonbecs::make_isd(e),
                  transform = map(e)),
-    gmm = target(fit_gmm(isd),
+    gmm = target(neonbecs::fit_gmm(isd),
                  transform = map(isd)),
     id = target(get_integrated_density(gmm, type = community_type,
                                        dat_name = dat_names, stdev = stdevs),

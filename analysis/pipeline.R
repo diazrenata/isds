@@ -7,8 +7,8 @@ stdevs = c(0.1, 0.2)
 thresholds_to_try = seq(.01, .26, by = 0.05)
 
 dats <- drake_plan(
-  dat1  = target(get_toy_portal_data()),
-  dat2 = target(get_toy_portal_data())
+  dat1  = target(neonbecs::get_toy_portal_data()),
+  dat2 = target(neonbecs::get_toy_portal_data())
 )
 
 cp_pipeline <- make_cp_pipeline(dats)
