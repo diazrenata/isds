@@ -75,8 +75,8 @@ make_id_pipeline <- function(community_dat_pipeline, community_type = "sim") {
   for(i in 1:length(community_dat_pipeline$target)) {
     cd_targets <- c(cd_targets, as.name(community_dat_pipeline$target[i]))
     if(community_type == "sim") {
-    dat_names[i] <- strsplit(community_dat_pipeline$target[i], "_")[[1]][4]
-    stdevs[i] <- as.numeric(strsplit(community_dat_pipeline$target[i], "_")[[1]][5])
+      dat_names[i] <- strsplit(community_dat_pipeline$target[i], "_")[[1]][4]
+      stdevs[i] <- as.numeric(strsplit(community_dat_pipeline$target[i], "_")[[1]][5])
     } else {
       dat_names[i] <- community_dat_pipeline$target[i]
       stdevs[i] <- NA
@@ -130,5 +130,63 @@ make_thresholds_pipeline <- function(id_pipeline,
     )
   )
   return(thresholds_pipeline)
+}
+
+#' Make id plots plan
+#'
+#' @param id_pipeline_plan rbind of empirical, sims pipelines
+#'
+#' @return plan to plot empirical + 1 of each sim setting for every dataset
+#' @export
+#'
+make_id_plots_pipeline <- function(id_pipeline_plan) {
+  # plot 1 plot for every combination of dataset + sim settings, plus empirical
+
+  id_objects <- id_pipeline_plan$target[ which(grepl("id_", id_pipeline_plan$target))]
+
+  for(i in 1:length(id_objects)) {
+    if(grepl("sim", id_objects[i])) {
+      if(substr(id_objects[i], nchar(id_objects[i]) - 1, nchar(id_objects[i])) != "_1")
+        id_objects[i] <- NA
+    }
+  }
+
+  id_objects <- id_objects[which(!is.na(id_objects))]
+  id_objects <- as.list(id_objects)
+
+  for(i in 1:length(id_objects)) {
+    id_objects[[i]] <- as.name(id_objects[[i]])
+  }
+
+  plot_titles <- as.character(id_objects)
+
+  for(i in 1:length(plot_titles)) {
+    if(grepl("sim", plot_titles[i])) {
+
+      dat_name <- strsplit(plot_titles[i], split = "_cp_")[[1]][2]
+      dat_name <- strsplit(dat_name, split = "_")[[1]][1]
+
+      stdev = strsplit(plot_titles[i], split = paste0(dat_name, "_"))[[1]][2]
+      stdev = strsplit(stdev, split = "_")[[1]][1]
+
+      plot_titles[i] <- paste0(dat_name, " sim, s.d. = ", stdev)
+    } else {
+      dat_name <- strsplit(plot_titles[i], split = "emp_")[[1]][2]
+      dat_name <- strsplit(dat_name, split = "_")[[1]][1]
+      plot_titles[i] <- paste0(dat_name, " empirical")
+    }
+  }
+
+  id_plots_plan <- drake_plan(
+    id_plot = target(plot_integrated_density(integrated_density = id,
+                                             plot_title = plot_title),
+                     transform = map(id = !!id_objects,
+                                     plot_title = !!plot_titles)),
+    all_id_plots = target(list(id_plot),
+                           transform = combine(id_plot))
+  )
+
+  return(id_plots_plan)
+
 }
 

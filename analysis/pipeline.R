@@ -4,7 +4,7 @@ expose_imports(isds)
 
 sim_indices = as.numeric(c(1:2))
 stdevs = c(0.1, 0.2)
-thresholds_to_try = seq(.01, .26, by = 0.01)
+thresholds_to_try = seq(.01, .26, by = 0.05)
 
 dats <- drake_plan(
   dat1  = target(neonbecs::get_toy_portal_data()),
@@ -24,10 +24,12 @@ empirical_id_pipeline <- make_id_pipeline(dats, "emp")
 
 id_pipelines <- rbind(sim_id_pipeline, empirical_id_pipeline)
 
+id_plots_pipeline <- make_id_plots_pipeline(id_pipelines)
+
 thresholds_pipeline <- make_thresholds_pipeline(id_pipelines,
                                                 thresholds_to_try)
 
-full_pipeline <- rbind(dats, cp_pipeline, sp_pipeline, draw_pipeline, id_pipelines, thresholds_pipeline)
+full_pipeline <- rbind(dats, cp_pipeline, sp_pipeline, draw_pipeline, id_pipelines,id_plots_pipeline, thresholds_pipeline)
 
 ## Set up the cache and config
 db <- DBI::dbConnect(RSQLite::SQLite(), here::here("drake", "drake-cache.sqlite"))
