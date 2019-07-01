@@ -29,7 +29,9 @@ id_plots_pipeline <- make_id_plots_pipeline(id_pipelines)
 thresholds_pipeline <- make_thresholds_pipeline(id_pipelines,
                                                 thresholds_to_try)
 
-full_pipeline <- rbind(dats, cp_pipeline, sp_pipeline, draw_pipeline, id_pipelines,id_plots_pipeline, thresholds_pipeline)
+summary_plot_pipeline <- make_summary_plots_pipeline(dats)
+
+full_pipeline <- rbind(dats, cp_pipeline, sp_pipeline, draw_pipeline, id_pipelines,id_plots_pipeline, thresholds_pipeline, summary_plot_pipeline)
 
 ## Set up the cache and config
 db <- DBI::dbConnect(RSQLite::SQLite(), here::here("drake", "drake-cache.sqlite"))

@@ -190,3 +190,23 @@ make_id_plots_pipeline <- function(id_pipeline_plan) {
 
 }
 
+#' Make summary plots pipeline
+#'
+#' @param dats_pipeline To get dataset names
+#'
+#' @return plan for summary plots
+#' @export
+#' @importFrom drake drake_plan
+make_summary_plots_pipeline <- function(dats_pipeline) {
+  datnames <- dats_pipeline$target
+
+  summary_plots_plan <- drake_plan(
+    summaryplots = target(plot_isd_methods_summary(results, datname),
+                         transform = map(results = result,
+                                         datname = !!datnames)),
+    all_summary_plots = target(list(summaryplots),
+                               transform = combine(summaryplots))
+  )
+
+  return(summary_plots_plan)
+}
