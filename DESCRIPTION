@@ -1,0 +1,25 @@
+Package: isds
+Type: Package
+Title: Analysis of Mammalian Individual Size Distributions
+Version: 0.1.0
+Author: Renata Diaz
+Maintainer: Renata Diaz <diaz.renatam@gmail.com>
+Description: Clumpy-gappy analysis of rodent ISDs + simulations 
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 6.1.1
+Imports: 
+    dplyr,
+    drake,
+    ggplot2,
+    here,
+    magrittr,
+    mclust,
+    neonbecs,
+    pastecs,
+    portalr,
+    remotes
+Remotes: 
+    diazrenata/neonbecs
