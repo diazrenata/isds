@@ -4,7 +4,7 @@ expose_imports(isds)
 
 sim_indices = as.numeric(c(1:2))
 stdevs = c(0.1, 0.2)
-thresholds_to_try = seq(.01, .26, by = 0.05)
+thresholds_to_try = seq(.01, .26, by = 0.01)
 
 dats <- drake_plan(
   dat1  = target(neonbecs::get_toy_portal_data()),

@@ -1,10 +1,16 @@
-
+#' Make community pars pipeline
+#'
+#' @param dats_pipeline pipeline of loading raw data
+#'
+#' @return pipeline to extract communty pars from raw datasets
+#' @export
+#' @importFrom drake drake_plan target
 make_cp_pipeline <- function(dats_pipeline) {
   dat_targets <- list()
   for(i in 1:length(dats_pipeline$target)) {
     dat_targets <- c(dat_targets, as.name(dats_pipeline$target[i]))
   }
-  cp_pipeline <- drake_plan(
+  cp_pipeline <- drake::drake_plan(
     cp = target(get_community_pars(raw_dat),
                 transform = map(raw_dat = !!dat_targets))
   )
@@ -12,13 +18,19 @@ make_cp_pipeline <- function(dats_pipeline) {
 }
 
 
-
+#' Make sim pars pipeline
+#'
+#' @param cp_pipeline pipeline of extracting community pars from raw data
+#'
+#' @return pipeline to add standard deviations to community pars
+#' @export
+#' @importFrom drake drake_plan target
 make_sp_pipeline <- function(cp_pipeline, stdevs) {
   cp_targets <- list()
   for(i in 1:length(cp_pipeline$target)) {
     cp_targets <- c(cp_targets, as.name(cp_pipeline$target[i]))
   }
-  sp_pipeline <- drake_plan(
+  sp_pipeline <- drake::drake_plan(
     sp = target(get_sim_pars(comm_pars, stdev),
                 transform = cross(comm_pars = !!cp_targets,
                                   stdev = !!stdevs))
@@ -26,13 +38,19 @@ make_sp_pipeline <- function(cp_pipeline, stdevs) {
   return(sp_pipeline)
 }
 
-
+#' Make draw sims pipeline
+#'
+#' @param sp_pipeline pipeline of community pars including standard deviations
+#' @param sim_indices for drake
+#' @return pipeline to extract draw sims based on community pars
+#' @export
+#' @importFrom drake drake_plan target
 make_draw_pipeline <- function(sp_pipeline, sim_indices) {
   sp_targets <- list()
   for(i in 1:length(sp_pipeline$target)) {
     sp_targets <- c(sp_targets, as.name(sp_pipeline$target[i]))
   }
-  draw_pipeline <- drake_plan(
+  draw_pipeline <- drake::drake_plan(
     sim = target(draw_sim(sim_pars, sim_index),
                  transform = cross(sim_pars = !!sp_targets,
                                    sim_index = !!sim_indices))
@@ -40,7 +58,16 @@ make_draw_pipeline <- function(sp_pipeline, sim_indices) {
   return(draw_pipeline)
 }
 
-
+#' Make community pars pipeline
+#'
+#' @param community_dat_pipeline pipeline to either get raw data or draw sims
+#' @param community_type "sim" or "empirical"
+#' @return pipeline to get integrated density of GMM fit to community data
+#' @export
+#' @importFrom drake drake_plan target
+#' @importFrom replicatebecs add_energy_sizeclass
+#' @importFrom neonbecs make_isd fit_gmm
+#'
 make_id_pipeline <- function(community_dat_pipeline, community_type = "sim") {
   cd_targets <- list()
   dat_names <- vector(length=nrow(community_dat_pipeline))
@@ -55,7 +82,7 @@ make_id_pipeline <- function(community_dat_pipeline, community_type = "sim") {
       stdevs[i] <- NA
     }
   }
-  id_pipeline <- drake_plan(
+  id_pipeline <- drake::drake_plan(
     e = target(replicatebecs::add_energy_sizeclass(community_dat),
                transform = map(community_dat = !!cd_targets)),
     isd = target(neonbecs::make_isd(e),
@@ -69,19 +96,27 @@ make_id_pipeline <- function(community_dat_pipeline, community_type = "sim") {
                                 stdevs = !!stdevs))
   )
   return(id_pipeline)
-  
+
 }
 
 
+#' Make thresholds pipeline
+#' Make pipeline to evaluate number of gaps/modes in an integrated density given a particular threshold density
+#' @param id_pipeline pipeline to make integrated densities
+#' @param thresholds_to_try thresholds for drake
+#' @return pipeline to evaluate at thresholds
+#' @export
+#' @importFrom drake drake_plan target
+#' @importFrom dplyr bind_rows
 make_thresholds_pipeline <- function(id_pipeline,
                                      thresholds_to_try) {
   id_lines <- which(grepl("id_", id_pipeline$target))
-  
+
   id_targets <- list()
   for(i in 1:length(id_lines)) {
     id_targets <- c(id_targets, as.name(id_pipeline$target[id_lines[i]]))
   }
-  thresholds_pipeline <- drake_plan(
+  thresholds_pipeline <- drake::drake_plan(
     t = target(find_gaps(threshold, id),
                transform = cross(threshold = !!thresholds_to_try,
                                  id = !!id_targets)
@@ -90,7 +125,7 @@ make_thresholds_pipeline <- function(id_pipeline,
                transform = map(t))
     ,
     result = target(
-      bind_rows(r),
+      dplyr::bind_rows(r),
       transform = combine(r)
     )
   )

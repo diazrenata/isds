@@ -16,7 +16,7 @@ find_gaps <- function(threshold, integrated_density) {
   within_peaks <- dplyr::filter(integrated_density, start >= first_peak,
                                 by_max >= threshold) %>%
     dplyr::mutate(start_diff =
-                    (start - dplyr::lag(start, n = 1, default = NA)) > 0.000000001) %>%
+                    (start - dplyr::lag(start, n = 1, default = NA)) > 0.000100000001) %>%
     dplyr::mutate(is_gap_start = dplyr::lead(start_diff, n = 1, default = F),
                   is_gap_end = start_diff) %>%
     tidyr::replace_na(replace = list(start_diff = FALSE,
@@ -81,7 +81,6 @@ get_type <- function(integrated_density) {
 #' @param integrated_density result of find_gaps(integrated_density)
 #'
 #' @return Name of dataset used in integrated_density/sims
-#' @export dat_name
 
 get_datname <- function(integrated_density) {
   return(integrated_density$dat_name[1])
