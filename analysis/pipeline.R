@@ -1,5 +1,6 @@
 library(drake)
-R.utils::sourceDirectory(path = here::here("R"))
+library(isds)
+expose_imports(isds)
 
 sim_indices = as.numeric(c(1:2))
 stdevs = c(0.1, 0.2)

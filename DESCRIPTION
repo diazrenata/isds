@@ -20,6 +20,9 @@ Imports:
     neonbecs,
     pastecs,
     portalr,
-    remotes
+    remotes,
+    replicatebecs,
+    rlang
 Remotes: 
     diazrenata/neonbecs
+    diazrenata/replicate-becs
