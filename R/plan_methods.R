@@ -135,18 +135,20 @@ make_thresholds_pipeline <- function(id_pipeline,
 #' Make id plots plan
 #'
 #' @param id_pipeline_plan rbind of empirical, sims pipelines
-#'
+#' @param sim_index which sim(s) to plot
 #' @return plan to plot empirical + 1 of each sim setting for every dataset
 #' @export
 #'
-make_id_plots_pipeline <- function(id_pipeline_plan) {
-  # plot 1 plot for every combination of dataset + sim settings, plus empirical
+make_id_plots_pipeline <- function(id_pipeline_plan, sim_index = c(1:2)) {
+  # plot 1 plot for every combination of dataset + sim (sdev) settings, plus empirical
 
   id_objects <- id_pipeline_plan$target[ which(grepl("id_", id_pipeline_plan$target))]
 
+  sim_labels <- paste0("_", as.character(sim_index))
+
   for(i in 1:length(id_objects)) {
     if(grepl("sim", id_objects[i])) {
-      if(substr(id_objects[i], nchar(id_objects[i]) - 1, nchar(id_objects[i])) != "_1")
+      if(!(substr(id_objects[i], nchar(id_objects[i]) - 1, nchar(id_objects[i])) %in% sim_labels))
         id_objects[i] <- NA
     }
   }
@@ -166,10 +168,13 @@ make_id_plots_pipeline <- function(id_pipeline_plan) {
       dat_name <- strsplit(plot_titles[i], split = "_cp_")[[1]][2]
       dat_name <- strsplit(dat_name, split = "_")[[1]][1]
 
+      sim_name <- strsplit(plot_titles[i], split = "_")[[1]]
+      sim_name <- sim_name[length(sim_name)]
+
       stdev = strsplit(plot_titles[i], split = paste0(dat_name, "_"))[[1]][2]
       stdev = strsplit(stdev, split = "_")[[1]][1]
 
-      plot_titles[i] <- paste0(dat_name, " sim, s.d. = ", stdev)
+      plot_titles[i] <- paste0(dat_name, " sim ", sim_name, " s.d. = ", stdev)
     } else {
       dat_name <- strsplit(plot_titles[i], split = "emp_")[[1]][2]
       dat_name <- strsplit(dat_name, split = "_")[[1]][1]

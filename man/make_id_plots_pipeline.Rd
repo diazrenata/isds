@@ -4,10 +4,12 @@
 \alias{make_id_plots_pipeline}
 \title{Make id plots plan}
 \usage{
-make_id_plots_pipeline(id_pipeline_plan)
+make_id_plots_pipeline(id_pipeline_plan, sim_index = c(1:2))
 }
 \arguments{
 \item{id_pipeline_plan}{rbind of empirical, sims pipelines}
+
+\item{sim_index}{which sim(s) to plot}
 }
 \value{
 plan to plot empirical + 1 of each sim setting for every dataset

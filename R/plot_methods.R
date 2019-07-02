@@ -21,10 +21,13 @@ plot_integrated_density <- function(integrated_density, threshold_lines = NULL, 
 
   if(!is.null(plot_title)) {
     integrated_plot <- integrated_plot +
-      ggplot2::labs(title = paste0("Integrated probability density: ", plot_title))
+      ggplot2::labs(title = paste0("Prob. dens: ", plot_title))
   }
 
-  return(integrated_plot)
+  id_plot_output <- list(plot = integrated_plot,
+                         plot_title = plot_title)
+
+  return(id_plot_output)
 }
 
 
@@ -60,7 +63,8 @@ plot_isd_methods_summary <- function(summary_dataframe, dat_name) {
     ggplot2::facet_wrap(. ~ threshold)
 
   summary_plots <- list(peaks_plot = peaks_plot,
-                        ngaps_plot = ngaps_plot)
+                        ngaps_plot = ngaps_plot,
+                        dat_name = dat_name)
 
   return(summary_plots)
 }
