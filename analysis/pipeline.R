@@ -68,6 +68,6 @@ if(grepl("ufhpc", nodename)) {
        caching = "master") # Important for DBI caches!
 } else {
   # Run the pipeline on a single local core
-  make(pipeline, cache = cache, cache_log_file = here::here("drake", "cache_log.txt"))
+  make(full_pipeline, cache = cache, cache_log_file = here::here("drake", "cache_log.txt"))
 }
 
