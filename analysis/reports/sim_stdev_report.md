@@ -55,4 +55,10 @@ gridExtra::grid.arrange(grobs = sims_plots,
                         nrow = length(unique(sims_plots_df$sim_index)))
 ```
 
-![](sim_stdev_report_files/figure-markdown_github/sim%20plots-1.png)
+``` r
+summary_plots <- readd(summaryplots_result_dat1, cache = cache)
+
+summary_plots$ngaps_by_t_plot
+```
+
+![](sim_stdev_report_files/figure-markdown_github/summary%20plots-1.png)

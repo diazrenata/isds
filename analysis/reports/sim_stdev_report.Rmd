@@ -56,7 +56,7 @@ gridExtra::grid.arrange(grobs = list(plots[[plots_df[ which(plots_df$dat_type ==
 
 ```
 
-```{r sim plots, fig.height = 25, fig.width = 20}
+```{r sim plots, fig.height = 25, fig.width = 20, eval = F}
 # arrange sims as rows = sims, cols = stdevs
 
 sims_plots_df <- dplyr::filter(plots_df, dat_type == "sim") %>%
@@ -68,5 +68,14 @@ for(i in 1:nrow(sims_plots_df)) {
 
 gridExtra::grid.arrange(grobs = sims_plots,
                         nrow = length(unique(sims_plots_df$sim_index)))
+
+```
+
+
+```{r summary plots}
+
+summary_plots <- readd(summaryplots_result_dat1, cache = cache)
+
+summary_plots$ngaps_by_t_plot
 
 ```

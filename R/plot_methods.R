@@ -62,8 +62,14 @@ plot_isd_methods_summary <- function(summary_dataframe, dat_name) {
     ggplot2::geom_abline(slope = 1, intercept = -1) +
     ggplot2::facet_wrap(. ~ threshold)
 
+  ngaps_by_t_plot <- baseplot +
+    ggplot2::geom_jitter(ggplot2::aes(x = threshold, y = ngaps), width = .2, height = 0) +
+    ggplot2::labs(x = "Threshold", y = "Number of gaps", title = paste0("Number of gaps - ", dat_name)) +
+    ggplot2::facet_wrap(. ~ stdev)
+
   summary_plots <- list(peaks_plot = peaks_plot,
                         ngaps_plot = ngaps_plot,
+                        ngaps_by_t_plot = ngaps_by_t_plot,
                         dat_name = dat_name)
 
   return(summary_plots)

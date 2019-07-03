@@ -2,9 +2,9 @@ library(drake)
 library(isds)
 expose_imports(isds)
 
-sim_indices = as.numeric(c(1:10))
-stdevs = seq(0.05, 0.25, by = 0.05)
-thresholds_to_try = seq(.01, .26, by = 0.05)
+sim_indices = as.numeric(c(1:50))
+stdevs = seq(0.01, 0.26, by = 0.025)
+thresholds_to_try = seq(.01, .3, by = 0.01)
 
 dats <- drake_plan(
   dat1  = target(neonbecs::get_toy_portal_data())
@@ -25,7 +25,7 @@ empirical_id_pipeline <- make_id_pipeline(dats, "emp")
 
 id_pipelines <- rbind(sim_id_pipeline, empirical_id_pipeline)
 
-id_plots_pipeline <- make_id_plots_pipeline(id_pipelines, sim_index = c(5:10))
+id_plots_pipeline <- make_id_plots_pipeline(id_pipelines, sim_index = c(1:5))
 
 thresholds_pipeline <- make_thresholds_pipeline(id_pipelines,
                                                 thresholds_to_try)
@@ -42,13 +42,32 @@ full_pipeline <- rbind(dats, cp_pipeline, sp_pipeline, draw_pipeline, id_pipelin
 ## Set up the cache and config
 db <- DBI::dbConnect(RSQLite::SQLite(), here::here("drake", "drake-cache.sqlite"))
 cache <- storr::storr_dbi("datatable", "keystable", db)
+#
+# ## View the graph of the plan
+# if (interactive())
+# {
+#   config <- drake_config(full_pipeline, cache = cache)
+#   sankey_drake_graph(config, build_times = "none")  # requires "networkD3" package
+#   vis_drake_graph(config, build_times = "none")     # requires "visNetwork" package
+# }
 
-## View the graph of the plan
-if (interactive())
-{
-  config <- drake_config(full_pipeline, cache = cache)
-  sankey_drake_graph(config, build_times = "none")  # requires "networkD3" package
-  vis_drake_graph(config, build_times = "none")     # requires "visNetwork" package
+## Run the pipeline
+nodename <- Sys.info()["nodename"]
+if(grepl("ufhpc", nodename)) {
+  library(future.batchtools)
+  print("I know I am on SLURM!")
+  ## Run the pipeline parallelized for HiPerGator
+  future::plan(batchtools_slurm, template = "slurm_batchtools.tmpl")
+  make(pipeline,
+       force = TRUE,
+       cache = cache,
+       cache_log_file = here::here("drake", "cache_log.txt"),
+       verbose = 2,
+       parallelism = "future",
+       jobs = 16,
+       caching = "master") # Important for DBI caches!
+} else {
+  # Run the pipeline on a single local core
+  make(pipeline, cache = cache, cache_log_file = here::here("drake", "cache_log.txt"))
 }
 
-make(full_pipeline, cache = cache, cache_log_file = here::here("drake", "cache_log.txt"))
