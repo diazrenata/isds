@@ -1,0 +1,18 @@
+language: r
+cache:
+- packages
+sudo: required
+dist: "trusty"
+warnings_are_errors: false
+
+before_install:
+    - Rscript -e 'install.packages("remotes")'
+    - Rscript -e 'remotes::install_github("diazrenata/replicate-becs")'
+    - Rscript -e 'remotes::install_github("diazrenata/neonbecs")'
+
+matrix:
+  include:
+  - r: devel
+  - r: release
+    after_success:
+    - R CMD INSTALL .

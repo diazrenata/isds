@@ -17,12 +17,14 @@ Imports:
     here,
     magrittr,
     mclust,
+    meteR,
     neonbecs,
     pastecs,
     portalr,
     remotes,
     replicatebecs,
-    rlang
+    rlang,
+    tidyr
 Remotes: 
     diazrenata/neonbecs,
     diazrenata/replicate-becs
