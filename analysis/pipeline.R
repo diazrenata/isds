@@ -31,25 +31,26 @@ thresholds_pipeline <- make_thresholds_pipeline(id_pipelines,
                                                 thresholds_to_try)
 
 summary_plot_pipeline <- make_summary_plots_pipeline(dats)
+#
+# reports_pipeline <- drake_plan(
+#   stdev_report = target(rmarkdown::render(here::here("analysis", "reports", "sim_stdev_report.Rmd")))
+# )
 
-reports_pipeline <- drake_plan(
-  stdev_report = target(rmarkdown::render(here::here("analysis", "reports", "sim_stdev_report.Rmd")))
-)
-
-full_pipeline <- rbind(dats, cp_pipeline, sp_pipeline, draw_pipeline, id_pipelines,id_plots_pipeline, thresholds_pipeline, summary_plot_pipeline, reports_pipeline)
+full_pipeline <- rbind(dats, cp_pipeline, sp_pipeline, draw_pipeline, id_pipelines,id_plots_pipeline, thresholds_pipeline, summary_plot_pipeline)
+                       #, reports_pipeline)
 
 
 ## Set up the cache and config
 db <- DBI::dbConnect(RSQLite::SQLite(), here::here("drake", "drake-cache.sqlite"))
 cache <- storr::storr_dbi("datatable", "keystable", db)
-#
-# ## View the graph of the plan
-# if (interactive())
-# {
-#   config <- drake_config(full_pipeline, cache = cache)
-#   sankey_drake_graph(config, build_times = "none")  # requires "networkD3" package
-#   vis_drake_graph(config, build_times = "none")     # requires "visNetwork" package
-# }
+
+## View the graph of the plan
+if (interactive())
+{
+  config <- drake_config(full_pipeline, cache = cache)
+  sankey_drake_graph(config, build_times = "none")  # requires "networkD3" package
+  vis_drake_graph(config, build_times = "none")     # requires "visNetwork" package
+}
 
 ## Run the pipeline
 nodename <- Sys.info()["nodename"]
