@@ -58,7 +58,7 @@ if(grepl("ufhpc", nodename)) {
   print("I know I am on SLURM!")
   ## Run the pipeline parallelized for HiPerGator
   future::plan(batchtools_slurm, template = "slurm_batchtools.tmpl")
-  make(pipeline,
+  make(full_pipeline,
        force = TRUE,
        cache = cache,
        cache_log_file = here::here("drake", "cache_log.txt"),
