@@ -3,7 +3,7 @@ library(isds)
 expose_imports(isds)
 
 sim_indices = as.numeric(c(1:20))
-stdevs = seq(0.01, 0.26, by = 0.05)
+stdevs = seq(0.01, 0.21, by = 0.1)
 thresholds_to_try = seq(.01, .31, by = 0.02)
 
 dats <- drake_plan(
