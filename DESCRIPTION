@@ -20,6 +20,6 @@ Imports:
     meteR,
     pastecs,
     portalr,
-    remotes,
     rlang,
+    testthat,
     tidyr
