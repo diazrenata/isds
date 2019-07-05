@@ -18,13 +18,8 @@ Imports:
     magrittr,
     mclust,
     meteR,
-    neonbecs,
     pastecs,
     portalr,
     remotes,
-    replicatebecs,
     rlang,
     tidyr
-Remotes: 
-    diazrenata/neonbecs,
-    diazrenata/replicate-becs

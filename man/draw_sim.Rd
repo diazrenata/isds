@@ -12,7 +12,7 @@ draw_sim(community_pars, sim_index = 1)
 \item{sim_index}{for drake}
 }
 \value{
-dataframe of \code{individual_species_ids} and \code{individual_sizes} drawn using \code{community_pars}
+dataframe of \code{species} and \code{wgt} drawn using \code{community_pars}
 }
 \description{
 Draw a sim

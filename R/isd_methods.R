@@ -1,3 +1,36 @@
+#' @title Make ISD
+#' @param community_dat community df with energy & sizeclass columns added
+#' @return ISD table
+#' @export
+make_isd <- function(community_dat){
+  this_isd <- community_dat %>%
+    dplyr::mutate(ln_size = log(wgt))
+
+  return(this_isd)
+}
+
+
+
+#' Fit GMM to individual size distribution
+#' Using `mclust::Mclust`
+#' @param isd result of `make_isd`
+#' @return mclust fit
+#' @export
+#' @importFrom mclust Mclust mclustBIC mclust.options emControl densityMclust
+#' @importFrom dplyr filter
+fit_gmm <- function(isd){
+  library(mclust)
+  isd <- dplyr::filter(isd, !is.na(ln_size))
+  this_fit <- mclust::densityMclust(isd$ln_size, G = 1:15, modelNames = "V",
+                                    prior = NULL,
+                                    control = emControl(),
+                                    initialization = NULL,
+                                    warn = mclust.options("warn"),
+                                    x =  NULL,
+                                    verbose = FALSE)
+  return(this_fit)
+}
+
 #' Integrate density based on GMM
 #' @param gmm result of `fit_gmm`
 #' @param interval_size width, in log units, of intervals to integrate over

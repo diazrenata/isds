@@ -13,7 +13,7 @@ assign_ind_sizes(bsd_index, bsd)
 \item{bsd}{bsd}
 }
 \value{
-data frame of \code{individual_species_ids} and \code{individual_sizes} for a single species
+data frame of \code{species} and \code{wgt} for a single species
 }
 \description{
 Assign sizes to all individuals of a species given abundance, mean, and sd

@@ -1,13 +1,13 @@
 #' Get community parameters
-#' @param raw_dat community data frame with columns `individual_species_ids`', `individual_sizes`
+#' @param raw_dat community data frame with columns `species`', `wgt`
 #'
 #' @return list of community parameters for sim draws: `S` = number of species, `N` = number of individuals, `min_size` = minimum body size, `max_size` = maximum body size
 #' @export
 get_community_pars <- function(raw_dat) {
-  S <- length(unique(raw_dat$individual_species_ids))
+  S <- length(unique(raw_dat$species))
   N <- nrow(raw_dat)
-  min_size <- min(raw_dat$individual_sizes)
-  max_size <- max(raw_dat$individual_sizes)
+  min_size <- min(raw_dat$wgt)
+  max_size <- max(raw_dat$wgt)
   community_pars <- list(S = S, N = N, min_size = min_size, max_size = max_size)
   return(community_pars)
 }
@@ -79,12 +79,12 @@ add_sd <- function(bsd_means, stdev) {
 #' Assumes a normal distribution
 #' @param bsd_index row of bsd - corresponds to species
 #' @param bsd bsd
-#' @return data frame of `individual_species_ids` and `individual_sizes` for a single species
+#' @return data frame of `species` and `wgt` for a single species
 #' @export
 assign_ind_sizes <- function(bsd_index, bsd){
   this_species <- data.frame(
-    individual_species_ids = rep(x = bsd_index, times = bsd$abundance[bsd_index]),
-    individual_sizes = rnorm(n = bsd$abundance[bsd_index],
+    species = rep(x = bsd_index, times = bsd$abundance[bsd_index]),
+    wgt = rnorm(n = bsd$abundance[bsd_index],
                              mean = bsd$means[bsd_index],
                              sd = bsd$sd[bsd_index])
   )
@@ -116,7 +116,7 @@ combine_abds <- function(sad, bsd) {
 #' @param community_pars result of get_sim_pars
 #' @param sim_index for drake
 #'
-#' @return dataframe of `individual_species_ids` and `individual_sizes` drawn using `community_pars`
+#' @return dataframe of `species` and `wgt` drawn using `community_pars`
 #' @export
 #' @importFrom dplyr bind_rows
 draw_sim <- function(community_pars, sim_index = 1){

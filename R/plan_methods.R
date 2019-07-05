@@ -65,8 +65,6 @@ make_draw_pipeline <- function(sp_pipeline, sim_indices) {
 #' @return pipeline to get integrated density of GMM fit to community data
 #' @export
 #' @importFrom drake drake_plan target
-#' @importFrom replicatebecs add_energy_sizeclass
-#' @importFrom neonbecs make_isd fit_gmm
 #'
 make_id_pipeline <- function(community_dat_pipeline, community_type = "sim") {
   cd_targets <- list()
@@ -83,11 +81,9 @@ make_id_pipeline <- function(community_dat_pipeline, community_type = "sim") {
     }
   }
   id_pipeline <- drake::drake_plan(
-    e = target(replicatebecs::add_energy_sizeclass(community_dat),
-               transform = map(community_dat = !!cd_targets)),
-    isd = target(neonbecs::make_isd(e),
-                 transform = map(e)),
-    gmm = target(neonbecs::fit_gmm(isd),
+    isd = target(make_isd(community_dat),
+                 transform = map(community_dat = !!cd_targets)),
+    gmm = target(fit_gmm(isd),
                  transform = map(isd)),
     id = target(get_integrated_density(gmm, type = community_type,
                                        dat_name = dat_names, stdev = stdevs),

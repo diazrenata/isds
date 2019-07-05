@@ -7,7 +7,7 @@
 get_community_pars(raw_dat)
 }
 \arguments{
-\item{raw_dat}{community data frame with columns \code{individual_species_ids}', \code{individual_sizes}}
+\item{raw_dat}{community data frame with columns \code{species}', \code{wgt}}
 }
 \value{
 list of community parameters for sim draws: \code{S} = number of species, \code{N} = number of individuals, \code{min_size} = minimum body size, \code{max_size} = maximum body size
