@@ -56,7 +56,7 @@ gridExtra::grid.arrange(grobs = list(plots[[plots_df[ which(plots_df$dat_type ==
 
 ```
 
-```{r sim plots, fig.height = 25, fig.width = 20, eval = F}
+```{r sim plots, fig.height = 25, fig.width = 20}
 # arrange sims as rows = sims, cols = stdevs
 
 sims_plots_df <- dplyr::filter(plots_df, dat_type == "sim") %>%
@@ -98,6 +98,8 @@ mode_plot <- ggplot(data = modes_result, aes(x = stdev, y = mean_modes)) +
              linetype = "dashed") +
   theme_bw()
 
+print(mode_plot)
+
 ```
 
 ```{r gaps plot}
@@ -126,4 +128,6 @@ gaps_plot <- ggplot(data = gaps_result,
              size = 3)+
   ylim(-0.5, max(empirical_gaps$ngaps, gaps_result$mean_gaps) + 1) +
   theme_bw()
+
+print(gaps_plot)
 ```

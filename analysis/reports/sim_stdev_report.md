@@ -55,10 +55,70 @@ gridExtra::grid.arrange(grobs = sims_plots,
                         nrow = length(unique(sims_plots_df$sim_index)))
 ```
 
-``` r
-summary_plots <- readd(summaryplots_result_dat1, cache = cache)
+![](sim_stdev_report_files/figure-markdown_github/sim%20plots-1.png)
 
-summary_plots$ngaps_by_t_plot
+``` r
+result <- readd(result, cache = cache)
+
+modes_result <- result %>%
+  dplyr::filter(dat_type == "sim",
+                threshold == 0.01) %>%
+  dplyr::select(npeaks, stdev) %>%
+  dplyr::group_by(stdev) %>%
+  dplyr::summarise(mean_modes = mean(npeaks),
+                   sd_modes = sd(npeaks)) %>%
+  dplyr::ungroup()
+
+empirical_modes <- result %>%
+  dplyr::filter(dat_type == "emp") %>%
+  dplyr::select(npeaks) %>%
+  dplyr::distinct()
+
+mode_plot <- ggplot(data = modes_result, aes(x = stdev, y = mean_modes)) + 
+  ylim(0, max(modes_result$mean_modes) + 1) +
+  geom_point(inherit.aes = TRUE) +
+  geom_errorbar(aes(x = stdev, ymin = mean_modes - sd_modes, 
+                    ymax = mean_modes + sd_modes)) +
+  geom_hline(yintercept = empirical_modes$npeaks, color = "green", 
+             linetype = "dashed") +
+  theme_bw()
+
+print(mode_plot)
 ```
 
-![](sim_stdev_report_files/figure-markdown_github/summary%20plots-1.png)
+    ## Warning: Removed 1 rows containing missing values (geom_errorbar).
+
+![](sim_stdev_report_files/figure-markdown_github/nb%20modes%20plot-1.png)
+
+``` r
+gaps_result <- result %>%
+  dplyr::filter(dat_type == "sim") %>%
+  dplyr::select(ngaps, threshold, stdev) %>%
+  dplyr::group_by(threshold, stdev) %>%
+  dplyr::summarise(mean_gaps = mean(ngaps),
+                   sd_gaps = sd(ngaps)) %>%
+  dplyr::ungroup()
+
+empirical_gaps <- result %>%
+  dplyr::filter(dat_type == "emp") %>%
+  dplyr::select(ngaps, threshold)
+
+gaps_plot <- ggplot(data = gaps_result,
+                    aes(x = threshold, 
+                        y = mean_gaps,
+                        color = as.factor(stdev))) + 
+  geom_jitter(inherit.aes = TRUE, height = 0, width = 0.01) +
+  geom_errorbar(aes(x = threshold, ymin = mean_gaps - sd_gaps,
+                ymax = mean_gaps + sd_gaps, color = as.factor(stdev))) +
+  geom_point(data = empirical_gaps,
+             aes(x = threshold, y = ngaps), inherit.aes = FALSE,
+             size = 3)+
+  ylim(-0.5, max(empirical_gaps$ngaps, gaps_result$mean_gaps) + 1) +
+  theme_bw()
+
+print(gaps_plot)
+```
+
+    ## Warning: Removed 2 rows containing missing values (geom_errorbar).
+
+![](sim_stdev_report_files/figure-markdown_github/gaps%20plot-1.png)
