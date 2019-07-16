@@ -44,6 +44,52 @@ result <- lapply(ids, get_result_not)
 result <- dplyr::bind_rows(result)
 ```
 
+Plots for 
+- mean ratio
+- sdev of ratio
+- elevation change
+- mean p
+
+wrapped by standard deviation
+
+
+```{r empirical v sim plots}
+mr_plot <- ggplot(data = result[ which(result$dat_type == "sim"), ], aes(x = ratio_mean)) +
+  geom_histogram(bins = 10) +
+  geom_vline(xintercept = result[ which(result$dat_type == "emp"), "ratio_mean"], color = "red") + 
+  facet_wrap(stdev ~ .) +
+  ggtitle("Mean ratio of modes") +
+  theme_bw()
+mr_plot
+
+stdr_plot <- ggplot(data = result[ which(result$dat_type == "sim"), ], aes(x = ratio_sd)) +
+  geom_histogram(bins = 10) +
+  geom_vline(xintercept = result[ which(result$dat_type == "emp"), "ratio_sd"], color = "red") + 
+    facet_wrap(stdev ~ .) +
+  ggtitle("Mean standard deviation of modes") +
+  theme_bw()
+stdr_plot
+
+echange_plot <- ggplot(data = result[ which(result$dat_type == "sim"), ], aes(x = scaled_e_change)) +
+  geom_histogram(bins = 10) +
+  geom_vline(xintercept = result[ which(result$dat_type == "emp"), "scaled_e_change"], color = "red") + 
+  facet_wrap(stdev ~ .) +
+  ggtitle("Scaled elevation change") +
+  theme_bw()
+echange_plot
+
+
+meanp_plot <- ggplot(data = result[ which(result$dat_type == "sim"), ], aes(x = mean_p)) +
+  geom_histogram(bins = 10) +
+  geom_vline(xintercept = result[ which(result$dat_type == "emp"), "mean_p"], color = "red") + 
+  facet_wrap(stdev ~ .) +
+  ggtitle("Mean p") +
+  theme_bw()
+meanp_plot
+
+
+```
+
 ```{r cleanup}
 DBI::dbDisconnect(db)
 ```
