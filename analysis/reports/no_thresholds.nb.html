@@ -269,13 +269,25 @@ ids &lt;- lapply(all_ids, readd, cache = cache, character_only  = T)</code></pre
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuICByZXR1cm4ocmVzdWx0KVxuXG5gYGAifQ== -->
-<pre class="r"><code>  return(result)
-</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ2V0X3Jlc3VsdF9ub3QgPC0gZnVuY3Rpb24oaW50ZWdyYXRlZF9kZW5zaXR5KSB7XG4gIHJlc3VsdCA8LSBkYXRhLmZyYW1lKG5wZWFrcyA9IGNvdW50X3BlYWtzKGludGVncmF0ZWRfZGVuc2l0eSksXG4gICAgICAgICAgICAgICAgICAgICAgIGRhdF90eXBlID0gZ2V0X3R5cGUoaW50ZWdyYXRlZF9kZW5zaXR5KSxcbiAgICAgICAgICAgICAgICAgICAgICAgZGF0bmFtZSA9IGdldF9kYXRuYW1lKGludGVncmF0ZWRfZGVuc2l0eSksXG4gICAgICAgICAgICAgICAgICAgICAgIHN0ZGV2ID0gZ2V0X3N0ZGV2KGludGVncmF0ZWRfZGVuc2l0eSksXG4gICAgICAgICAgICAgICAgICAgICAgIHJhdGlvX21lYW4gPSBnZXRfbW9kZV9yYXRpbyhpbnRlZ3JhdGVkX2RlbnNpdHksIHdoYXQgPSBcIm1lYW5cIiksXG4gICAgICAgICAgICAgICAgICAgICAgIHJhdGlvX3NkID0gZ2V0X21vZGVfcmF0aW8oaW50ZWdyYXRlZF9kZW5zaXR5LCB3aGF0ID0gXCJzdGRldlwiKSxcbiAgICAgICAgICAgICAgICAgICAgICAgc2NhbGVkX2VfY2hhbmdlID0gZ2V0X3NjYWxlZF9lX2NoYW5nZShpbnRlZ3JhdGVkX2RlbnNpdHkpLFxuICAgICAgICAgICAgICAgICAgICAgICBtZWFuX3AgPSBnZXRfbWVhbl9wKGludGVncmF0ZWRfZGVuc2l0eSlcbiAgKVxuICBcbiAgcmVzdWx0JGRhdF90eXBlIDwtIGFzLmNoYXJhY3RlcihyZXN1bHQkZGF0X3R5cGUpXG4gIFxuICByZXR1cm4ocmVzdWx0KVxufVxucmVzdWx0IDwtIGxhcHBseShpZHMsIGdldF9yZXN1bHRfbm90KVxucmVzdWx0IDwtIGRwbHlyOjpiaW5kX3Jvd3MocmVzdWx0KVxuYGBgIn0= -->
+<pre class="r"><code>get_result_not &lt;- function(integrated_density) {
+  result &lt;- data.frame(npeaks = count_peaks(integrated_density),
+                       dat_type = get_type(integrated_density),
+                       datname = get_datname(integrated_density),
+                       stdev = get_stdev(integrated_density),
+                       ratio_mean = get_mode_ratio(integrated_density, what = &quot;mean&quot;),
+                       ratio_sd = get_mode_ratio(integrated_density, what = &quot;stdev&quot;),
+                       scaled_e_change = get_scaled_e_change(integrated_density),
+                       mean_p = get_mean_p(integrated_density)
+  )
+  
+  result$dat_type &lt;- as.character(result$dat_type)
+  
+  return(result)
+}
+result &lt;- lapply(ids, get_result_not)
+result &lt;- dplyr::bind_rows(result)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3I6IG5vIGZ1bmN0aW9uIHRvIHJldHVybiBmcm9tLCBqdW1waW5nIHRvIHRvcCBsZXZlbFxuIn0= -->
-<pre><code>Error: no function to return from, jumping to top level</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
