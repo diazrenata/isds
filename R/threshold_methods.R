@@ -45,15 +45,6 @@ count_gaps <- function(integrated_density) {
   return(length(which(integrated_density$is_gap_start)))
 }
 
-#' Count peaks
-#'
-#' @param integrated_density result of find_gaps(integrated_density).
-#'
-#' @return number of peaks
-count_peaks <- function(integrated_density) {
- return(length(which(integrated_density$start_is_peak)))
-}
-
 #' Get threshold
 #'
 #' Retrieve the threshold probability used in find_gaps. For collecting results.
@@ -66,37 +57,6 @@ get_threshold <- function(integrated_density) {
   return(integrated_density$threshold[1])
 }
 
-#' Get type
-#' For collecting results.
-#' @param integrated_density result of find_gaps(integrated_density)
-#'
-#' @return "emp" or "sim"
-#' @export
-get_type <- function(integrated_density) {
-  return(integrated_density$type[1])
-}
-
-#' Get dataset name
-#' For collecting results.
-#' @param integrated_density result of find_gaps(integrated_density)
-#'
-#' @return Name of dataset used in integrated_density/sims
-
-get_datname <- function(integrated_density) {
-  return(integrated_density$dat_name[1])
-}
-
-#' Retrieve standard deviation
-#'
-#' Retrieve sd used to create ISD for sims. For collecting results.
-#'
-#' @param integrated_density result of find_gaps(integrated_density)
-#'
-#' @return sd
-#' @export
-get_stdev <- function(integrated_density) {
-  return(integrated_density$stdev[1])
-}
 
 #' Collect results
 #'
