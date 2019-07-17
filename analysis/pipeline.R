@@ -2,7 +2,7 @@ library(drake)
 library(isds)
 expose_imports(isds)
 
-sim_indices = as.numeric(c(1:2))
+sim_indices = as.numeric(c(1:15))
 stdevs = seq(0.05, 0.35, by = 0.1)
 #stdevs = c(0.01, 0.25)
 # thresholds_to_try = seq(.01, .31, by = 0.02)

@@ -80,6 +80,7 @@ add_sd <- function(bsd_means, stdev) {
 #' @param bsd_index row of bsd - corresponds to species
 #' @param bsd bsd
 #' @return data frame of `species` and `wgt` for a single species
+#' @importFrom dplyr mutate
 #' @export
 assign_ind_sizes <- function(bsd_index, bsd){
   this_species <- data.frame(
