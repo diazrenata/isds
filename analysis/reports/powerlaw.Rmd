@@ -69,3 +69,7 @@ fit3 <- vglm(y ~ 1, truncpareto(min(log10_isd$y) - .01, max(log10_isd$y) + .01),
 
 ```
 `vglm` cannot fit a truncated Pareto to either the raw or the log10-transformed data. Is it just too far from a powerlaw for the MLE to work?
+
+A next attempt might be to find the best-fitting estimates by minimizing the KS D or maximizing R2, then evaluating whether that is significantly different via a KS test (or calculating the loglikelihood of the observed vector vs samples from the corresponding rtruncpareto).
+
+I'm not sure if any of this is a good use of time, because these are visually not power-law. 
