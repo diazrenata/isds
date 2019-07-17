@@ -1,6 +1,6 @@
 library(drake)
 library(isds)
-expose_imports(isds)
+# expose_imports(isds)
 
 sim_indices = as.numeric(c(1:15))
 stdevs = seq(0.05, 0.35, by = 0.1)
@@ -28,7 +28,7 @@ empirical_id_pipeline <- make_id_pipeline(dats, "emp")
 
 id_pipelines <- rbind(sim_id_pipeline, empirical_id_pipeline)
 #
-# id_plots_pipeline <- make_id_plots_pipeline(id_pipelines, sim_index = c(1:5))
+ id_plots_pipeline <- make_id_plots_pipeline(id_pipelines, sim_index = c(1:5))
 #
 # thresholds_pipeline <- make_thresholds_pipeline(id_pipelines,
 #                                                 thresholds_to_try)
@@ -39,8 +39,8 @@ id_pipelines <- rbind(sim_id_pipeline, empirical_id_pipeline)
 #   stdev_report = target(rmarkdown::render(here::here("analysis", "reports", "sim_stdev_report.Rmd")))
 # )
 
-full_pipeline <- rbind(dats, cp_pipeline, sp_pipeline, draw_pipeline, id_pipelines)
-                       #, thresholds_pipeline, id_plots_pipeline, summary_plot_pipeline)
+full_pipeline <- rbind(dats, cp_pipeline, sp_pipeline, draw_pipeline, id_pipelines, id_plots_pipeline)
+                       #, thresholds_pipeline, , summary_plot_pipeline)
                        #, reports_pipeline)
 
 

@@ -15,6 +15,9 @@ cache <- storr::storr_dbi("datatable", "keystable", db)
 ```{r load things}
 
 all_ids <- cached(cache = cache) [ which(substr(cached(cache = cache), 0, 2) == "id")]
+all_ids <- all_ids[ which(grepl("dat1", all_ids))]
+
+
 # for(i in 1:length(all_ids)) {
 # loadd(all_ids[i], cache = cache, character_only = T)
 # }
@@ -44,7 +47,8 @@ result <- lapply(ids, get_result_not)
 result <- dplyr::bind_rows(result)
 ```
 
-Plots for 
+Plots for
+- nmodes (!)
 - mean ratio
 - sdev of ratio
 - elevation change
@@ -54,6 +58,14 @@ wrapped by standard deviation
 
 
 ```{r empirical v sim plots}
+nmodes_plot <- ggplot(data = result[ which(result$dat_type == "sim"), ], aes(x = npeaks)) +
+  geom_histogram(bins = 10) +
+  geom_vline(xintercept = result[ which(result$dat_type == "emp"), "npeaks"], color = "red") + 
+  facet_wrap(stdev ~ .) +
+  ggtitle("Number of modes") +
+  theme_bw()
+nmodes_plot
+
 mr_plot <- ggplot(data = result[ which(result$dat_type == "sim"), ], aes(x = ratio_mean)) +
   geom_histogram(bins = 10) +
   geom_vline(xintercept = result[ which(result$dat_type == "emp"), "ratio_mean"], color = "red") + 
