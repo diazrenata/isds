@@ -3,15 +3,16 @@ library(isds)
 expose_imports(isds)
 
 sim_indices = as.numeric(c(1:2))
-stdevs = seq(0.01, 0.21, by = 0.1)
+stdevs = seq(0.05, 0.35, by = 0.1)
 #stdevs = c(0.01, 0.25)
 # thresholds_to_try = seq(.01, .31, by = 0.02)
 
 dats <- drake_plan(
-  dat1  = target(get_toy_portal_data()),
-  dat2 = target(get_toy_portal_data(years = c(1985, 1986))),
-  dat3 = target(get_toy_portal_data(years = c(2000, 2001))),
-  dat4 = target(get_toy_portal_data(years = c(2014, 2015)))
+  dat1  = target(get_toy_portal_data())
+  # ,
+  # dat2 = target(get_toy_portal_data(years = c(1985, 1986))),
+  # dat3 = target(get_toy_portal_data(years = c(2000, 2001))),
+  # dat4 = target(get_toy_portal_data(years = c(2014, 2015)))
 )
 
 cp_pipeline <- make_cp_pipeline(dats)

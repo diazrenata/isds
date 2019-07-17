@@ -89,6 +89,9 @@ assign_ind_sizes <- function(bsd_index, bsd){
                              sd = bsd$sd[bsd_index])
   )
 
+  this_species <- this_species %>%
+    dplyr::mutate(wgt = max(wgt, 1))
+
   return(this_species)
 }
 
