@@ -6,6 +6,7 @@
 #'
 #' @return plot of integrated density with maxima and minima marked
 #' @importFrom ggplot2 ggplot geom_point aes theme_bw geom_hline labs
+#' @export
 plot_integrated_density <- function(integrated_density, threshold_lines = NULL, plot_title = NULL) {
 
   integrated_plot <- ggplot2::ggplot(data = integrated_density, ggplot2::aes(x = start, y = by_max)) +
