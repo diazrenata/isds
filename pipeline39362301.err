@@ -1,759 +1,0 @@
-Loading required package: future
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-
-.........target dat1
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-Target dat1 messages:
-  Loading in data version 1.117.0
-.target cp_dat1
-target isd_dat1
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target gmm_isd_dat1
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target sp_cp_dat1_0.05
-target sp_cp_dat1_0.15
-target sp_cp_dat1_0.25
-target sp_cp_dat1_0.35
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target sim_sp_cp_dat1_0.05_1
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-Target gmm_isd_dat1 messages:
-  Package 'mclust' version 5.4.5
-Type 'citation("mclust")' for citing this R package in publications.
-.target sim_sp_cp_dat1_0.05_2
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target sim_sp_cp_dat1_0.05_3
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target sim_sp_cp_dat1_0.05_4
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target sim_sp_cp_dat1_0.05_5
-target sim_sp_cp_dat1_0.05_6
-target sim_sp_cp_dat1_0.05_7
-target sim_sp_cp_dat1_0.05_8
-target sim_sp_cp_dat1_0.05_9
-target sim_sp_cp_dat1_0.05_10
-target sim_sp_cp_dat1_0.05_11
-target sim_sp_cp_dat1_0.05_12
-target sim_sp_cp_dat1_0.05_13
-target sim_sp_cp_dat1_0.05_14
-target sim_sp_cp_dat1_0.05_15
-target id_emp_dat1_NA_gmm_isd_dat1
-target sim_sp_cp_dat1_0.15_1
-target sim_sp_cp_dat1_0.15_2
-target sim_sp_cp_dat1_0.15_3
-target sim_sp_cp_dat1_0.15_4
-target sim_sp_cp_dat1_0.15_5
-target sim_sp_cp_dat1_0.15_6
-target sim_sp_cp_dat1_0.15_7
-target sim_sp_cp_dat1_0.15_8
-target sim_sp_cp_dat1_0.15_9
-target sim_sp_cp_dat1_0.15_10
-target sim_sp_cp_dat1_0.15_11
-target sim_sp_cp_dat1_0.15_12
-target sim_sp_cp_dat1_0.15_13
-target sim_sp_cp_dat1_0.15_14
-target sim_sp_cp_dat1_0.15_15
-target sim_sp_cp_dat1_0.25_1
-target sim_sp_cp_dat1_0.25_2
-target sim_sp_cp_dat1_0.25_3
-target sim_sp_cp_dat1_0.25_4
-target sim_sp_cp_dat1_0.25_5
-target sim_sp_cp_dat1_0.25_6
-target sim_sp_cp_dat1_0.25_7
-target sim_sp_cp_dat1_0.25_8
-target sim_sp_cp_dat1_0.25_9
-target sim_sp_cp_dat1_0.25_10
-target sim_sp_cp_dat1_0.25_11
-target sim_sp_cp_dat1_0.25_12
-target sim_sp_cp_dat1_0.25_13
-target sim_sp_cp_dat1_0.25_14
-target sim_sp_cp_dat1_0.25_15
-target sim_sp_cp_dat1_0.35_1
-target sim_sp_cp_dat1_0.35_2
-target sim_sp_cp_dat1_0.35_3
-target sim_sp_cp_dat1_0.35_4
-target sim_sp_cp_dat1_0.35_5
-target sim_sp_cp_dat1_0.35_6
-target sim_sp_cp_dat1_0.35_7
-target sim_sp_cp_dat1_0.35_8
-target sim_sp_cp_dat1_0.35_9
-target sim_sp_cp_dat1_0.35_10
-target sim_sp_cp_dat1_0.35_11
-target sim_sp_cp_dat1_0.35_12
-target sim_sp_cp_dat1_0.35_13
-target sim_sp_cp_dat1_0.35_14
-target sim_sp_cp_dat1_0.35_15
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.05_1
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.05_2
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.05_3
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.05_4
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.05_5
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.05_6
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.05_7
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.05_8
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.05_9
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.05_10
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.05_11
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.05_12
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.05_13
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.05_14
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.05_15
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-..target id_plot_id_emp_dat1_NA_gmm_isd_dat1_dat1.empirical
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.15_1
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.15_2
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.15_3
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.15_4
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.15_5
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.15_6
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.15_7
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.15_8
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.15_9
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.15_10
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.15_11
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.15_12
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.15_13
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.15_14
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.15_15
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.25_1
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.25_2
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.25_3
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.25_4
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.25_5
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.25_6
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.25_7
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.25_8
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-..target isd_sim_sp_cp_dat1_0.25_9
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.25_10
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.25_11
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.25_12
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.25_13
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.25_14
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.25_15
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.35_1
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.35_2
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.35_3
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.35_4
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.35_5
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.35_6
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.35_7
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.35_8
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.35_9
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.35_10
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-..target isd_sim_sp_cp_dat1_0.35_11
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.35_12
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.
-target isd_sim_sp_cp_dat1_0.35_13
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.35_14
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target isd_sim_sp_cp_dat1_0.35_15
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target gmm_isd_sim_sp_cp_dat1_0.05_1
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target gmm_isd_sim_sp_cp_dat1_0.05_2
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target gmm_isd_sim_sp_cp_dat1_0.05_3
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target gmm_isd_sim_sp_cp_dat1_0.05_4
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target gmm_isd_sim_sp_cp_dat1_0.05_5
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target gmm_isd_sim_sp_cp_dat1_0.05_6
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target gmm_isd_sim_sp_cp_dat1_0.05_7
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target gmm_isd_sim_sp_cp_dat1_0.05_8
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target gmm_isd_sim_sp_cp_dat1_0.05_9
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target gmm_isd_sim_sp_cp_dat1_0.05_10
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target gmm_isd_sim_sp_cp_dat1_0.05_11
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target gmm_isd_sim_sp_cp_dat1_0.05_12
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target gmm_isd_sim_sp_cp_dat1_0.05_13
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target gmm_isd_sim_sp_cp_dat1_0.05_14
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-.target gmm_isd_sim_sp_cp_dat1_0.05_15
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-fail id_plot_id_emp_dat1_NA_gmm_isd_dat1_dat1.empirical
-Error: Target `id_plot_id_emp_dat1_NA_gmm_isd_dat1_dat1.empirical` failed. Call `diagnose(id_plot_id_emp_dat1_NA_gmm_isd_dat1_dat1.empirical)` for details. Error message:
-  could not find function "plot_integrated_density"
-Execution halted
