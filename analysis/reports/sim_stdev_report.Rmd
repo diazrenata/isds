@@ -72,7 +72,7 @@ gridExtra::grid.arrange(grobs = sims_plots,
 ```
 
 
-```{r nb modes plot}
+```{r nb modes plot, eval = F, include = F}
 result <- readd(result, cache = cache)
 
 modes_result <- result %>%
@@ -102,7 +102,7 @@ print(mode_plot)
 
 ```
 
-```{r gaps plot}
+```{r gaps plot, eval = F, include = F}
 
 gaps_result <- result %>%
   dplyr::filter(dat_type == "sim") %>%

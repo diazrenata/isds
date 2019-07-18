@@ -16,6 +16,7 @@ cache <- storr::storr_dbi("datatable", "keystable", db)
 
 all_ids <- cached(cache = cache) [ which(substr(cached(cache = cache), 0, 2) == "id")]
 all_ids <- all_ids[ which(grepl("dat1", all_ids))]
+all_ids <- all_ids[ which(!grepl("plot", all_ids))]
 
 
 # for(i in 1:length(all_ids)) {
@@ -42,6 +43,10 @@ get_result_not <- function(integrated_density) {
   
   return(result)
 }
+
+# for(i in 1:length(ids)) {
+#   get_result_not(ids[[i]])
+# }
 
 result <- lapply(ids, get_result_not)
 result <- dplyr::bind_rows(result)
