@@ -25,16 +25,24 @@ make_cp_pipeline <- function(dats_pipeline) {
 #' @return pipeline to add standard deviations to community pars
 #' @export
 #' @importFrom drake drake_plan target
-make_sp_pipeline <- function(cp_pipeline, stdevs) {
+make_sp_pipeline <- function(cp_pipeline, stdevs, stdev_range = NULL) {
   cp_targets <- list()
   for(i in 1:length(cp_pipeline$target)) {
     cp_targets <- c(cp_targets, as.name(cp_pipeline$target[i]))
   }
+  if(is.null(stdev_range)) {
   sp_pipeline <- drake::drake_plan(
     sp = target(get_sim_pars(comm_pars, stdev),
                 transform = cross(comm_pars = !!cp_targets,
                                   stdev = !!stdevs))
   )
+  } else {
+    sp_pipeline <- drake::drake_plan(
+      sp = target(get_sim_pars(comm_pars, stdev_range = stdev_range),
+                  transform = map(comm_pars = !!cp_targets)
+      )
+    )
+  }
   return(sp_pipeline)
 }
 

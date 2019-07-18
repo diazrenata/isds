@@ -4,7 +4,7 @@
 \alias{make_sp_pipeline}
 \title{Make sim pars pipeline}
 \usage{
-make_sp_pipeline(cp_pipeline, stdevs)
+make_sp_pipeline(cp_pipeline, stdevs, stdev_range = NULL)
 }
 \arguments{
 \item{cp_pipeline}{pipeline of extracting community pars from raw data}

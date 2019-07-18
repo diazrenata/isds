@@ -4,12 +4,14 @@
 \alias{add_sd}
 \title{Add standard deviations to BSD}
 \usage{
-add_sd(bsd_means, stdev)
+add_sd(bsd_means, stdev, stdev_range = NULL)
 }
 \arguments{
 \item{bsd_means}{vector of BSD means}
 
 \item{stdev}{stdev proportion to BSD mean value}
+
+\item{stdev_range}{range of std coefficients to draw from (uniform)}
 }
 \value{
 dataframe of mean sizes + scaled sds

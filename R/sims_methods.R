@@ -63,10 +63,15 @@ draw_bsd <- function(community_pars) {
 #' Add standard deviations to BSD
 #' @param bsd_means vector of BSD means
 #' @param stdev stdev proportion to BSD mean value
+#' @param stdev_range range of std coefficients to draw from (uniform)
 #' @return dataframe of mean sizes + scaled sds
 #' @export
-add_sd <- function(bsd_means, stdev) {
-  sds <- stdev * bsd_means
+add_sd <- function(bsd_means, stdev, stdev_range = NULL) {
+if(is.null(stdev_range)) {
+  sds <- bsd_means * stdev
+} else {
+  sds <- bsd_means * (runif(n = length(bsd_means), min = stdev_range[1], max = stdev_range[2]))
+}
   bsd <- data.frame(
     means = bsd_means,
     sd = sds

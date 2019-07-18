@@ -19,6 +19,9 @@ cp_pipeline <- make_cp_pipeline(dats)
 
 sp_pipeline <- make_sp_pipeline(cp_pipeline = cp_pipeline,
                                 stdevs = stdevs)
+sp_randomstdev_pipeline <- make_sp_pipeline(cp_pipeline = cp_pipeline,
+                                            stdev_range = c(0.1, 0.4))
+sp_pipeline <- rbind(sp_pipeline, sp_randomstdev_pipeline)
 
 draw_pipeline <- make_draw_pipeline(sp_pipeline = sp_pipeline,
                                     sim_indices = sim_indices)
