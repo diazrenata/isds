@@ -83,6 +83,9 @@ make_id_pipeline <- function(community_dat_pipeline, community_type = "sim") {
     if(community_type == "sim") {
       dat_names[i] <- strsplit(community_dat_pipeline$target[i], "_")[[1]][4]
       stdevs[i] <- as.numeric(strsplit(community_dat_pipeline$target[i], "_")[[1]][5])
+      if(stdevs[i] >= 1) {
+        stdevs[i] <- 99
+      }
     } else {
       dat_names[i] <- community_dat_pipeline$target[i]
       stdevs[i] <- NA
