@@ -5,12 +5,14 @@
 \title{Get sim pars
 Add standard deviations to \code{community_pars}}
 \usage{
-get_sim_pars(community_pars, stdev)
+get_sim_pars(community_pars, stdev = NULL, stdev_range = NULL)
 }
 \arguments{
 \item{community_pars}{community_pars from get_community_pars}
 
 \item{stdev}{stdev to use in sims}
+
+\item{stdev_range}{or you can use a range}
 }
 \value{
 community_pars with stdev

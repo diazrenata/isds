@@ -38,7 +38,7 @@ make_sp_pipeline <- function(cp_pipeline, stdevs, stdev_range = NULL) {
   )
   } else {
     sp_pipeline <- drake::drake_plan(
-      sp = target(get_sim_pars(comm_pars, stdev_range = stdev_range),
+      sp = target(get_sim_pars(comm_pars, stdev_range = !!stdev_range),
                   transform = map(comm_pars = !!cp_targets)
       )
     )

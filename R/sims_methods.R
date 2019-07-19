@@ -16,10 +16,11 @@ get_community_pars <- function(raw_dat) {
 #' Add standard deviations to `community_pars`
 #' @param community_pars community_pars from get_community_pars
 #' @param stdev stdev to use in sims
+#' @param stdev_range or you can use a range
 #' @return  community_pars with stdev
 #' @export
-get_sim_pars <- function(community_pars, stdev) {
-  sim_pars <- append(community_pars, list(stdev = stdev))
+get_sim_pars <- function(community_pars, stdev = NULL, stdev_range = NULL) {
+  sim_pars <- append(community_pars, list(stdev = stdev, stdev_range = stdev_range))
   return(sim_pars)
 }
 
@@ -85,7 +86,7 @@ if(is.null(stdev_range)) {
 #' @param bsd_index row of bsd - corresponds to species
 #' @param bsd bsd
 #' @return data frame of `species` and `wgt` for a single species
-#' @importFrom dplyr mutate
+#' @importFrom dplyr mutate if_else
 #' @export
 assign_ind_sizes <- function(bsd_index, bsd){
   this_species <- data.frame(
@@ -96,7 +97,7 @@ assign_ind_sizes <- function(bsd_index, bsd){
   )
 
   this_species <- this_species %>%
-    dplyr::mutate(wgt = max(wgt, 1))
+    dplyr::mutate(wgt = dplyr::if_else((wgt <= 0), 1, wgt))
 
   return(this_species)
 }
@@ -132,7 +133,7 @@ draw_sim <- function(community_pars, sim_index = 1){
 
   sad <- draw_sad(community_pars = community_pars)
   bsd <- draw_bsd(community_pars = community_pars)
-  bsd <- add_sd(bsd, stdev = community_pars$stdev)
+  bsd <- add_sd(bsd, stdev = community_pars$stdev, stdev_range = community_pars$stdev_range)
   bsd <- combine_abds(sad = sad, bsd = bsd)
 
   sim <- lapply(1:nrow(bsd),FUN = assign_ind_sizes, bsd = bsd)
