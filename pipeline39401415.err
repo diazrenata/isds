@@ -1,21 +1,0 @@
-Loading required package: future
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-
-................target sp_cp_dat1
-
-Attaching package: ‘future’
-
-The following object is masked from ‘package:drake’:
-
-    plan
-
-fail sp_cp_dat1
-Error: Target `sp_cp_dat1` failed. Call `diagnose(sp_cp_dat1)` for details. Error message:
-  unused argument (stdev_range = stdev_range)
-Execution halted
