@@ -15,7 +15,7 @@ cache <- storr::storr_dbi("datatable", "keystable", db)
 ```{r load things}
 
 all_ids <- cached(cache = cache) [ which(substr(cached(cache = cache), 0, 2) == "id")]
-all_ids <- all_ids[ which(grepl("dat1", all_ids))]
+# all_ids <- all_ids[ which(grepl("dat1", all_ids))]
 all_ids <- all_ids[ which(!grepl("plot", all_ids))]
 
 
@@ -66,7 +66,7 @@ wrapped by standard deviation
 nmodes_plot <- ggplot(data = result[ which(result$dat_type == "sim"), ], aes(x = npeaks)) +
   geom_histogram(bins = 10) +
   geom_vline(xintercept = result[ which(result$dat_type == "emp"), "npeaks"], color = "red") + 
-  facet_wrap(stdev ~ .) +
+  facet_wrap(stdev ~  datname) +
   ggtitle("Number of modes") +
   theme_bw()
 nmodes_plot
@@ -74,7 +74,7 @@ nmodes_plot
 mr_plot <- ggplot(data = result[ which(result$dat_type == "sim"), ], aes(x = ratio_mean)) +
   geom_histogram(bins = 10) +
   geom_vline(xintercept = result[ which(result$dat_type == "emp"), "ratio_mean"], color = "red") + 
-  facet_wrap(stdev ~ .) +
+  facet_wrap(stdev ~  datname) +
   ggtitle("Mean ratio of modes") +
   theme_bw()
 mr_plot
@@ -82,7 +82,7 @@ mr_plot
 stdr_plot <- ggplot(data = result[ which(result$dat_type == "sim"), ], aes(x = ratio_sd)) +
   geom_histogram(bins = 10) +
   geom_vline(xintercept = result[ which(result$dat_type == "emp"), "ratio_sd"], color = "red") + 
-    facet_wrap(stdev ~ .) +
+    facet_wrap(stdev ~  datname) +
   ggtitle("Mean standard deviation of modes") +
   theme_bw()
 stdr_plot
@@ -90,7 +90,7 @@ stdr_plot
 echange_plot <- ggplot(data = result[ which(result$dat_type == "sim"), ], aes(x = scaled_e_change)) +
   geom_histogram(bins = 10) +
   geom_vline(xintercept = result[ which(result$dat_type == "emp"), "scaled_e_change"], color = "red") + 
-  facet_wrap(stdev ~ .) +
+  facet_wrap(stdev ~  datname) +
   ggtitle("Scaled elevation change") +
   theme_bw()
 echange_plot
@@ -99,7 +99,7 @@ echange_plot
 meanp_plot <- ggplot(data = result[ which(result$dat_type == "sim"), ], aes(x = mean_p)) +
   geom_histogram(bins = 10) +
   geom_vline(xintercept = result[ which(result$dat_type == "emp"), "mean_p"], color = "red") + 
-  facet_wrap(stdev ~ .) +
+  facet_wrap(stdev ~ datname) +
   ggtitle("Mean p") +
   theme_bw()
 meanp_plot

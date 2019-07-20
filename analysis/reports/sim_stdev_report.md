@@ -36,7 +36,15 @@ for(i in 1:length(all_id_plots)) {
 ```
 
 ``` r
-gridExtra::grid.arrange(grobs = list(plots[[plots_df[ which(plots_df$dat_type == "empirical"), "row_index"]]]), nrow = ceiling(length(which(plots_df$dat_type == "empirical"))/2))
+empirical_plot_indexes <- plots_df[ which(plots_df$dat_type == "empirical"), "row_index"]
+
+empirical_plots <- list()
+
+for(i in 1:length(empirical_plot_indexes)) {
+  empirical_plots[[i]] <- plots[[empirical_plot_indexes[i]]]
+}
+
+gridExtra::grid.arrange(grobs = empirical_plots, nrow = ceiling(length(which(plots_df$dat_type == "empirical"))/2))
 ```
 
 ![](sim_stdev_report_files/figure-markdown_github/empirical%20plots-1.png)
