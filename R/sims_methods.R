@@ -1,14 +1,15 @@
 #' Get community parameters
 #' @param raw_dat community data frame with columns `species`', `wgt`
+#' @param dat_name name of dataset
 #'
 #' @return list of community parameters for sim draws: `S` = number of species, `N` = number of individuals, `min_size` = minimum body size, `max_size` = maximum body size
 #' @export
-get_community_pars <- function(raw_dat) {
+get_community_pars <- function(raw_dat, dat_name) {
   S <- length(unique(raw_dat$species))
   N <- nrow(raw_dat)
   min_size <- min(raw_dat$wgt)
   max_size <- max(raw_dat$wgt)
-  community_pars <- list(S = S, N = N, min_size = min_size, max_size = max_size)
+  community_pars <- list(S = S, N = N, min_size = min_size, max_size = max_size, dat_name = dat_name, sim = FALSE)
   return(community_pars)
 }
 
@@ -21,6 +22,9 @@ get_community_pars <- function(raw_dat) {
 #' @export
 get_sim_pars <- function(community_pars, stdev = NULL, stdev_range = NULL) {
   sim_pars <- append(community_pars, list(stdev = stdev, stdev_range = stdev_range))
+  if(any(!is.na(c(stdev, stdev_range)))) {
+    sim_pars$sim <- TRUE
+  }
   return(sim_pars)
 }
 
@@ -138,5 +142,47 @@ draw_sim <- function(community_pars, sim_index = 1){
 
   sim <- lapply(1:nrow(bsd),FUN = assign_ind_sizes, bsd = bsd)
   sim <- dplyr::bind_rows(sim)
+  sim <- list(community = sim, pars = community_pars)
   return(sim)
 }
+
+
+#' draw sims all at once
+#'
+#' @param base_dat data
+#' @param dat_name to add to pars
+#' @param fixed_sds sd pars
+#' @param sd_range range
+#' @param nsim nb sim
+#'
+#' @return list of sims
+#' @export
+generate_sim_draws <- function(base_dat, dat_name = NULL, fixed_sds, sd_range, nsim) {
+
+  cpars <- get_community_pars(base_dat, dat_name = dat_name)
+
+  fixed_sd_sim_pars <- lapply(fixed_sds, get_sim_pars, community_pars = cpars, stdev_range = NULL)
+  range_sd_sim_pars <- lapply(sd_range, get_sim_pars, community_pars = cpars, stdev = NULL)
+
+  all_sim_pars <- c(fixed_sd_sim_pars, range_sd_sim_pars)
+
+  sim_calls <- list()
+  for(i in 1:length(all_sim_pars)) {
+    sim_calls[[i]] <- call("draw_sim", community_pars = all_sim_pars[[i]])
+  }
+
+  replicate_sim_calls <- function(sim_call, nsim) {
+    sim_reps <- replicate(nsim, expr = eval(sim_call), simplify = FALSE)
+    return(sim_reps)
+  }
+
+  all_sim_draws <- lapply(sim_calls, replicate_sim_calls, nsim = nsim)
+  all_sim_draws <- unlist(all_sim_draws, recursive = F)
+
+  empirical = list(list(community = base_dat, pars = get_sim_pars(community_pars = cpars,stdev = NA,stdev_range = NA)))
+
+  all_sims <- append(empirical, all_sim_draws)
+
+  return(all_sims)
+}
+
