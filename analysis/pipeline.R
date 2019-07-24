@@ -2,13 +2,11 @@ library(drake)
 library(isds)
 expose_imports(isds)
 
-sim_indices = as.numeric(c(1:2))
-#stdevs = seq(0.05, 0.35, by = 0.1)
-stdevs = c(0.05)
-stdevs = c(0.01, 0.25)
+stdevs = seq(0.05, 0.35, by = 0.1)
+#stdevs = c(0.01, 0.25)
 # thresholds_to_try = seq(.01, .31, by = 0.02)
 stdev_range = list(c(0.01, 0.04))
-nsim = 2
+nsim = 15
 dats <- drake_plan(
   dat1  = target(get_toy_portal_data()),
   dat2 = target(get_toy_portal_data(years = c(1985, 1986)))#,
@@ -22,23 +20,40 @@ for(i in 1:nrow(dats)) {
   dat_targets[[i]] <- as.name(dats$target[i])
 }
 
-sims_pipeline <- drake_plan(sims = target(generate_sim_draws(community_dat, dat_name, stdevs, stdev_range, nsim),
-                                          transform = map(community_dat = !!dat_targets,
-                                                          dat_name = !!dats$target,
-                                                          stdevs = stdevs,
-                                                          stdev_range = stdev_range,
-                                                          nsim =nsim)
+sims_pipeline <- drake_plan(
+  sims = target(generate_sim_draws(community_dat, dat_name, stdevs, stdev_range, nsim),
+                transform = map(community_dat = !!dat_targets,
+                                dat_name = !!dats$target,
+                                stdevs = stdevs,
+                                stdev_range = stdev_range,
+                                nsim =nsim)
+  )
 )
-)
-
 
 for(i in 1:nrow(sims_pipeline)) {
-sims_pipeline$target[i] <- unlist(strsplit(sims_pipeline$target[i], split = "sims_"))[2]
-sims_pipeline$target[i] <- unlist(strsplit(sims_pipeline$target[i], split = "_"))[1]
-sims_pipeline$target[i] <- paste0("sims_", sims_pipeline$target[i])
+  sims_pipeline$target[i] <- unlist(strsplit(sims_pipeline$target[i], split = "sims_"))[2]
+  sims_pipeline$target[i] <- unlist(strsplit(sims_pipeline$target[i], split = "_"))[1]
+  sims_pipeline$target[i] <- paste0("sims_", sims_pipeline$target[i])
 }
 
-all <- rbind(dats, sims_pipeline)
+sim_targets <- list()
+
+for(i in 1:nrow(sims_pipeline)) {
+  sim_targets[[i]] <- as.name(sims_pipeline$target[i])
+}
+
+ids_pipeline <- drake_plan(
+  ids = target(get_id_wrapped(datasets = datasets),
+                transform = map(datasets = !!sim_targets)
+  )
+)
+
+for(i in 1:nrow(ids_pipeline)) {
+  ids_pipeline$target[i] <- unlist(strsplit(ids_pipeline$target[i], split = "sims_"))[2]
+  ids_pipeline$target[i] <- paste0("ids_", ids_pipeline$target[i])
+}
+
+all <- rbind(dats, sims_pipeline, ids_pipeline)
 
 
 ## Set up the cache and config

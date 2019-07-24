@@ -5,7 +5,7 @@
 \title{Integrate density based on GMM}
 \usage{
 get_integrated_density(gmm, interval_size = 1e-04, min_size = 0,
-  max_size = 8, type = "sim", dat_name, stdev = NA)
+  max_size = 8)
 }
 \arguments{
 \item{gmm}{result of \code{fit_gmm}}
@@ -15,12 +15,6 @@ get_integrated_density(gmm, interval_size = 1e-04, min_size = 0,
 \item{min_size}{minimum of window to integrate - v. v. small}
 
 \item{max_size}{maximum of window to integrate - v. v. large compared to rodents}
-
-\item{type}{"sim" or "empirical", for collecting results later}
-
-\item{dat_name}{source dataset, for collecting results later}
-
-\item{stdev}{if sim, standard deviation of intraspecific body size used to generate sim}
 }
 \value{
 dataframe with density, turnpoints marked

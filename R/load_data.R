@@ -8,7 +8,8 @@
 get_toy_portal_data <- function(years = c(1994, 1995)) {
   portal_data <- portalr::summarise_individual_rodents(clean = T, type = "Granivores", unknowns = F, time = "date") %>%
     dplyr::filter(year %in% years, treatment == "control", !is.na(wgt)) %>%
-    dplyr::select(species, wgt)
+    dplyr::select(species, wgt) %>%
+    dplyr::mutate(species = as.character(species))
 
   return(portal_data)
 }

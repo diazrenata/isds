@@ -1,3 +1,33 @@
+#' Wrapper for get_id
+#'
+#' @param datasets list of datasets
+#'
+#' @return list of ids
+#' @export
+#'
+get_id_wrapped <- function(datasets) {
+  ids <- lapply(datasets, get_id)
+  return(ids)
+}
+
+#' Get id from community data
+#'
+#' @param dataset list of community data, pars
+#'
+#' @return list of id, pars
+#' @export
+get_id <- function(dataset) {
+  isd <- make_isd(dataset$community)
+
+  gmm <- fit_gmm(isd)
+
+  id <- get_integrated_density(gmm)
+
+  id <- list(integrated_density = id,
+               pars = dataset$pars)
+  return(id)
+}
+
 #' @title Make ISD
 #' @param community_dat community df with energy & sizeclass columns added
 #' @return ISD table
@@ -36,16 +66,12 @@ fit_gmm <- function(isd){
 #' @param interval_size width, in log units, of intervals to integrate over
 #' @param min_size minimum of window to integrate - v. v. small
 #' @param max_size maximum of window to integrate - v. v. large compared to rodents
-#' @param type "sim" or "empirical", for collecting results later
-#' @param dat_name source dataset, for collecting results later
-#' @param stdev if sim, standard deviation of intraspecific body size used to generate sim
-#'
 #' @return dataframe with density, turnpoints marked
 #' @export
 #' @importFrom stats predict
 #' @importFrom dplyr mutate
 #' @importFrom pastecs turnpoints
-get_integrated_density <- function(gmm, interval_size = 0.0001, min_size = 0, max_size = 8, type = "sim", dat_name, stdev = NA) {
+get_integrated_density <- function(gmm, interval_size = 0.0001, min_size = 0, max_size = 8) {
 
   density_evalpoints <- seq(min_size, max_size, by = interval_size)
 
@@ -79,9 +105,6 @@ get_integrated_density <- function(gmm, interval_size = 0.0001, min_size = 0, ma
   integrated_density$start_is_peak <- c(1:(length(density_evalpoints) - 1)) %in% peaks
   integrated_density$start_is_pit <- c(1:(length(density_evalpoints) - 1)) %in% pits
   integrated_density$start_is_turnpoint <- (integrated_density$start_is_peak | integrated_density$start_is_pit)
-  integrated_density$type = type
-  integrated_density$dat_name = dat_name
-  integrated_density$stdev = stdev
 
   return(integrated_density)
 }

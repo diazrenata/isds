@@ -65,46 +65,46 @@
 #'   )
 #'   return(draw_pipeline)
 #' }
-
-#' Make community pars pipeline
 #'
-#' @param community_dat_pipeline pipeline to either get raw data or draw sims
-#' @param community_type "sim" or "empirical"
-#' @return pipeline to get integrated density of GMM fit to community data
-#' @export
-#' @importFrom drake drake_plan target
+#' #' Make community pars pipeline
+#' #'
+#' #' @param community_dat_pipeline pipeline to either get raw data or draw sims
+#' #' @param community_type "sim" or "empirical"
+#' #' @return pipeline to get integrated density of GMM fit to community data
+#' #' @export
+#' #' @importFrom drake drake_plan target
+#' #'
+#' make_id_pipeline <- function(community_dat_pipeline, community_type = "sim") {
+#'   cd_targets <- list()
+#'   dat_names <- vector(length=nrow(community_dat_pipeline))
+#'   stdevs <- vector(length=nrow(community_dat_pipeline))
+#'   for(i in 1:length(community_dat_pipeline$target)) {
+#'     cd_targets <- c(cd_targets, as.name(community_dat_pipeline$target[i]))
+#'     if(community_type == "sim") {
+#'       dat_names[i] <- strsplit(community_dat_pipeline$target[i], "_")[[1]][4]
+#'       stdevs[i] <- as.numeric(strsplit(community_dat_pipeline$target[i], "_")[[1]][5])
+#'       if(stdevs[i] >= 1) {
+#'         stdevs[i] <- 99
+#'       }
+#'     } else {
+#'       dat_names[i] <- community_dat_pipeline$target[i]
+#'       stdevs[i] <- NA
+#'     }
+#'   }
+#'   id_pipeline <- drake::drake_plan(
+#'     isd = target(make_isd(community_dat),
+#'                  transform = map(community_dat = !!cd_targets)),
+#'     gmm = target(fit_gmm(isd),
+#'                  transform = map(isd)),
+#'     id = target(get_integrated_density(gmm, type = community_type,
+#'                                        dat_name = dat_names, stdev = stdevs),
+#'                 transform = map(gmm, community_type = !!community_type,
+#'                                 dat_names = !!dat_names,
+#'                                 stdevs = !!stdevs))
+#'   )
+#'   return(id_pipeline)
 #'
-make_id_pipeline <- function(community_dat_pipeline, community_type = "sim") {
-  cd_targets <- list()
-  dat_names <- vector(length=nrow(community_dat_pipeline))
-  stdevs <- vector(length=nrow(community_dat_pipeline))
-  for(i in 1:length(community_dat_pipeline$target)) {
-    cd_targets <- c(cd_targets, as.name(community_dat_pipeline$target[i]))
-    if(community_type == "sim") {
-      dat_names[i] <- strsplit(community_dat_pipeline$target[i], "_")[[1]][4]
-      stdevs[i] <- as.numeric(strsplit(community_dat_pipeline$target[i], "_")[[1]][5])
-      if(stdevs[i] >= 1) {
-        stdevs[i] <- 99
-      }
-    } else {
-      dat_names[i] <- community_dat_pipeline$target[i]
-      stdevs[i] <- NA
-    }
-  }
-  id_pipeline <- drake::drake_plan(
-    isd = target(make_isd(community_dat),
-                 transform = map(community_dat = !!cd_targets)),
-    gmm = target(fit_gmm(isd),
-                 transform = map(isd)),
-    id = target(get_integrated_density(gmm, type = community_type,
-                                       dat_name = dat_names, stdev = stdevs),
-                transform = map(gmm, community_type = !!community_type,
-                                dat_names = !!dat_names,
-                                stdevs = !!stdevs))
-  )
-  return(id_pipeline)
-
-}
+#' }
 
 #'
 #' #' Make thresholds pipeline
