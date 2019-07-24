@@ -2,7 +2,24 @@
 % Please edit documentation in R/plan_methods.R
 \name{make_id_pipeline}
 \alias{make_id_pipeline}
-\title{Make community pars pipeline}
+\title{#' Make community pars pipeline
+#'
+#' @param dats_pipeline pipeline of loading raw data
+#'
+#' @return pipeline to extract communty pars from raw datasets
+#' @export
+#' @importFrom drake drake_plan target
+make_cp_pipeline <- function(dats_pipeline) {
+dat_targets <- list()
+for(i in 1:length(dats_pipeline$target)) {
+dat_targets <- c(dat_targets, as.name(dats_pipeline$target\link{i}))
+}
+cp_pipeline <- drake::drake_plan(
+cp = target(get_community_pars(raw_dat),
+transform = map(raw_dat = !!dat_targets))
+)
+return(cp_pipeline)
+}}
 \usage{
 make_id_pipeline(community_dat_pipeline, community_type = "sim")
 }
@@ -15,5 +32,53 @@ make_id_pipeline(community_dat_pipeline, community_type = "sim")
 pipeline to get integrated density of GMM fit to community data
 }
 \description{
+#' Make sim pars pipeline
+#'
+#' @param cp_pipeline pipeline of extracting community pars from raw data
+#'
+#' @return pipeline to add standard deviations to community pars
+#' @export
+#' @importFrom drake drake_plan target
+make_sp_pipeline <- function(cp_pipeline, stdevs, stdev_range = NULL) {
+cp_targets <- list()
+for(i in 1:length(cp_pipeline$target)) {
+cp_targets <- c(cp_targets, as.name(cp_pipeline$target\link{i}))
+}
+if(is.null(stdev_range)) {
+sp_pipeline <- drake::drake_plan(
+sp = target(get_sim_pars(comm_pars, stdev),
+transform = cross(comm_pars = !!cp_targets,
+stdev = !!stdevs))
+)
+} else {
+sp_pipeline <- drake::drake_plan(
+sp = target(get_sim_pars(comm_pars, stdev_range = !!stdev_range),
+transform = map(comm_pars = !!cp_targets)
+)
+)
+}
+return(sp_pipeline)
+}
+}
+\details{
+#' Make draw sims pipeline
+#'
+#' @param sp_pipeline pipeline of community pars including standard deviations
+#' @param sim_indices for drake
+#' @return pipeline to extract draw sims based on community pars
+#' @export
+#' @importFrom drake drake_plan target
+make_draw_pipeline <- function(sp_pipeline, sim_indices) {
+sp_targets <- list()
+for(i in 1:length(sp_pipeline$target)) {
+sp_targets <- c(sp_targets, as.name(sp_pipeline$target\link{i}))
+}
+draw_pipeline <- drake::drake_plan(
+sim = target(draw_sim(sim_pars, sim_index),
+transform = cross(sim_pars = !!sp_targets,
+sim_index = !!sim_indices))
+)
+return(draw_pipeline)
+}
 Make community pars pipeline
 }

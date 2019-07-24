@@ -171,11 +171,6 @@ generate_sim_draws <- function(base_dat, dat_name = NULL, fixed_sds, sd_range, n
     sim_calls[[i]] <- call("draw_sim", community_pars = all_sim_pars[[i]])
   }
 
-  replicate_sim_calls <- function(sim_call, nsim) {
-    sim_reps <- replicate(nsim, expr = eval(sim_call), simplify = FALSE)
-    return(sim_reps)
-  }
-
   all_sim_draws <- lapply(sim_calls, replicate_sim_calls, nsim = nsim)
   all_sim_draws <- unlist(all_sim_draws, recursive = F)
 
@@ -186,3 +181,16 @@ generate_sim_draws <- function(base_dat, dat_name = NULL, fixed_sds, sd_range, n
   return(all_sims)
 }
 
+#' Replicte sim call
+#'
+#' To draw sims.
+#'
+#' @param sim_call sim call
+#' @param nsim nb replicates
+#'
+#' @return list of sims
+#' @export
+replicate_sim_calls <- function(sim_call, nsim) {
+  sim_reps <- replicate(nsim, expr = eval(sim_call), simplify = FALSE)
+  return(sim_reps)
+}
