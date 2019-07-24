@@ -6,7 +6,7 @@ stdevs = seq(0.05, 0.35, by = 0.1)
 #stdevs = c(0.01, 0.25)
 # thresholds_to_try = seq(.01, .31, by = 0.02)
 stdev_range = list(c(0.01, 0.04))
-nsim = 15
+nsim = 5
 dats <- drake_plan(
   dat1  = target(get_toy_portal_data()),
   dat2 = target(get_toy_portal_data(years = c(1985, 1986)))#,
@@ -105,3 +105,5 @@ if(grepl("ufhpc", nodename)) {
   make(all, cache = cache, cache_log_file = here::here("drake", "cache_log.txt"))
 }
 
+
+print("Completed OK")
