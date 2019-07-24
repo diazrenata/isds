@@ -53,7 +53,24 @@ for(i in 1:nrow(ids_pipeline)) {
   ids_pipeline$target[i] <- paste0("ids_", ids_pipeline$target[i])
 }
 
-all <- rbind(dats, sims_pipeline, ids_pipeline)
+
+ids_targets <- list()
+
+for(i in 1:nrow(ids_pipeline)) {
+  ids_targets[[i]] <- as.name(ids_pipeline$target[i])
+}
+
+id_plots_pipeline <- drake_plan(
+  ids_plots = target(plot_dataset_ids(dataset_ids = dat_ids),
+                     transform = map(dat_ids = !!ids_targets))
+)
+
+for(i in 1:nrow(id_plots_pipeline)) {
+  id_plots_pipeline$target[i] <- unlist(strsplit(id_plots_pipeline$target[i], split = "ids_plots_ids_"))[2]
+  id_plots_pipeline$target[i] <- paste0("ids_plots_", id_plots_pipeline$target[i])
+}
+
+all <- rbind(dats, sims_pipeline, ids_pipeline, id_plots_pipeline)
 
 
 ## Set up the cache and config

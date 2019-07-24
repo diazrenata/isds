@@ -1,4 +1,20 @@
-
+#' Get metadata from pars list
+#'
+#' @param id_list list ofi ntegrated density, pars
+#'
+#' @return metadata df
+#' @export
+make_metadata <- function(id_list) {
+  this_metadata <- id_list$pars
+  this_metadata$stdev_range <- ifelse(is.na(this_metadata$stdev_range), "no range", paste(this_metadata$stdev_range[1], this_metadata$stdev_range[2], sep = "_" ))
+  this_metadata$stdev_range <- as.character(this_metadata$stdev_range[1])
+  if(is.null(this_metadata$stdev)) {
+    this_metadata$stdev <- NA
+  }
+  this_metadata$dat_name <- as.character(this_metadata$dat_name)
+  this_metadata$stdev_range <- as.character(this_metadata$stdev_range)
+  return(this_metadata)
+}
 #' Count peaks
 #'
 #' @param integrated_density result of find_gaps(integrated_density).
