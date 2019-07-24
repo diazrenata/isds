@@ -1,0 +1,80 @@
+Loading required package: future
+
+Attaching package: ‘future’
+
+The following object is masked from ‘package:drake’:
+
+    plan
+
+
+......target dat1
+.target dat2
+
+Attaching package: ‘future’
+
+The following object is masked from ‘package:drake’:
+
+    plan
+
+Target dat2 messages:
+  Loading in data version 1.119.0
+..target sims_dat2
+
+Attaching package: ‘future’
+
+The following object is masked from ‘package:drake’:
+
+    plan
+
+Target dat1 messages:
+  Loading in data version 1.119.0
+..target sims_dat1
+
+Attaching package: ‘future’
+
+The following object is masked from ‘package:drake’:
+
+    plan
+
+..target ids_dat1
+
+Attaching package: ‘future’
+
+The following object is masked from ‘package:drake’:
+
+    plan
+
+..target ids_dat2
+
+Attaching package: ‘future’
+
+The following object is masked from ‘package:drake’:
+
+    plan
+
+Target ids_dat1 messages:
+  Package 'mclust' version 5.4.5
+Type 'citation("mclust")' for citing this R package in publications.
+...target ids_plots_dat1
+
+Attaching package: ‘future’
+
+The following object is masked from ‘package:drake’:
+
+    plan
+
+Target ids_dat2 messages:
+  Package 'mclust' version 5.4.5
+Type 'citation("mclust")' for citing this R package in publications.
+...target ids_plots_dat2
+
+Attaching package: ‘future’
+
+The following object is masked from ‘package:drake’:
+
+    plan
+
+.Error in result_bind(res@ptr, params) : 
+  NOT NULL constraint failed: datatable.value
+Calls: make ... .local -> dbBind -> dbBind -> db_bind -> result_bind
+Execution halted
