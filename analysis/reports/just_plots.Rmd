@@ -1,0 +1,73 @@
+---
+title: "Just plots"
+author: "Renata Diaz"
+date: "7/24/2019"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+library(drake)
+library(isds)
+library(ggplot2)
+knitr::opts_chunk$set(echo = TRUE)
+
+## Set up the cache and config
+db <- DBI::dbConnect(RSQLite::SQLite(), here::here("drake", "drake-cache.sqlite"))
+cache <- storr::storr_dbi("datatable", "keystable", db)
+```
+
+```{r plot by dataset}
+
+ids <- cached(cache = cache)[ which(grepl(pattern = "ids_", cached(cache = cache)))]
+
+all_ids <- lapply(ids, readd, cache = cache, character_only = T)
+
+ids_list <- unlist(all_ids, recursive = F)
+
+rm(all_ids)
+
+ids_metadata <- list()
+
+for(i in 1:length(ids_list)) {
+  this_metadata <- ids_list[[i]]$pars
+  this_metadata$stdev_range <- ifelse(is.na(this_metadata$stdev_range), "no range", paste(this_metadata$stdev_range[1], this_metadata$stdev_range[2], sep = "_" ))
+  this_metadata$stdev_range <- as.character(this_metadata$stdev_range[1])
+  if(is.null(this_metadata$stdev)) {
+    this_metadata$stdev <- NA
+  }
+  this_metadata$dat_name <- as.character(this_metadata$dat_name)
+  this_metadata$stdev_range <- as.character(this_metadata$stdev_range)
+  ids_metadata[[length(ids_metadata) + 1]] <-this_metadata
+}
+
+
+
+ids_metadata <- dplyr::bind_rows(ids_metadata) 
+ids_metadata$indices <- 1:nrow(ids_metadata)
+
+
+make_es_plots <- function(ids_metadata_line, id_list) {
+  
+  if(!ids_metadata_line[6]) {
+  this_plot <- plot_integrated_density(id_list[[ids_metadata_line[9]]]$integrated_density,
+                                      plot_title = paste(ids_metadata_line[5], "empirical", sep = " "))
+  } else {
+  
+    plot_name <- ifelse(is.na(ids_metadata_line[7]),
+                        paste(ids_metadata_line[5], ids_metadata_line[8], sep = " "),
+                        paste(ids_metadata_line[5], ids_metadata_line[7], sep = " "))
+    
+  this_plot <- plot_integrated_density(id_list[[ids_metadata_line[9]]]$integrated_density,
+                                              plot_title = plot_name)
+ 
+  }
+  return(this_plot)
+  
+  
+}
+
+es_plots <- apply(X = ids_metadata, MARGIN = 1, make_es_plots, id_list = ids_list)
+
+es_plots <- unlist(es_plots, recursive = F)
+
+```
