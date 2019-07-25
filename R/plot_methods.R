@@ -1,28 +1,33 @@
 #' Plot a bunch of things
 #'
 #' @param dataset_ids list ofids
+#' @param max_sims_to_plot max # sims to plot per scenario
 #'
 #' @return list of plots
 #' @export
 
-plot_dataset_ids <- function(dataset_ids) {
+plot_dataset_ids <- function(dataset_ids, max_sims_to_plot = 10) {
 
   metadata <- lapply(dataset_ids, make_metadata) %>%
     dplyr::bind_rows() %>%
     dplyr::mutate(
-      indices = 1:length(dataset_ids),
+      indices =dplyr::row_number(),
       plot_name = ifelse(!sim,
                          paste(dat_name, "empirical", sep = " "),
                          ifelse(is.na(stdev),
                                 paste(dat_name, stdev_range, sep = " "),
                                 paste(dat_name, stdev, sep = " ")))
 
-    )
+    )  %>%
+    dplyr::group_by(sim, stdev) %>%
+    dplyr::mutate(sim_index = dplyr::row_number()) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(sim_index <= max_sims_to_plot)
 
   these_plots <- list()
 
   for(i in 1:nrow(metadata)) {
-    this_id_plot <- plot_integrated_density(dataset_ids[[i]]$integrated_density, plot_title = as.character(metadata[ which(metadata$indices == i), "plot_name"]))
+    this_id_plot <- plot_integrated_density(dataset_ids[[metadata$indices[i]]]$integrated_density, plot_title = as.character(metadata[ which(metadata$indices == i), "plot_name"]))
     these_plots[[i]] <- this_id_plot
   }
 

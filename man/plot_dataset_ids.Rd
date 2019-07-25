@@ -4,10 +4,12 @@
 \alias{plot_dataset_ids}
 \title{Plot a bunch of things}
 \usage{
-plot_dataset_ids(dataset_ids)
+plot_dataset_ids(dataset_ids, max_sims_to_plot = 10)
 }
 \arguments{
 \item{dataset_ids}{list ofids}
+
+\item{max_sims_to_plot}{max # sims to plot per scenario}
 }
 \value{
 list of plots

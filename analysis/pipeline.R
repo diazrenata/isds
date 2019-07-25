@@ -9,9 +9,9 @@ stdev_range = list(c(0.01, 0.4))
 nsim = 25
 dats <- drake_plan(
   dat1  = target(get_toy_portal_data()),
-  dat2 = target(get_toy_portal_data(years = c(1985, 1986)))#,
-  # dat3 = target(get_toy_portal_data(years = c(2000, 2001))),
-  # dat4 = target(get_toy_portal_data(years = c(2014, 2015)))
+  dat2 = target(get_toy_portal_data(years = c(1985, 1986))),
+  dat3 = target(get_toy_portal_data(years = c(2000, 2001))),
+  dat4 = target(get_toy_portal_data(years = c(2014, 2015)))
 )
 
 dat_targets <- list()
@@ -61,7 +61,7 @@ for(i in 1:nrow(ids_pipeline)) {
 }
 
 id_plots_pipeline <- drake_plan(
-  ids_plots = target(plot_dataset_ids(dataset_ids = dat_ids),
+  ids_plots = target(plot_dataset_ids(dataset_ids = dat_ids, max_sims_to_plot = 5),
                      transform = map(dat_ids = !!ids_targets))
 )
 
@@ -78,7 +78,7 @@ results_pipeline <- drake_plan(
 )
 
 all <- rbind(dats, sims_pipeline, ids_pipeline,
-             #id_plots_pipeline,
+             id_plots_pipeline,
              results_pipeline)
 
 
