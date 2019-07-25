@@ -13,6 +13,7 @@ make_results <- function(id_list) {
 
   results$npeaks <- vapply(id_list, count_peaks, FUN.VALUE = 2)
   results$mean_p <- vapply(id_list, get_mean_p, FUN.VALUE = .5)
+  results$width <- vapply(id_list, get_width, FUN.VALUE = 100)
 
   return(results)
 }
@@ -92,6 +93,25 @@ get_mean_p <- function(integrated_density) {
 
   return(mean(integrated_density$by_max))
 }
+
+
+#' Get width of size spectrum
+#'
+#' @param integrated_density integrated_density
+#'
+#' @return width
+#' @export
+get_width <- function(integrated_density) {
+  if(is.list(integrated_density)) {
+    integrated_density <- integrated_density$integrated_density
+  }
+  beginning <- min(which(integrated_density$by_max >= (.001)))
+  end <- max(which(integrated_density$by_max >= (.001)))
+
+  return(end - beginning)
+}
+
+
 
 #' Get elevation change
 #' @param integrated_density integrated_density
