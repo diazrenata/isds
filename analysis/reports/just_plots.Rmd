@@ -69,10 +69,11 @@ for(i in 1:length(all_plots)) {
       geom_vline(xintercept = empirical_results$npeaks, color = "red") +
       ggtitle(paste0("Number of peaks - ", dataset_name, ", ", stdevs[j]))
     
-    these_plots[[k + 2]] <- ggplot(data = these_results, aes(x = mean_p)) +
-      geom_histogram() + 
+    these_plots[[k + 2]] <- ggplot(data = these_results, aes(x = dataset_name, y = mean_p)) +
+      geom_jitter(width = .5, height = 0) + 
+      ylim(0, 1) +
       theme_bw() +
-      geom_vline(xintercept = empirical_results$mean_p, color = "red") +
+      geom_hline(yintercept = empirical_results$mean_p, color = "red") +
       ggtitle(paste0("Mean p - ", dataset_name, ", ", stdevs[j]))
     
     gridExtra::grid.arrange(grobs = these_plots,
@@ -105,11 +106,11 @@ for(i in 1:length(all_plots)) {
       geom_vline(xintercept = empirical_results$npeaks, color = "red") +
       ggtitle(paste0("Number of peaks - ", dataset_name, ", ", stdev_ranges[j]))
     
-    these_plots[[k + 2]] <- ggplot(data = these_results, aes(x = mean_p)) +
-      geom_histogram(bins = 10) + 
-      xlim(0, 1) + 
+    these_plots[[k + 2]] <- ggplot(data = these_results, aes(x = dataset_name, y = mean_p)) +
+      geom_jitter(width = .5, height = 0) + 
+      ylim(0, 1) +
       theme_bw() +
-      geom_vline(xintercept = empirical_results$mean_p, color = "red") +
+      geom_hline(yintercept = empirical_results$mean_p, color = "red") +
       ggtitle(paste0("Mean p - ", dataset_name, ", ", stdev_ranges[j]))
     
     gridExtra::grid.arrange(grobs = these_plots,
