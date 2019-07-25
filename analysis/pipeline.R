@@ -5,8 +5,8 @@ library(isds)
 stdevs = seq(0.05, 0.35, by = 0.1)
 #stdevs = c(0.01, 0.25)
 # thresholds_to_try = seq(.01, .31, by = 0.02)
-stdev_range = list(c(0.01, 0.04))
-nsim = 5
+stdev_range = list(c(0.01, 0.4))
+nsim = 25
 dats <- drake_plan(
   dat1  = target(get_toy_portal_data()),
   dat2 = target(get_toy_portal_data(years = c(1985, 1986)))#,
@@ -77,7 +77,9 @@ results_pipeline <- drake_plan(
                        transform = combine(results))
 )
 
-all <- rbind(dats, sims_pipeline, ids_pipeline, id_plots_pipeline, results_pipeline)
+all <- rbind(dats, sims_pipeline, ids_pipeline,
+             #id_plots_pipeline,
+             results_pipeline)
 
 
 ## Set up the cache and config

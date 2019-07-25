@@ -1,0 +1,58 @@
+---
+title: "Just plots"
+author: "Renata Diaz"
+date: "7/24/2019"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+library(drake)
+library(isds)
+library(ggplot2)
+knitr::opts_chunk$set(echo = TRUE)
+
+## Set up the cache and config
+db <- DBI::dbConnect(RSQLite::SQLite(), here::here("drake", "drake-cache.sqlite"))
+cache <- storr::storr_dbi("datatable", "keystable", db)
+```
+
+```{r plot by dataset, echo = F}
+
+
+all_results <- readd(all_results, cache = cache)
+
+all_datasets <- unique(all_results$dat_name)
+
+for(i in 1:length(all_datasets)) {
+  dataset_name <- all_datasets[i]
+  
+  this_result <- dplyr::filter(all_results,
+                               dat_name == dataset_name)
+  
+  empirical_result <- dplyr::filter(this_result, !sim)
+  
+  this_result <- dplyr::filter(this_result, sim) %>%
+    dplyr::mutate(stdev = as.factor(stdev)) %>%
+    dplyr::mutate(stdev = ifelse(is.na(stdev), stdev_range, stdev))
+  
+  modes_plot <- ggplot(data = this_result, aes(x = stdev, y = npeaks)) +
+    geom_jitter() + 
+    theme_bw() +
+    geom_hline(yintercept = empirical_result$npeaks, color = "red") +
+    ggtitle(paste0("Number of peaks - ", dataset_name))
+  
+  meanp_plot <- ggplot(data = this_result, aes(x = width, y = mean_p)) +
+    geom_jitter() + 
+    ylim(0, 1) +
+    theme_bw() +
+    geom_point(data = empirical_result, aes(x = width, y = mean_p), color = "red") +
+    geom_hline(yintercept = empirical_result$mean_p, color = "red") +
+    geom_vline(xintercept = empirical_result$width, color = "red") +
+    facet_wrap(stdev ~.)
+
+  gridExtra::grid.arrange(grobs = list(modes_plot, meanp_plot),
+                          nrow = 1)
+  
+}
+
+```
