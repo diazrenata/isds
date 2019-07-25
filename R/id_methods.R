@@ -1,3 +1,22 @@
+#' Make results table
+#'
+#' @param id_list  list ofi ntegrated densities
+#'
+#' @return df of rsults
+#' @export
+#'
+#' @importFrom dplyr bind_rows
+make_results <- function(id_list) {
+
+  results <- lapply(id_list, make_metadata)
+  results <- dplyr::bind_rows(results)
+
+  results$npeaks <- vapply(id_list, count_peaks, FUN.VALUE = 2)
+  results$mean_p <- vapply(id_list, get_mean_p, FUN.VALUE = .5)
+
+  return(results)
+}
+
 #' Get metadata from pars list
 #'
 #' @param id_list list ofi ntegrated density, pars
@@ -17,47 +36,13 @@ make_metadata <- function(id_list) {
 }
 #' Count peaks
 #'
-#' @param integrated_density result of find_gaps(integrated_density).
+#' @param integrated_density_list list
 #'
 #' @return number of peaks
 #' @export
-count_peaks <- function(integrated_density) {
-  return(length(which(integrated_density$start_is_peak)))
+count_peaks <- function(integrated_density_list) {
+  return(length(which(integrated_density_list$integrated_density$start_is_peak)))
 }
-
-#' Get type
-#' For collecting results.
-#' @param integrated_density result of find_gaps(integrated_density)
-#'
-#' @return "emp" or "sim"
-#' @export
-get_type <- function(integrated_density) {
-  this_type <- integrated_density$type[1]
-  return(this_type)
-}
-
-#' Get dataset name
-#' For collecting results.
-#' @param integrated_density result of find_gaps(integrated_density)
-#'
-#' @return Name of dataset used in integrated_density/sims
-#' @export
-get_datname <- function(integrated_density) {
-  return(integrated_density$dat_name[1])
-}
-
-#' Retrieve standard deviation
-#'
-#' Retrieve sd used to create ISD for sims. For collecting results.
-#'
-#' @param integrated_density result of find_gaps(integrated_density)
-#'
-#' @return sd
-#' @export
-get_stdev <- function(integrated_density) {
-  return(integrated_density$stdev[1])
-}
-
 
 #' Get mean ratio or stdev of ratio modes
 #'
@@ -97,15 +82,13 @@ get_mode_ratio <- function(integrated_density, what = "mean") {
 #' @return mean
 #' @export
 get_mean_p <- function(integrated_density) {
-
-  if(sum(integrated_density$start_is_peak) <= 1) {
-    return(NA)
+  if(is.list(integrated_density)) {
+  integrated_density <- integrated_density$integrated_density
   }
+  beginning <- min(which(integrated_density$by_max >= (.001)))
+  end <- max(which(integrated_density$by_max >= (.001)))
 
-  integrated_density <- integrated_density[
-    min(which(integrated_density$start_is_peak)):
-      max(which(integrated_density$start_is_peak)), ]
-
+  integrated_density <- integrated_density[ beginning:end, ]
 
   return(mean(integrated_density$by_max))
 }

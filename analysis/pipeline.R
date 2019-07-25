@@ -70,7 +70,14 @@ for(i in 1:nrow(id_plots_pipeline)) {
   id_plots_pipeline$target[i] <- paste0("ids_plots_", id_plots_pipeline$target[i])
 }
 
-all <- rbind(dats, sims_pipeline, ids_pipeline, id_plots_pipeline)
+results_pipeline <- drake_plan(
+  results = target(make_results(id_list = dat_ids),
+                           transform = map(dat_ids = !!ids_targets)),
+  all_results = target(dplyr::bind_rows(results),
+                       transform = combine(results))
+)
+
+all <- rbind(dats, sims_pipeline, ids_pipeline, id_plots_pipeline, results_pipeline)
 
 
 ## Set up the cache and config

@@ -4,10 +4,10 @@
 \alias{count_peaks}
 \title{Count peaks}
 \usage{
-count_peaks(integrated_density)
+count_peaks(integrated_density_list)
 }
 \arguments{
-\item{integrated_density}{result of find_gaps(integrated_density).}
+\item{integrated_density_list}{list}
 }
 \value{
 number of peaks
