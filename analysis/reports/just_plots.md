@@ -1,25 +1,16 @@
----
-title: "Just plots"
-author: "Renata Diaz"
-date: "7/24/2019"
-output: github_document
----
+Just plots
+================
+Renata Diaz
+7/24/2019
 
-```{r setup, include=FALSE}
-library(drake)
-library(isds)
-library(ggplot2)
-knitr::opts_chunk$set(echo = TRUE)
-
-## Set up the cache and config
-db <- DBI::dbConnect(RSQLite::SQLite(), here::here("drake", "drake-cache.sqlite"))
-cache <- storr::storr_dbi("datatable", "keystable", db)
+``` r
+cached(cache = cache)
 ```
 
-```{r plot by dataset}
+    ## [1] "dat1"           "dat2"           "ids_dat1"       "ids_dat2"      
+    ## [5] "ids_plots_dat1" "ids_plots_dat2" "sims_dat1"      "sims_dat2"
 
-cached(cache = cache)
-
+``` r
 all_plot_names <- cached(cache = cache)[which(grepl(cached(cache = cache), pattern = "ids_plots"))]
                     
 all_plots <- list()
@@ -74,5 +65,46 @@ for(i in 1:length(all_plots)) {
   }
   
 }
-
 ```
+
+![](just_plots_files/figure-markdown_github/plot%20by%20dataset-1.png)
+
+    ## [1] 0.05
+
+![](just_plots_files/figure-markdown_github/plot%20by%20dataset-2.png)
+
+    ## [1] 0.15
+
+![](just_plots_files/figure-markdown_github/plot%20by%20dataset-3.png)
+
+    ## [1] 0.25
+
+![](just_plots_files/figure-markdown_github/plot%20by%20dataset-4.png)
+
+    ## [1] 0.35
+
+![](just_plots_files/figure-markdown_github/plot%20by%20dataset-5.png)
+
+    ## [1] "0.01_0.04"
+
+![](just_plots_files/figure-markdown_github/plot%20by%20dataset-6.png)![](just_plots_files/figure-markdown_github/plot%20by%20dataset-7.png)
+
+    ## [1] 0.05
+
+![](just_plots_files/figure-markdown_github/plot%20by%20dataset-8.png)
+
+    ## [1] 0.15
+
+![](just_plots_files/figure-markdown_github/plot%20by%20dataset-9.png)
+
+    ## [1] 0.25
+
+![](just_plots_files/figure-markdown_github/plot%20by%20dataset-10.png)
+
+    ## [1] 0.35
+
+![](just_plots_files/figure-markdown_github/plot%20by%20dataset-11.png)
+
+    ## [1] "0.01_0.04"
+
+![](just_plots_files/figure-markdown_github/plot%20by%20dataset-12.png)
