@@ -14,7 +14,7 @@ make_results <- function(id_list) {
   results$npeaks <- vapply(id_list, count_peaks, FUN.VALUE = 2)
   results$mean_p <- vapply(id_list, get_mean_p, FUN.VALUE = .5)
   results$width <- vapply(id_list, get_width, FUN.VALUE = 100)
-
+  results$mean_diff <- vapply(id_list, get_mean_difference, FUN.VALUE = .1)
   return(results)
 }
 
@@ -108,10 +108,40 @@ get_width <- function(integrated_density) {
   beginning <- min(which(integrated_density$by_max >= (.001)))
   end <- max(which(integrated_density$by_max >= (.001)))
 
-  return(end - beginning)
+  width <- (end - beginning) / 10000
+
+  return(width)
 }
 
+#' Get mean difference between modes
+#'
+#' @param integrated_density integrated_density
+#'
+#' @return mean difference
+#' @export
+get_mean_difference <- function(integrated_density) {
+  if(is.list(integrated_density)) {
+    integrated_density <- integrated_density$integrated_density
+  }
 
+  peaks <- integrated_density %>%
+    dplyr::filter(start_is_peak) %>%
+    dplyr::select(start) %>%
+    dplyr::mutate(start = start/10000)
+
+  if(nrow(peaks) <= 1) {
+    return(NA)
+  }
+
+  differences <- vector(mode = "numeric",
+                        length = nrow(peaks) - 1)
+
+  for(i in 1:length(differences)) {
+    differences[i] <- peaks$start[i + 1] - peaks$start[i]
+  }
+
+  return(mean(differences))
+}
 
 #' Get elevation change
 #' @param integrated_density integrated_density

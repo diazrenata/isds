@@ -1,6 +1,6 @@
 library(drake)
 library(isds)
-#expose_imports(isds)
+expose_imports(isds)
 
 stdevs = seq(0.05, 0.35, by = 0.1)
 #stdevs = c(0.01, 0.25)
@@ -8,10 +8,10 @@ stdevs = seq(0.05, 0.35, by = 0.1)
 stdev_range = list(c(0.01, 0.4))
 nsim = 25
 dats <- drake_plan(
-  dat1  = target(get_toy_portal_data()),
-  dat2 = target(get_toy_portal_data(years = c(1985, 1986))),
-  dat3 = target(get_toy_portal_data(years = c(2000, 2001))),
-  dat4 = target(get_toy_portal_data(years = c(2014, 2015)))
+  dat1  = target(get_toy_portal_data(), trigger = trigger(depend = FALSE)),
+  dat2 = target(get_toy_portal_data(years = c(1985, 1986)), trigger = trigger(depend = FALSE)),
+  dat3 = target(get_toy_portal_data(years = c(2000, 2001)), trigger = trigger(depend = FALSE)),
+  dat4 = target(get_toy_portal_data(years = c(2014, 2015)), trigger = trigger(depend = FALSE))
 )
 
 dat_targets <- list()
@@ -26,7 +26,8 @@ sims_pipeline <- drake_plan(
                                 dat_name = !!dats$target,
                                 stdevs = stdevs,
                                 stdev_range = stdev_range,
-                                nsim =nsim)
+                                nsim =nsim),
+                trigger = trigger(depend = FALSE)
   )
 )
 
@@ -44,7 +45,8 @@ for(i in 1:nrow(sims_pipeline)) {
 
 ids_pipeline <- drake_plan(
   ids = target(get_id_wrapped(datasets = datasets),
-                transform = map(datasets = !!sim_targets)
+               transform = map(datasets = !!sim_targets),
+               trigger = trigger(depend = FALSE)
   )
 )
 
@@ -62,7 +64,8 @@ for(i in 1:nrow(ids_pipeline)) {
 
 id_plots_pipeline <- drake_plan(
   ids_plots = target(plot_dataset_ids(dataset_ids = dat_ids, max_sims_to_plot = 5),
-                     transform = map(dat_ids = !!ids_targets))
+                     transform = map(dat_ids = !!ids_targets),
+                     trigger = trigger(depend = FALSE))
 )
 
 for(i in 1:nrow(id_plots_pipeline)) {
@@ -72,9 +75,11 @@ for(i in 1:nrow(id_plots_pipeline)) {
 
 results_pipeline <- drake_plan(
   results = target(make_results(id_list = dat_ids),
-                           transform = map(dat_ids = !!ids_targets)),
+                   transform = map(dat_ids = !!ids_targets),
+                   trigger = trigger(depend = TRUE)),
   all_results = target(dplyr::bind_rows(results),
-                       transform = combine(results))
+                       transform = combine(results),
+                       trigger = trigger(depend = TRUE))
 )
 
 all <- rbind(dats, sims_pipeline, ids_pipeline,

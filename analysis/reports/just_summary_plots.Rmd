@@ -49,8 +49,16 @@ for(i in 1:length(all_datasets)) {
     geom_hline(yintercept = empirical_result$mean_p, color = "red") +
     geom_vline(xintercept = empirical_result$width, color = "red") +
     facet_wrap(stdev ~.)
+  
+  meandiff_plot <- ggplot(data = this_result, aes(x = npeaks, y = mean_diff)) +
+    geom_jitter() + 
+    theme_bw() +
+    geom_point(data = empirical_result, aes(x = npeaks, y = mean_diff), color = "red") +
+    geom_hline(yintercept = empirical_result$mean_diff, color = "red") +
+    geom_vline(xintercept = empirical_result$npeaks, color = "red") +
+    facet_wrap(stdev ~.)
 
-  gridExtra::grid.arrange(grobs = list(modes_plot, meanp_plot),
+  gridExtra::grid.arrange(grobs = list(modes_plot, meanp_plot, meandiff_plot),
                           nrow = 1)
   
 }
