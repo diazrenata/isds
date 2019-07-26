@@ -4,9 +4,12 @@ Renata Diaz
 7/24/2019
 
     ##  [1] "all_results"      "dat1"             "dat2"            
-    ##  [4] "ids_dat1"         "ids_dat2"         "ids_plots_dat1"  
-    ##  [7] "ids_plots_dat2"   "results_ids_dat1" "results_ids_dat2"
-    ## [10] "sims_dat1"        "sims_dat2"
+    ##  [4] "dat3"             "dat4"             "ids_dat1"        
+    ##  [7] "ids_dat2"         "ids_dat3"         "ids_dat4"        
+    ## [10] "ids_plots_dat1"   "ids_plots_dat2"   "ids_plots_dat3"  
+    ## [13] "ids_plots_dat4"   "results_ids_dat1" "results_ids_dat2"
+    ## [16] "results_ids_dat3" "results_ids_dat4" "sims_dat1"       
+    ## [19] "sims_dat2"        "sims_dat3"        "sims_dat4"
 
 ![](just_plots_files/figure-markdown_github/plot%20by%20dataset-1.png)
 
@@ -80,4 +83,76 @@ Renata Diaz
 
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
-![](just_plots_files/figure-markdown_github/plot%20by%20dataset-14.png)
+![](just_plots_files/figure-markdown_github/plot%20by%20dataset-14.png)![](just_plots_files/figure-markdown_github/plot%20by%20dataset-15.png)
+
+    ## [1] "0.05"
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+![](just_plots_files/figure-markdown_github/plot%20by%20dataset-16.png)
+
+    ## [1] "0.15"
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+![](just_plots_files/figure-markdown_github/plot%20by%20dataset-17.png)
+
+    ## [1] "0.25"
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+![](just_plots_files/figure-markdown_github/plot%20by%20dataset-18.png)
+
+    ## [1] "0.35"
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+![](just_plots_files/figure-markdown_github/plot%20by%20dataset-19.png)
+
+    ## [1] "0.01_0.4"
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+![](just_plots_files/figure-markdown_github/plot%20by%20dataset-20.png)
+
+    ## [1] "norm"
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+![](just_plots_files/figure-markdown_github/plot%20by%20dataset-21.png)![](just_plots_files/figure-markdown_github/plot%20by%20dataset-22.png)
+
+    ## [1] "0.05"
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+![](just_plots_files/figure-markdown_github/plot%20by%20dataset-23.png)
+
+    ## [1] "0.15"
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+![](just_plots_files/figure-markdown_github/plot%20by%20dataset-24.png)
+
+    ## [1] "0.25"
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+![](just_plots_files/figure-markdown_github/plot%20by%20dataset-25.png)
+
+    ## [1] "0.35"
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+![](just_plots_files/figure-markdown_github/plot%20by%20dataset-26.png)
+
+    ## [1] "0.01_0.4"
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+![](just_plots_files/figure-markdown_github/plot%20by%20dataset-27.png)
+
+    ## [1] "norm"
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+![](just_plots_files/figure-markdown_github/plot%20by%20dataset-28.png)
