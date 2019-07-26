@@ -4,16 +4,14 @@
 \alias{generate_sim_draws}
 \title{draw sims all at once}
 \usage{
-generate_sim_draws(base_dat, dat_name = NULL, fixed_sds, sd_range, nsim)
+generate_sim_draws(base_dat, dat_name = NULL, sds, nsim)
 }
 \arguments{
 \item{base_dat}{data}
 
 \item{dat_name}{to add to pars}
 
-\item{fixed_sds}{sd pars}
-
-\item{sd_range}{range}
+\item{sds}{sd pars}
 
 \item{nsim}{nb sim}
 }

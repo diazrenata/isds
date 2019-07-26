@@ -26,13 +26,12 @@ make_results <- function(id_list) {
 #' @export
 make_metadata <- function(id_list) {
   this_metadata <- id_list$pars
-  this_metadata$stdev_range <- ifelse(is.na(this_metadata$stdev_range), "no range", paste(this_metadata$stdev_range[1], this_metadata$stdev_range[2], sep = "_" ))
-  this_metadata$stdev_range <- as.character(this_metadata$stdev_range[1])
   if(is.null(this_metadata$stdev)) {
     this_metadata$stdev <- NA
+  } else {
+    this_metadata$stdev <- paste(this_metadata$stdev, collapse = "_")
   }
   this_metadata$dat_name <- as.character(this_metadata$dat_name)
-  this_metadata$stdev_range <- as.character(this_metadata$stdev_range)
   return(this_metadata)
 }
 #' Count peaks

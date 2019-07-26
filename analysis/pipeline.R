@@ -2,17 +2,22 @@ library(drake)
 library(isds)
 expose_imports(isds)
 
-stdevs = seq(0.05, 0.35, by = 0.1)
-#stdevs = c(0.01, 0.25)
-# thresholds_to_try = seq(.01, .31, by = 0.02)
-stdev_range = list(c(0.01, 0.4))
-nsim = 25
+rerun_things <- TRUE
+
+stdevs <- as.list(seq(0.05, 0.35, by = 0.1))
+stdevs[[length(stdevs) + 1]] <- c(0.01, 0.4)
+stdevs[[length(stdevs) + 1]] <- "norm"
+
+# #stdevs = c(0.01, 0.25)
+# # thresholds_to_try = seq(.01, .31, by = 0.02)
+# stdev_range = list(c(0.01, 0.4))
+nsim = 2
 dats <- drake_plan(
-  dat1  = target(get_toy_portal_data(), trigger = trigger(depend = FALSE)),
-  dat2 = target(get_toy_portal_data(years = c(1985, 1986)), trigger = trigger(depend = FALSE)),
-  dat3 = target(get_toy_portal_data(years = c(2000, 2001)), trigger = trigger(depend = FALSE)),
-  dat4 = target(get_toy_portal_data(years = c(2014, 2015)), trigger = trigger(depend = FALSE))
-)
+  dat1  = target(get_toy_portal_data(), trigger = trigger(depend = rerun_things)),
+ dat2 = target(get_toy_portal_data(years = c(1985, 1986)), trigger = trigger(depend = rerun_things))#,
+#   dat3 = target(get_toy_portal_data(years = c(2000, 2001)), trigger = trigger(depend = rerun_things)),
+#   dat4 = target(get_toy_portal_data(years = c(2014, 2015)), trigger = trigger(depend = rerun_things))
+ )
 
 dat_targets <- list()
 
@@ -21,13 +26,12 @@ for(i in 1:nrow(dats)) {
 }
 
 sims_pipeline <- drake_plan(
-  sims = target(generate_sim_draws(community_dat, dat_name, stdevs, stdev_range, nsim),
+  sims = target(generate_sim_draws(community_dat, dat_name, stdevs, nsim),
                 transform = map(community_dat = !!dat_targets,
                                 dat_name = !!dats$target,
                                 stdevs = stdevs,
-                                stdev_range = stdev_range,
-                                nsim =nsim),
-                trigger = trigger(depend = FALSE)
+                                nsim = nsim),
+                trigger = trigger(depend = rerun_things)
   )
 )
 
@@ -46,7 +50,7 @@ for(i in 1:nrow(sims_pipeline)) {
 ids_pipeline <- drake_plan(
   ids = target(get_id_wrapped(datasets = datasets),
                transform = map(datasets = !!sim_targets),
-               trigger = trigger(depend = FALSE)
+               trigger = trigger(depend = rerun_things)
   )
 )
 
@@ -65,7 +69,7 @@ for(i in 1:nrow(ids_pipeline)) {
 id_plots_pipeline <- drake_plan(
   ids_plots = target(plot_dataset_ids(dataset_ids = dat_ids, max_sims_to_plot = 5),
                      transform = map(dat_ids = !!ids_targets),
-                     trigger = trigger(depend = FALSE))
+                     trigger = trigger(depend = rerun_things))
 )
 
 for(i in 1:nrow(id_plots_pipeline)) {
@@ -82,9 +86,11 @@ results_pipeline <- drake_plan(
                        trigger = trigger(depend = TRUE))
 )
 
-all <- rbind(dats, sims_pipeline, ids_pipeline,
-             id_plots_pipeline,
-             results_pipeline)
+all <- rbind(dats, sims_pipeline,
+             ids_pipeline,
+             id_plots_pipeline#,
+             # results_pipeline
+             )
 
 
 ## Set up the cache and config

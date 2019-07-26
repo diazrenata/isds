@@ -14,9 +14,7 @@ plot_dataset_ids <- function(dataset_ids, max_sims_to_plot = 10) {
       indices =dplyr::row_number(),
       plot_name = ifelse(!sim,
                          paste(dat_name, "empirical", sep = " "),
-                         ifelse(is.na(stdev),
-                                paste(dat_name, stdev_range, sep = " "),
-                                paste(dat_name, stdev, sep = " ")))
+                                paste(dat_name, stdev, sep = " "))
 
     )  %>%
     dplyr::group_by(sim, stdev) %>%
