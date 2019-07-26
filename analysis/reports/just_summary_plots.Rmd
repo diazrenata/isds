@@ -31,10 +31,11 @@ for(i in 1:length(all_datasets)) {
   
   empirical_result <- dplyr::filter(this_result, !sim)
   
-  this_result <- dplyr::filter(this_result, sim) %>%
-    dplyr::mutate(stdev = as.factor(stdev)) %>%
-    dplyr::mutate(stdev = ifelse(is.na(stdev), stdev_range, stdev))
-  
+  this_result <- dplyr::filter(this_result, sim)
+  # %>%
+  #   dplyr::mutate(stdev = as.factor(stdev)) %>%
+  #   dplyr::mutate(stdev = ifelse(is.na(stdev), stdev_range, stdev))
+  # 
   modes_plot <- ggplot(data = this_result, aes(x = stdev, y = npeaks)) +
     geom_jitter() + 
     theme_bw() +
