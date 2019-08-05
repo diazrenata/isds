@@ -1,13 +1,25 @@
----
-title: "Exploring analysis of rank P plots"
-output: github_document
----
+Exploring analysis of rank P plots
+================
 
-```{r setup}
+``` r
 library(drake)
 library(isds)
 library(ggplot2)
 library(dplyr)
+```
+
+    ## 
+    ## Attaching package: 'dplyr'
+
+    ## The following objects are masked from 'package:stats':
+    ## 
+    ##     filter, lag
+
+    ## The following objects are masked from 'package:base':
+    ## 
+    ##     intersect, setdiff, setequal, union
+
+``` r
 knitr::opts_chunk$set(echo = TRUE)
 
 ## Set up the cache and config
@@ -17,7 +29,7 @@ cache <- storr::storr_dbi("datatable", "keystable", db)
 
 Get a sim.
 
-```{r get a sim}
+``` r
 loadd(ids_dat1, cache = cache)
 
 empirical <- ids_dat1[[1]]
@@ -30,7 +42,7 @@ rm(sims_dat1)
 rm(ids_dat1)
 ```
 
-```{r plot}
+``` r
 e <- plot_integrated_density(empirical$integrated_density, plot_title = "empirical") +
   geom_vline(xintercept = c(log(min(empirical_dat$community$wgt)), log(max(empirical_dat$community$wgt))))
 s <- plot_integrated_density(sim$integrated_density, plot_title = "sim")+
@@ -38,9 +50,11 @@ s <- plot_integrated_density(sim$integrated_density, plot_title = "sim")+
 gridExtra::grid.arrange(grobs = list(e, s), nrow = 1)
 ```
 
+![](toy_p_files/figure-markdown_github/plot-1.png)
+
 Truncate to min and max body size? Plus a buffer of log units?
 
-```{r truncate ids}
+``` r
 truncate_id <- function(id_list, dat) {
   id_list$integrated_density <- id_list$integrated_density %>%
   dplyr::filter(dplyr::between(start, log(min(dat$community$wgt)) - .1,
@@ -57,25 +71,15 @@ e_t <- plot_integrated_density(empirical_t$integrated_density, plot_title = "emp
 s_t <- plot_integrated_density(sim_t$integrated_density, plot_title = "sim truncated")+
   geom_vline(xintercept = c(log(min(sim_dat$community$wgt)), log(max(sim_dat$community$wgt))))
 gridExtra::grid.arrange(grobs = list(e_t, s_t), nrow = 1)
-
 ```
+
+![](toy_p_files/figure-markdown_github/truncate%20ids-1.png)
 
 Try fitting inverse parabolas?
 
-```{r inverse parabolas, eval = F, include = F}
-y <- sim_t$integrated_density$by_max
-x <- sim_t$integrated_density$start
-fit2 <- lm(y~poly(x,2,raw=TRUE))
+Try smoothing the integrated density so it is unimodal with two minima (one at each end); exactly one turnpoint.
 
-fitplot <- plot_integrated_density(sim_t$integrated_density) +
-  geom_point(aes(x = x, y = predict(fit2, as.data.frame(x))), color = "green")
-fitplot
-```
-
-Try smoothing the integrated density so it is unimodal with two minima (one at each end); exactly one turnpoint. 
-
-```{r erosion}
-
+``` r
 erode <- function(integrated_density_list) {
   this_intd <- integrated_density_list$integrated_density
 maxima <- this_intd%>%
@@ -111,7 +115,11 @@ eroded_s_plot <- plot_integrated_density(sim$integrated_density) +
 
 gridExtra::grid.arrange(grobs = list(eroded_e_plot,
                                      eroded_s_plot), nrow = 1)
+```
 
+![](toy_p_files/figure-markdown_github/erosion-1.png)
+
+``` r
 get_eroded_diff <- function(eroded_list) {
   return(sum(eroded_list$integrated_density$by_max_eroded - 
                eroded_list$integrated_density$by_max))
@@ -126,14 +134,27 @@ sim_diff <- get_eroded_diff(sim_eroded)
 sim_width <- get_eroded_width(sim_eroded)
 
 sim_diff
-sim_diff/sim_width
+```
 
+    ## [1] 830.0194
+
+``` r
+sim_diff/sim_width
+```
+
+    ## [1] 0.2939162
+
+``` r
 e_diff <- get_eroded_diff(empirical_eroded)
 e_width <- get_eroded_width(empirical_eroded)
 
 e_diff
-e_diff /e_width
-
 ```
 
-try depth?
+    ## [1] 2818.357
+
+``` r
+e_diff /e_width
+```
+
+    ## [1] 0.3245086
