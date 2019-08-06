@@ -81,16 +81,28 @@ erode <- function(integrated_density_list) {
 maxima <- this_intd%>%
   filter(start_is_peak)
 
+this_intd$by_max_eroded <- this_intd$by_max
+
 for(i in 1:(nrow(maxima) - 1)) {
-  rise <- maxima$by_max[i+1] - maxima$by_max[i]
+  # rise <- maxima$by_max[i+1] - maxima$by_max[i]
   begin <- maxima$start[i]
   end <- maxima$start[i + 1]
-  run <- end - begin
-  slope <- rise / run
-  this_intd <-this_intd %>%
-    mutate(by_max_eroded = ifelse(between(start, begin, end),
-                           maxima$by_max[i] + (slope * (start - begin)), 
-                           by_max))
+  # run <- end - begin
+  # slope <- rise / run
+  # this_intd <-this_intd %>%
+  #   mutate(by_max_eroded = ifelse(between(start, begin, end),
+  #                          maxima$by_max[i] + (slope * (start - begin)), 
+  #                          by_max)) %>%
+  #   mutate(by_max_eroded = ifelse(by_max > by_max_eroded,
+  #                                 by_max,
+  #                                 by_max_eroded))
+  
+  lower_peak <- min(maxima$by_max[i], maxima$by_max[i + 1])
+  
+  a <- which(between(this_intd$start, begin, end))
+  b <- which(this_intd$by_max_eroded < lower_peak)
+  
+  this_intd$by_max_eroded [ a[which(a %in% b)]] <- lower_peak
 }
 
 integrated_density_list$integrated_density <- this_intd
@@ -133,6 +145,27 @@ e_width <- get_eroded_width(empirical_eroded)
 
 e_diff
 e_diff /e_width
+
+sim_d <- sim_eroded$integrated_density$by_max_eroded - 
+  sim_eroded$integrated_density$by_max
+
+sim_d[ which(sim_eroded$integrated_density$start_is_pit)]
+
+sim_d <- sim_d[ which(sim_d > 0)]
+
+emp_d <- empirical_eroded$integrated_density$by_max_eroded -
+  empirical_eroded$integrated_density$by_max
+
+emp_d[ which(empirical_eroded$integrated_density$start_is_pit)]
+
+emp_d <- emp_d[ which(emp_d > 0)]
+
+mean(sim_d)
+sd(sim_d)
+
+
+mean(emp_d)
+sd(emp_d)
 
 ```
 

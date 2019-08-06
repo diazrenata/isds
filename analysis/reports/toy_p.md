@@ -85,16 +85,28 @@ erode <- function(integrated_density_list) {
 maxima <- this_intd%>%
   filter(start_is_peak)
 
+this_intd$by_max_eroded <- this_intd$by_max
+
 for(i in 1:(nrow(maxima) - 1)) {
-  rise <- maxima$by_max[i+1] - maxima$by_max[i]
+  # rise <- maxima$by_max[i+1] - maxima$by_max[i]
   begin <- maxima$start[i]
   end <- maxima$start[i + 1]
-  run <- end - begin
-  slope <- rise / run
-  this_intd <-this_intd %>%
-    mutate(by_max_eroded = ifelse(between(start, begin, end),
-                           maxima$by_max[i] + (slope * (start - begin)), 
-                           by_max))
+  # run <- end - begin
+  # slope <- rise / run
+  # this_intd <-this_intd %>%
+  #   mutate(by_max_eroded = ifelse(between(start, begin, end),
+  #                          maxima$by_max[i] + (slope * (start - begin)), 
+  #                          by_max)) %>%
+  #   mutate(by_max_eroded = ifelse(by_max > by_max_eroded,
+  #                                 by_max,
+  #                                 by_max_eroded))
+  
+  lower_peak <- min(maxima$by_max[i], maxima$by_max[i + 1])
+  
+  a <- which(between(this_intd$start, begin, end))
+  b <- which(this_intd$by_max_eroded < lower_peak)
+  
+  this_intd$by_max_eroded [ a[which(a %in% b)]] <- lower_peak
 }
 
 integrated_density_list$integrated_density <- this_intd
@@ -136,13 +148,13 @@ sim_width <- get_eroded_width(sim_eroded)
 sim_diff
 ```
 
-    ## [1] 830.0194
+    ## [1] 106.3842
 
 ``` r
 sim_diff/sim_width
 ```
 
-    ## [1] 0.2939162
+    ## [1] 0.03302832
 
 ``` r
 e_diff <- get_eroded_diff(empirical_eroded)
@@ -151,10 +163,58 @@ e_width <- get_eroded_width(empirical_eroded)
 e_diff
 ```
 
-    ## [1] 2818.357
+    ## [1] 61.87787
 
 ``` r
 e_diff /e_width
 ```
 
-    ## [1] 0.3245086
+    ## [1] 0.01051808
+
+``` r
+sim_d <- sim_eroded$integrated_density$by_max_eroded - 
+  sim_eroded$integrated_density$by_max
+
+sim_d[ which(sim_eroded$integrated_density$start_is_pit)]
+```
+
+    ## [1] 0.001167257 0.107205618
+
+``` r
+sim_d <- sim_d[ which(sim_d > 0)]
+
+emp_d <- empirical_eroded$integrated_density$by_max_eroded -
+  empirical_eroded$integrated_density$by_max
+
+emp_d[ which(empirical_eroded$integrated_density$start_is_pit)]
+```
+
+    ## [1] 0.02376185
+
+``` r
+emp_d <- emp_d[ which(emp_d > 0)]
+
+mean(sim_d)
+```
+
+    ## [1] 0.03302832
+
+``` r
+sd(sim_d)
+```
+
+    ## [1] 0.04028002
+
+``` r
+mean(emp_d)
+```
+
+    ## [1] 0.01051808
+
+``` r
+sd(emp_d)
+```
+
+    ## [1] 0.008188289
+
+try depth?
