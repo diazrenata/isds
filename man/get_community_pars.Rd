@@ -4,10 +4,12 @@
 \alias{get_community_pars}
 \title{Get community parameters}
 \usage{
-get_community_pars(raw_dat)
+get_community_pars(raw_dat, dat_name)
 }
 \arguments{
 \item{raw_dat}{community data frame with columns \code{species}', \code{wgt}}
+
+\item{dat_name}{name of dataset}
 }
 \value{
 list of community parameters for sim draws: \code{S} = number of species, \code{N} = number of individuals, \code{min_size} = minimum body size, \code{max_size} = maximum body size

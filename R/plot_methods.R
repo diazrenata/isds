@@ -1,3 +1,39 @@
+#' Plot a bunch of things
+#'
+#' @param dataset_ids list ofids
+#' @param max_sims_to_plot max # sims to plot per scenario
+#'
+#' @return list of plots
+#' @export
+
+plot_dataset_ids <- function(dataset_ids, max_sims_to_plot = 10) {
+
+  metadata <- lapply(dataset_ids, make_metadata) %>%
+    dplyr::bind_rows() %>%
+    dplyr::mutate(
+      indices =dplyr::row_number(),
+      plot_name = ifelse(!sim,
+                         paste(dat_name, "empirical", sep = " "),
+                                paste(dat_name, stdev, sep = " "))
+
+    )  %>%
+    dplyr::group_by(sim, stdev) %>%
+    dplyr::mutate(sim_index = dplyr::row_number()) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(sim_index <= max_sims_to_plot)
+
+  these_plots <- list()
+
+  for(i in 1:nrow(metadata)) {
+    this_id_plot <- plot_integrated_density(dataset_ids[[metadata$indices[i]]]$integrated_density, plot_title = as.character(metadata[ which(metadata$indices == i), "plot_name"]))
+    these_plots[[i]] <- this_id_plot
+  }
+
+  plots_output <- list(id_plots = these_plots,
+                       metadata = metadata)
+  return(plots_output)
+}
+
 #' Plot integrated density
 #'
 #' @param integrated_density int d dataframe
@@ -28,50 +64,50 @@ plot_integrated_density <- function(integrated_density, threshold_lines = NULL, 
   id_plot_output <- list(plot = integrated_plot,
                          plot_title = plot_title)
 
-  return(id_plot_output)
+  return(integrated_plot)
 }
-
-
-#' Make summary plots
 #'
-#' @param summary_dataframe result
-#' @param dat_name dat name for this set of plots
 #'
-#' @return histogram of n peaks, dotplot of npeaks:ngaps by threshold
-#' @export
-#' @importFrom dplyr filter
-#' @importFrom ggplot2 ggplot theme_bw aes geom_bar geom_point labs facet_wrap geom_jitter geom_abline
-plot_isd_methods_summary <- function(summary_dataframe, dat_name) {
-
-  summary_dataframe <- dplyr::filter(summary_dataframe, datname == dat_name)
-
-  baseplot <- ggplot2::ggplot(data = summary_dataframe) +
-    ggplot2::theme_bw()
-
-  peaks_plot <- baseplot +
-    ggplot2::geom_bar(data = dplyr::filter(summary_dataframe, dat_type == "sim"), ggplot2::aes(x = as.factor(npeaks)), position = ggplot2::position_dodge2()) +
-    ggplot2::geom_point(data = dplyr::filter(summary_dataframe, dat_type == "emp"),
-                        ggplot2::aes(x = as.factor(npeaks), y = 0.5), color = "green", size= 5) +
-    ggplot2::labs(x = "Number of peaks", y = "Count", title = paste0("Number of peaks (all) - ", dat_name)) +
-    ggplot2::facet_wrap(. ~ threshold)
-
-  ngaps_plot <- baseplot +
-    ggplot2::geom_jitter(ggplot2::aes(x = npeaks, y = ngaps, color = dat_type), width = .2, height = 0) +
-    ggplot2::xlim(-0, max(summary_dataframe$npeaks) + .5) +
-    ggplot2::ylim(0, max(summary_dataframe$npeaks) + 1) +
-    ggplot2::labs(x = "Number of peaks", y = "Number of gaps", title = paste0("Number of gaps - ", dat_name)) +
-    ggplot2::geom_abline(slope = 1, intercept = -1) +
-    ggplot2::facet_wrap(. ~ threshold)
-
-  ngaps_by_t_plot <- baseplot +
-    ggplot2::geom_jitter(ggplot2::aes(x = threshold, y = ngaps), width = .2, height = 0) +
-    ggplot2::labs(x = "Threshold", y = "Number of gaps", title = paste0("Number of gaps - ", dat_name)) +
-    ggplot2::facet_wrap(. ~ stdev)
-
-  summary_plots <- list(peaks_plot = peaks_plot,
-                        ngaps_plot = ngaps_plot,
-                        ngaps_by_t_plot = ngaps_by_t_plot,
-                        dat_name = dat_name)
-
-  return(summary_plots)
-}
+#' #' Make summary plots
+#' #'
+#' #' @param summary_dataframe result
+#' #' @param dat_name dat name for this set of plots
+#' #'
+#' #' @return histogram of n peaks, dotplot of npeaks:ngaps by threshold
+#' #' @export
+#' #' @importFrom dplyr filter
+#' #' @importFrom ggplot2 ggplot theme_bw aes geom_bar geom_point labs facet_wrap geom_jitter geom_abline
+#' plot_isd_methods_summary <- function(summary_dataframe, dat_name) {
+#'
+#'   summary_dataframe <- dplyr::filter(summary_dataframe, datname == dat_name)
+#'
+#'   baseplot <- ggplot2::ggplot(data = summary_dataframe) +
+#'     ggplot2::theme_bw()
+#'
+#'   peaks_plot <- baseplot +
+#'     ggplot2::geom_bar(data = dplyr::filter(summary_dataframe, dat_type == "sim"), ggplot2::aes(x = as.factor(npeaks)), position = ggplot2::position_dodge2()) +
+#'     ggplot2::geom_point(data = dplyr::filter(summary_dataframe, dat_type == "emp"),
+#'                         ggplot2::aes(x = as.factor(npeaks), y = 0.5), color = "green", size= 5) +
+#'     ggplot2::labs(x = "Number of peaks", y = "Count", title = paste0("Number of peaks (all) - ", dat_name)) +
+#'     ggplot2::facet_wrap(. ~ threshold)
+#'
+#'   ngaps_plot <- baseplot +
+#'     ggplot2::geom_jitter(ggplot2::aes(x = npeaks, y = ngaps, color = dat_type), width = .2, height = 0) +
+#'     ggplot2::xlim(-0, max(summary_dataframe$npeaks) + .5) +
+#'     ggplot2::ylim(0, max(summary_dataframe$npeaks) + 1) +
+#'     ggplot2::labs(x = "Number of peaks", y = "Number of gaps", title = paste0("Number of gaps - ", dat_name)) +
+#'     ggplot2::geom_abline(slope = 1, intercept = -1) +
+#'     ggplot2::facet_wrap(. ~ threshold)
+#'
+#'   ngaps_by_t_plot <- baseplot +
+#'     ggplot2::geom_jitter(ggplot2::aes(x = threshold, y = ngaps), width = .2, height = 0) +
+#'     ggplot2::labs(x = "Threshold", y = "Number of gaps", title = paste0("Number of gaps - ", dat_name)) +
+#'     ggplot2::facet_wrap(. ~ stdev)
+#'
+#'   summary_plots <- list(peaks_plot = peaks_plot,
+#'                         ngaps_plot = ngaps_plot,
+#'                         ngaps_by_t_plot = ngaps_by_t_plot,
+#'                         dat_name = dat_name)
+#'
+#'   return(summary_plots)
+#' }

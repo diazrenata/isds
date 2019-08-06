@@ -1,0 +1,127 @@
+---
+title: "Just plots"
+author: "Renata Diaz"
+date: "7/24/2019"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+library(drake)
+library(isds)
+library(ggplot2)
+knitr::opts_chunk$set(echo = TRUE)
+
+## Set up the cache and config
+db <- DBI::dbConnect(RSQLite::SQLite(), here::here("drake", "drake-cache.sqlite"))
+cache <- storr::storr_dbi("datatable", "keystable", db)
+```
+
+```{r plot by dataset, echo = F}
+
+cached(cache = cache)
+
+all_plot_names <- cached(cache = cache)[which(grepl(cached(cache = cache), pattern = "ids_plots"))]
+
+all_plots <- list()
+
+all_results <- readd(all_results, cache = cache)
+
+
+for(i in 1:length(all_plot_names)) {
+  all_plots[[i]] <- readd(all_plot_names[i], character_only = T, cache = cache)
+}
+
+for(i in 1:length(all_plots)) {
+  
+  dataset_name <- all_plots[[i]]$metadata$dat_name[1]
+  
+  # plot empirical
+  
+  print(all_plots[[i]]$id_plots[[ which(!all_plots[[i]]$metadata$sim)]])
+  
+  empirical_results <- dplyr::filter(all_results,
+                                     dat_name == dataset_name,
+                                     !sim)
+  
+  
+  stdevs <- unique(all_plots[[i]]$metadata$stdev)[ which(unique(all_plots[[i]]$metadata$stdev) != "NA")]
+  
+  for(j in 1:length(stdevs)) {
+    
+    print(stdevs[j])
+    
+    these_indices <- which(all_plots[[i]]$metadata$stdev == stdevs[j])
+    these_plots <- list()
+    
+    for(k in 1:length(these_indices)) {
+      these_plots[[k]] <- all_plots[[i]]$id_plots[[these_indices[k]]]
+    }
+    
+    # Add global results
+    these_results <- dplyr::filter(all_results,
+                                   dat_name == dataset_name,
+                                   stdev == stdevs[j])
+    
+    these_plots[[k + 1]] <- ggplot(data = these_results, aes(x = npeaks)) +
+      geom_histogram() + 
+      theme_bw() +
+      geom_vline(xintercept = empirical_results$npeaks, color = "red") +
+      ggtitle(paste0("Number of peaks - ", dataset_name, ", ", stdevs[j]))
+    
+    these_plots[[k + 2]] <- ggplot(data = these_results, aes(x = width, y = mean_p)) +
+      geom_point() + 
+      ylim(0, 1) +
+      theme_bw() +
+      geom_point(data = empirical_results, aes(x = width, y = mean_p), color = "red") +
+      geom_hline(yintercept = empirical_results$mean_p, color = "red") +
+      geom_vline(xintercept = empirical_results$width, color = "red") +
+    ggtitle(paste0("Mean p - ", dataset_name, ", ", stdevs[j]))
+    
+    gridExtra::grid.arrange(grobs = these_plots,
+                            nrow = ceiling((k + 2)/3))
+    
+  }
+  # 
+  # # plot stdev range
+  # 
+  # stdev_ranges <- unique(all_plots[[i]]$metadata$stdev_range)
+  # stdev_ranges <- stdev_ranges[ which(grepl(stdev_ranges, pattern = "_"))]
+  # 
+  # for(j in 1:length(stdev_ranges)) {
+  #   print(stdev_ranges[j])
+  #   these_indices <- which(all_plots[[i]]$metadata$stdev_range == stdev_ranges[j])
+  #   these_plots <- list()
+  #   
+  #   for(k in 1:length(these_indices)) {
+  #     these_plots[[k]] <- all_plots[[i]]$id_plots[[these_indices[k]]]
+  #   }
+  #   
+  #   # Add global results
+  #   these_results <- dplyr::filter(all_results,
+  #                                  dat_name == dataset_name,
+  #                                  stdev_range == stdev_ranges[j])
+  #   
+  #   these_plots[[k + 1]] <- ggplot(data = these_results, aes(x = npeaks)) +
+  #     geom_histogram() + 
+  #     theme_bw() +
+  #     geom_vline(xintercept = empirical_results$npeaks, color = "red") +
+  #     ggtitle(paste0("Number of peaks - ", dataset_name, ", ", stdev_ranges[j]))
+  #   
+  #   these_plots[[k + 2]] <- ggplot(data = these_results, aes(x = width, y = mean_p)) +
+  #     geom_point() + 
+  #     ylim(0, 1) +
+  #     theme_bw() +
+  #     geom_point(data = empirical_results, aes(x = width, y = mean_p), color = "red")+
+  #     geom_hline(yintercept = empirical_results$mean_p, color = "red") +
+  #     geom_vline(xintercept = empirical_results$width, color = "red") +
+  #   ggtitle(paste0("Mean p - ", dataset_name, ", ", stdev_ranges[j]))
+  #   
+  #   gridExtra::grid.arrange(grobs = these_plots,
+  #                           nrow = ceiling((k + 2)/3))
+  # }
+  # 
+  
+  
+}
+
+```

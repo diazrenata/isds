@@ -1,51 +1,96 @@
 library(drake)
 library(isds)
-# expose_imports(isds)
+expose_imports(isds)
 
-sim_indices = as.numeric(c(1:15))
-stdevs = seq(0.05, 0.35, by = 0.1)
-# stdevs = c(0.05)
-#stdevs = c(0.01, 0.25)
-# thresholds_to_try = seq(.01, .31, by = 0.02)
+rerun_things <- TRUE
 
+stdevs <- as.list(seq(0.05, 0.35, by = 0.1))
+stdevs[[length(stdevs) + 1]] <- c(0.01, 0.4)
+stdevs[[length(stdevs) + 1]] <- "norm"
+
+# #stdevs = c(0.01, 0.25)
+# # thresholds_to_try = seq(.01, .31, by = 0.02)
+# stdev_range = list(c(0.01, 0.4))
+nsim = 10
 dats <- drake_plan(
-  dat1  = target(get_toy_portal_data()),
-  dat2 = target(get_toy_portal_data(years = c(1985, 1986))),
-  dat3 = target(get_toy_portal_data(years = c(2000, 2001))),
-  dat4 = target(get_toy_portal_data(years = c(2014, 2015)))
+  dat1  = target(get_toy_portal_data(), trigger = trigger(depend = rerun_things)),
+ dat2 = target(get_toy_portal_data(years = c(1985, 1986)), trigger = trigger(depend = rerun_things)),
+  dat3 = target(get_toy_portal_data(years = c(2000, 2001)), trigger = trigger(depend = rerun_things)),
+  dat4 = target(get_toy_portal_data(years = c(2014, 2015)), trigger = trigger(depend = rerun_things))
+ )
+
+dat_targets <- list()
+
+for(i in 1:nrow(dats)) {
+  dat_targets[[i]] <- as.name(dats$target[i])
+}
+
+sims_pipeline <- drake_plan(
+  sims = target(generate_sim_draws(community_dat, dat_name, stdevs, nsim),
+                transform = map(community_dat = !!dat_targets,
+                                dat_name = !!dats$target,
+                                stdevs = stdevs,
+                                nsim = nsim),
+                trigger = trigger(depend = rerun_things)
+  )
 )
 
-cp_pipeline <- make_cp_pipeline(dats)
+for(i in 1:nrow(sims_pipeline)) {
+  sims_pipeline$target[i] <- unlist(strsplit(sims_pipeline$target[i], split = "sims_"))[2]
+  sims_pipeline$target[i] <- unlist(strsplit(sims_pipeline$target[i], split = "_"))[1]
+  sims_pipeline$target[i] <- paste0("sims_", sims_pipeline$target[i])
+}
 
-sp_pipeline <- make_sp_pipeline(cp_pipeline = cp_pipeline,
-                                stdevs = stdevs)
-sp_randomstdev_pipeline <- make_sp_pipeline(cp_pipeline = cp_pipeline,
-                                            stdev_range = c(0.1, 0.4))
-sp_pipeline <- rbind(sp_pipeline, sp_randomstdev_pipeline)
+sim_targets <- list()
 
-draw_pipeline <- make_draw_pipeline(sp_pipeline = sp_pipeline,
-                                    sim_indices = sim_indices)
-sim_id_pipeline <- make_id_pipeline(draw_pipeline, "sim")
+for(i in 1:nrow(sims_pipeline)) {
+  sim_targets[[i]] <- as.name(sims_pipeline$target[i])
+}
 
-empirical_id_pipeline <- make_id_pipeline(dats, "emp")
+ids_pipeline <- drake_plan(
+  ids = target(get_id_wrapped(datasets = datasets),
+               transform = map(datasets = !!sim_targets),
+               trigger = trigger(depend = rerun_things)
+  )
+)
 
-id_pipelines <- rbind(sim_id_pipeline, empirical_id_pipeline)
-#
-#id_plots_pipeline <- make_id_plots_pipeline(id_pipelines, sim_index = c(1:5))
-#
-# thresholds_pipeline <- make_thresholds_pipeline(id_pipelines,
-#                                                 thresholds_to_try)
-#
-# summary_plot_pipeline <- make_summary_plots_pipeline(dats)
-#
-# reports_pipeline <- drake_plan(
-#   stdev_report = target(rmarkdown::render(here::here("analysis", "reports", "sim_stdev_report.Rmd")))
-# )
+for(i in 1:nrow(ids_pipeline)) {
+  ids_pipeline$target[i] <- unlist(strsplit(ids_pipeline$target[i], split = "sims_"))[2]
+  ids_pipeline$target[i] <- paste0("ids_", ids_pipeline$target[i])
+}
 
-full_pipeline <- rbind(dats, cp_pipeline, sp_pipeline, draw_pipeline, id_pipelines)
-                       #, id_plots_pipeline)
-                       #, thresholds_pipeline, , summary_plot_pipeline)
-                       #, reports_pipeline)
+
+ids_targets <- list()
+
+for(i in 1:nrow(ids_pipeline)) {
+  ids_targets[[i]] <- as.name(ids_pipeline$target[i])
+}
+
+id_plots_pipeline <- drake_plan(
+  ids_plots = target(plot_dataset_ids(dataset_ids = dat_ids, max_sims_to_plot = 5),
+                     transform = map(dat_ids = !!ids_targets),
+                     trigger = trigger(depend = rerun_things))
+)
+
+for(i in 1:nrow(id_plots_pipeline)) {
+  id_plots_pipeline$target[i] <- unlist(strsplit(id_plots_pipeline$target[i], split = "ids_plots_ids_"))[2]
+  id_plots_pipeline$target[i] <- paste0("ids_plots_", id_plots_pipeline$target[i])
+}
+
+results_pipeline <- drake_plan(
+  results = target(make_results(id_list = dat_ids),
+                   transform = map(dat_ids = !!ids_targets),
+                   trigger = trigger(depend = TRUE)),
+  all_results = target(dplyr::bind_rows(results),
+                       transform = combine(results),
+                       trigger = trigger(depend = TRUE))
+)
+
+all <- rbind(dats, sims_pipeline,
+             ids_pipeline,
+             id_plots_pipeline,
+             results_pipeline
+             )
 
 
 ## Set up the cache and config
@@ -55,7 +100,7 @@ cache <- storr::storr_dbi("datatable", "keystable", db)
 ## View the graph of the plan
 if (interactive())
 {
-  config <- drake_config(full_pipeline, cache = cache)
+  config <- drake_config(all, cache = cache)
   sankey_drake_graph(config, build_times = "none")  # requires "networkD3" package
   vis_drake_graph(config, build_times = "none")     # requires "visNetwork" package
 }
@@ -67,7 +112,7 @@ if(grepl("ufhpc", nodename)) {
   print("I know I am on SLURM!")
   ## Run the pipeline parallelized for HiPerGator
   future::plan(batchtools_slurm, template = "slurm_batchtools.tmpl")
-  make(full_pipeline,
+  make(all,
        force = TRUE,
        cache = cache,
        cache_log_file = here::here("drake", "cache_log.txt"),
@@ -77,6 +122,8 @@ if(grepl("ufhpc", nodename)) {
        caching = "master") # Important for DBI caches!
 } else {
   # Run the pipeline on a single local core
-  make(full_pipeline, cache = cache, cache_log_file = here::here("drake", "cache_log.txt"))
+  make(all, cache = cache, cache_log_file = here::here("drake", "cache_log.txt"))
 }
 
+
+print("Completed OK")
