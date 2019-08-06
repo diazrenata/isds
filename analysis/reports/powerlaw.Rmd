@@ -1,6 +1,6 @@
 ---
 title: "Power law - truncated Pareto"
-output: html_notebook
+output: github_document
 ---
 From Thibault et al 2011:
 
@@ -15,20 +15,16 @@ library(drake)
 db <- DBI::dbConnect(RSQLite::SQLite(), here::here("drake", "drake-cache.sqlite"))
 cache <- storr::storr_dbi("datatable", "keystable", db)
 
-isd_dat1 <- readd(isd_dat1, cache = cache)
+dat1 <- readd(dat1, cache = cache)
 
-head(isd_dat1)
-
-isd_dat1 <- isd_dat1 %>%
+dat1 <- dat1 %>%
   dplyr::mutate(log10_size = log(wgt, base = 10))
-
-
 
 ```
 
-Fit raw
+## Fit raw
 
-```{r fitting raw}
+```{r fitting raw, eval = F, include = F}
 library(VGAM)
 
 isd_dat1 <- isd_dat1 %>%
@@ -73,3 +69,33 @@ fit3 <- vglm(y ~ 1, truncpareto(min(log10_isd$y) - .01, max(log10_isd$y) + .01),
 A next attempt might be to find the best-fitting estimates by minimizing the KS D or maximizing R2, then evaluating whether that is significantly different via a KS test (or calculating the loglikelihood of the observed vector vs samples from the corresponding rtruncpareto).
 
 I'm not sure if any of this is a good use of time, because these are visually not power-law. 
+
+## Trying with code from Clauset et al
+```{r clauset toy pl}
+
+library(poweRlaw)
+
+data("moby", package = "poweRlaw")
+
+m_pl <- displ$new(moby)
+
+m_pl
+
+est = estimate_xmin(m_pl)
+
+m_pl$setXmin(est)
+
+bs <- bootstrap(m_pl, no_of_sims = 100, threads = 2)
+
+plot(bs, trim = 0.1)
+
+bs_p = bootstrap_p(m_pl, threads = 2)
+
+bs_p$p
+
+plot(bs_p)
+
+```
+```{r clauset pl on real dat}
+
+```
