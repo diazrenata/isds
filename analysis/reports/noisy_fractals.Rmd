@@ -5,6 +5,40 @@ date: "8/6/2019"
 output: github_document
 ---
 
+
+### Commentary 8/7/19
+
+Here I'm trying to generate quantitative but loose predictions from Holling's TDH and Scheffer & Van Ness's emergent similarity models for individual size distributions. This has become a necessity because working from the verbal version - "gappy", "multimodal", "discontinuous" - doesn't provide enough statistical traction. I can come up with a metric and then ask if empirical data scores higher/lower on that metric than sims, but the answer to that is challenging to interpret: Is the empirical similar to the sims because the simulation method really captures whatever gappiness/multimodality there is in the empirical data, or is it similar because the metric isn't quite measuring what we want to measure?  
+
+So we will also calculate our metrics on simulations generated from the core components of the candidate theories. How would a "discontinuous", "fractal", "emergent similar" distribution score on these metrics?
+
+What is the minimally biological model that is indistinguishable from empirical?
+
+The prediction distributions will depend on parameter values.
+
+**Some sampling schemes**
+
+- Say there are modes or optima along the size spectrum. Say individual sizes are drawn from normal distributions with means at these modes and some standard deviation. As the number of modes and/or the standard deviation increases, gappiness should decrease and modes should become less distinct.
+  - Very loose:
+    - Modes can come from `runif(n = nmodes,
+    min = minimally plausible size,
+    max = maximally plausible size)` and standard deviations are similarly unconstrained. Community dataset is the combination of several vectors `component[[i]] = rnorm(n = runif(n = 1, minimum_component_abundance, maximum_component_abundance),
+    mean = mode[i], sd = sd[i])`
+        - Should generate multimodal distribution. Some regions of parameter space will be gappy, but as the number of modes or the standard deviation increases, the gaps will fill in.
+  - Somewhat tighter WRT mode overlap:
+    - Modes cannot be too close together. Generate as `mode[i + 1] = mode[i] + runif(n = 1, minimum_mode_distance, some_large_value)`.
+    - Constrain the standard deviation more tightly
+      - Might broaden the space where you see gappiness
+  - Somewhat tighter WRT body size-abundance:
+    - Component abundance scales negatively with mode value.
+      - Might produce more idiosyncratic behavior at large sizes.
+  - More strictly fractal:
+    - Modes are exponential of each other: `mode[i] = base_value ^ (minimum_exponent + fractal_unit)`, such that if the base value is 2, the minimum exponent is 0 and the fractal unit is 1, `modes = c(2^0, 2^1, 2^2, 2^3)`.
+    - Component abundances scale negatively with mode value, to the same or a different exponent, such that if the exponent is the same and the min value is 3, `component_abundances = c(3^4, 3^3, 3^2, 3^1)` (or something).
+      - I think this would: approximate a discontinuous power law; generate pronounced modes; generate pronounced gaps.
+
+### Early implementation of strict fractals
+
 ```{r setup, include=FALSE}
 
 library(isds)
@@ -34,7 +68,7 @@ fractal_sds <- fractal_means * runif(n = length(fractal_means), min = 0.05, max 
 
 fractal_abundances <- ceiling(sort(fractal_means, decreasing = T))
 
-draws <- NULL 
+draws <- NULL
 
 for(i in 1:length(fractal_means)) {
   draws <- c(draws, rnorm(n = fractal_abundances[i],
