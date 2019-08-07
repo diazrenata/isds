@@ -1,0 +1,53 @@
+---
+title: "Noisy fractals"
+author: "Renata Diaz"
+date: "8/6/2019"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+
+library(isds)
+library(drake)
+
+## Set up the cache and config
+db <- DBI::dbConnect(RSQLite::SQLite(), here::here("drake", "drake-cache.sqlite"))
+cache <- storr::storr_dbi("datatable", "keystable", db)
+
+dat1 <- readd(dat1, cache = cache)
+
+dat1 <- dat1 %>%
+  dplyr::mutate(log10_size = log(wgt, base = 10))
+```
+
+Set up fractal scale
+
+```{r fractal scale}
+
+fractal_min <- runif(n= 1, min = 5, max = 20)
+
+fractal_exponent <- runif(n = 1, min = 0.5, max = 1.5)
+
+fractal_means <- fractal_min ^ (fractal_exponent * c(1, 2, 3))
+
+fractal_sds <- fractal_means * runif(n = length(fractal_means), min = 0.05, max = 0.5)
+
+fractal_abundances <- ceiling(sort(fractal_means, decreasing = T))
+
+draws <- NULL 
+
+for(i in 1:length(fractal_means)) {
+  draws <- c(draws, rnorm(n = fractal_abundances[i],
+                          mean = fractal_means[i],
+                          sd = fractal_sds[i]))
+}
+
+draws <- abs(draws)
+
+hist(draws)
+
+hist(log(draws))
+
+hist(dat1$wgt)
+
+```
