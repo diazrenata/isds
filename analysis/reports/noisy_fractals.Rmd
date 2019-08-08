@@ -37,6 +37,8 @@ The prediction distributions will depend on parameter values.
     - Component abundances scale negatively with mode value, to the same or a different exponent, such that if the exponent is the same and the min value is 3, `component_abundances = c(3^4, 3^3, 3^2, 3^1)` (or something).
       - I think this would: approximate a discontinuous power law; generate pronounced modes; generate pronounced gaps.
 
+It's important here to avoid constructing straw man versions of the theories. 
+
 ### Early implementation of strict fractals
 
 ```{r setup, include=FALSE}

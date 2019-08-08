@@ -1,0 +1,101 @@
+---
+title: "Exploring discontinuity analysis"
+output: github_document
+---
+
+```{r setup}
+library(drake)
+library(isds)
+library(ggplot2)
+library(dplyr)
+knitr::opts_chunk$set(echo = TRUE)
+
+## Set up the cache and config
+db <- DBI::dbConnect(RSQLite::SQLite(), here::here("drake", "drake-cache.sqlite"))
+cache <- storr::storr_dbi("datatable", "keystable", db)
+```
+
+Get a sim.
+
+```{r get a sim}
+toyp <- get_toy_portal_data()
+```
+
+```{r get mean bsd}
+
+ebsd <- toyp %>%
+  group_by(species) %>%
+  summarize(meanwgt = mean(wgt)) %>%
+  ungroup() %>%
+  mutate(logwgt = log(meanwgt))
+
+bsdk <- ks::kde(ebsd$logwgt)
+
+plot(bsdk)
+
+bsdkp <- data.frame(
+  eval = bsdk$eval.points,
+  estimate = bsdk$estimate
+)
+
+bsdkp <- bsdkp %>%
+  filter(eval > 0) %>%
+  mutate(stdp = estimate / sum(estimate))
+
+drawbsd <- function(){
+  
+  thisbsd <- sample(bsdkp$eval, size = 7, replace = T, prob = bsdkp$stdp)
+  
+  return(thisbsd)
+}
+
+sims <- replicate(n = 1000, expr = drawbsd(), simplify = T) %>%
+  t()
+
+find_gaps <- function(bsd) {
+  
+  bsd <- sort(bsd) 
+  
+  gaps <- vector(length = length(bsd) - 1)
+  
+  for(i in 1:(length(gaps))) {
+    gaps[i] = bsd[i + 1] - bsd[i]
+  }
+  
+  return(gaps)
+}
+
+
+sim_gaps <- apply(sims, MARGIN = 1, FUN = find_gaps) %>%
+  t()
+
+mean_gap <- apply(sim_gaps, MARGIN = 1, FUN = mean)
+sd_gap <- apply(sim_gaps, MARGIN = 1, FUN = sd)
+
+hist(mean_gap)
+hist(sd_gap)
+
+mean(sim_gaps)
+sd(sim_gaps)
+
+emp_gap <- find_gaps(ebsd$logwgt)
+mean(emp_gap)
+sd(emp_gap)
+
+
+all_gaps <- as.vector(sim_gaps)
+
+all_gaps <- as.data.frame(all_gaps)
+
+emp_gap <- as.data.frame(emp_gap)
+
+library(ggplot2)
+
+gaphist <- ggplot(data = all_gaps, aes(x = all_gaps)) + 
+  geom_freqpoly() +
+  geom_point(data = emp_gap, aes(x = emp_gap, y = 2)) +
+  geom_vline(xintercept = quantile(all_gaps$all_gaps, probs = c(0.5, 0.75, 0.95)))
+
+gaphist
+
+```
