@@ -66,9 +66,13 @@ drawbsd <- function(){
   return(thisbsd)
 }
 
-sims <- replicate(n = 1000, expr = drawbsd(), simplify = T) %>%
+sims <- replicate(n = 500, expr = drawbsd(), simplify = T) %>%
   t()
+```
 
+Multimodal sims
+
+``` r
 find_gaps <- function(bsd) {
   
   bsd <- sort(bsd) 
@@ -82,66 +86,38 @@ find_gaps <- function(bsd) {
   return(gaps)
 }
 
+nmodes <- sample(c(2,3,4), size = 1) 
 
-sim_gaps <- apply(sims, MARGIN = 1, FUN = find_gaps) %>%
-  t()
+modevals <- runif(n = nmodes,
+                 min = min(ebsd$meanwgt) * .75, 
+                 max = max(ebsd$meanwgt) * 1.1)
 
-mean_gap <- apply(sim_gaps, MARGIN = 1, FUN = mean)
-sd_gap <- apply(sim_gaps, MARGIN = 1, FUN = sd)
+modegaps <- find_gaps(log(modevals))
 
-hist(mean_gap)
+while(min(modegaps) <= .75) {
+  
+modevals <- runif(n = nmodes,
+                 min = min(ebsd$meanwgt) * .75, 
+                 max = max(ebsd$meanwgt) * 1.1)
+
+modegaps <- find_gaps(log(modevals))
+}
+
+sd_coeff <- runif(n = nmodes, min = 0.5, max = 2)
+
+mode_p <- data.frame(
+  val = seq(1, 1.25 * max(modevals), by = .1)
+)
+
+for(i in 1:nmodes) {
+  mode_p[, i + 1] <- dnorm(mode_p$val, mean = modevals[i], sd = sd_coeff[i])
+}
+
+mode_p$sum <- rowSums(mode_p[ , 2:(nmodes + 1)])
+
+mode_p$sum <- mode_p$sum / sum(mode_p$sum)
+
+plot(mode_p$sum)
 ```
 
-![](discont_files/figure-markdown_github/get%20mean%20bsd-2.png)
-
-``` r
-hist(sd_gap)
-```
-
-![](discont_files/figure-markdown_github/get%20mean%20bsd-3.png)
-
-``` r
-mean(sim_gaps)
-```
-
-    ## [1] 0.4785841
-
-``` r
-sd(sim_gaps)
-```
-
-    ## [1] 0.4207266
-
-``` r
-emp_gap <- find_gaps(ebsd$logwgt)
-mean(emp_gap)
-```
-
-    ## [1] 0.4179499
-
-``` r
-sd(emp_gap)
-```
-
-    ## [1] 0.2564652
-
-``` r
-all_gaps <- as.vector(sim_gaps)
-
-all_gaps <- as.data.frame(all_gaps)
-
-emp_gap <- as.data.frame(emp_gap)
-
-library(ggplot2)
-
-gaphist <- ggplot(data = all_gaps, aes(x = all_gaps)) + 
-  geom_freqpoly() +
-  geom_point(data = emp_gap, aes(x = emp_gap, y = 2)) +
-  geom_vline(xintercept = quantile(all_gaps$all_gaps, probs = c(0.5, 0.75, 0.95)))
-
-gaphist
-```
-
-    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-
-![](discont_files/figure-markdown_github/get%20mean%20bsd-4.png)
+![](discont_files/figure-markdown_github/multimodal%20sims-1.png)
