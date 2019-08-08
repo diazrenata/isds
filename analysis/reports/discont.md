@@ -2,7 +2,6 @@ Exploring discontinuity analysis
 ================
 
 ``` r
-library(drake)
 library(isds)
 library(ggplot2)
 library(dplyr)
@@ -20,11 +19,12 @@ library(dplyr)
     ##     intersect, setdiff, setequal, union
 
 ``` r
+library(tidyr)
 knitr::opts_chunk$set(echo = TRUE)
-
-## Set up the cache and config
-db <- DBI::dbConnect(RSQLite::SQLite(), here::here("drake", "drake-cache.sqlite"))
-cache <- storr::storr_dbi("datatable", "keystable", db)
+# 
+# ## Set up the cache and config
+# db <- DBI::dbConnect(RSQLite::SQLite(), here::here("drake", "drake-cache.sqlite"))
+# cache <- storr::storr_dbi("datatable", "keystable", db)
 ```
 
 Get a sim.
@@ -63,7 +63,7 @@ drawbsd <- function(){
   
   thisbsd <- sample(bsdkp$eval, size = 7, replace = T, prob = bsdkp$stdp)
   
-  return(thisbsd)
+  return(sort(exp(thisbsd)))
 }
 
 sims <- replicate(n = 500, expr = drawbsd(), simplify = T) %>%
@@ -85,6 +85,8 @@ find_gaps <- function(bsd) {
   
   return(gaps)
 }
+draw_mm_bsd <- function() {
+
 
 nmodes <- sample(c(2,3,4), size = 1) 
 
@@ -117,7 +119,55 @@ mode_p$sum <- rowSums(mode_p[ , 2:(nmodes + 1)])
 
 mode_p$sum <- mode_p$sum / sum(mode_p$sum)
 
-plot(mode_p$sum)
+#plot(mode_p$sum)
+
+return(sort(sample(mode_p$val, size = 7, replace= T, prob = mode_p$sum)))
+
+}
+
+sims_mm <- replicate(n = 500, expr = draw_mm_bsd()) %>%
+  t()
+
+sims <- as.data.frame(sims)
+sims$source <- "unimodal"
+sims_mm <- as.data.frame(sims_mm)
+sims_mm$source <- "multim"
+sims$ind <- row.names(sims)
+sims_mm$ind <- row.names(sims_mm)
+
+all_sims <- rbind(sims, sims_mm)
+
+all_sims_gaps <- all_sims
+
+
+all_sims_gaps[, 1:6] <- apply(all_sims_gaps[, 1:7], MARGIN = 1, FUN = find_gaps)
+
+all_sims_gaps <- all_sims_gaps[, c(1:6, 8:9)]
+
+all_sims_gaps <- all_sims_gaps %>%
+  gather(key = "rank", value = "gap_size", -source, -ind)
+
+sd_gaps <- all_sims_gaps %>%
+  group_by(ind, source) %>%
+  summarize(mean = mean(gap_size), sd = sd(gap_size)) %>%
+  ungroup()
+
+gapplot <- ggplot(data = all_sims_gaps, aes(x = ind, y = gap_size, color = source)) + geom_jitter() + theme_bw()
+gapplot
 ```
 
 ![](discont_files/figure-markdown_github/multimodal%20sims-1.png)
+
+``` r
+gapmeanplot <- ggplot(data = sd_gaps, aes(x = source, y = mean)) + geom_point()
+gapmeanplot
+```
+
+![](discont_files/figure-markdown_github/multimodal%20sims-2.png)
+
+``` r
+gapsdplot <- ggplot(data = sd_gaps, aes(x = source, y = sd)) + geom_point()
+gapsdplot
+```
+
+![](discont_files/figure-markdown_github/multimodal%20sims-3.png)
