@@ -1,0 +1,137 @@
+---
+title: "BSD decay?"
+output: github_document
+---
+
+```{r setup}
+library(isds)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+knitr::opts_chunk$set(echo = TRUE)
+
+toyp <- get_toy_portal_data()
+
+ebsd <- toyp %>%
+  group_by(species) %>%
+  summarize(meanwgt = mean(wgt)) %>%
+  ungroup() %>%
+  mutate(logwgt = log(meanwgt))
+
+set.seed(1977)
+
+uniform_log_bsd <- draw_uniform_bsd(s = nrow(ebsd), min = .75 * min(ebsd$logwgt), max = 1.1 *max(ebsd$logwgt))
+
+unimodal_log_bsd <- draw_unimodal_bsd(ebsd$logwgt)
+
+mmodal_log_bsd_full <- draw_multimodal_bsd(emp_vector = ebsd$logwgt,
+                                       max_sd_coeff = .5)
+
+mmodal_log_bsd <- mmodal_log_bsd_full$bsd
+
+
+uniform_bsd <- draw_uniform_bsd(s = nrow(ebsd), min = .75 * min(ebsd$meanwgt), max = 1.1 * max(ebsd$meanwgt))
+unimodal_bsd <- draw_unimodal_bsd(ebsd$meanwgt)
+mmodal_bsd_full <- draw_multimodal_bsd(emp_vector = ebsd$meanwgt, min_mode_gap = 20, min_sd_coeff = .3, max_sd_coeff = 1)
+mmodal_bsd <- mmodal_bsd_full$bsd
+```
+
+
+```{r visualize}
+
+all_log_bsds <- data.frame(
+  vals = c(mmodal_log_bsd, uniform_log_bsd, unimodal_log_bsd, ebsd$logwgt),
+  source = c(rep("multimodal", 7),
+             rep("uniform", 7), 
+             rep("unimodal", 7),
+             rep("empirical", 7))
+)
+
+
+all_log_bsd_plot <- ggplot(data = all_log_bsds, aes(x = vals, y = source, color = source)) +
+  geom_point() +
+  theme_bw() +
+  theme(legend.position = "none")
+
+all_log_bsd_plot
+
+
+all_bsds <- data.frame(
+  vals = c(mmodal_bsd, uniform_bsd, unimodal_bsd, ebsd$meanwgt),
+  source = c(rep("multimodal", 7),
+             rep("uniform", 7), 
+             rep("unimodal", 7),
+             rep("empirical", 7))
+)
+
+
+all_bsd_plot <- ggplot(data = all_bsds, aes(x = vals, y = source, color = source)) +
+  geom_point() +
+  theme_bw() +
+  theme(legend.position = "none")
+
+all_bsd_plot
+
+
+```
+
+```{r nb clumps}
+
+raw_clumps <- all_bsds %>%
+  group_by(source) %>%
+  summarize(nbclumps = get_n_clumps(vals))
+
+log_clumps <- all_log_bsds %>%
+  group_by(source) %>%
+  summarize(nbclumps = get_n_clumps(vals))
+
+log_clumps
+raw_clumps
+
+```
+
+```{r playing with kmeans}
+
+raw_ssq<- all_bsds %>%
+  group_by(source) %>%
+  summarize(ssq_prop = get_ssq_prop(vals))
+
+log_ssq <- all_log_bsds %>%
+  group_by(source) %>%
+  summarize(ssq_prop = get_ssq_prop(vals))
+
+raw_ssq
+log_ssq
+
+```
+
+
+```{r scraps, include=F,eval=F}
+
+
+get_best_cluster <- function(sim) {
+  kmeans_list <- list(
+    c2 = kmeans(unlist(sim)[1:7], 2),
+  c3 = kmeans(unlist(sim)[1:7], 3),
+  c4 = kmeans(unlist(sim)[1:7], 4)
+  )
+  
+  ss_vect <- c(kmeans_list$c2$betweenss / kmeans_list$c2$totss,
+   kmeans_list$c3$betweenss / kmeans_list$c3$totss,
+  kmeans_list$c4$betweenss / kmeans_list$c4$totss
+  )
+  
+ best_kmean <- kmeans_list[[ which(ss_vect == max(ss_vect))]]
+  
+  return(best_kmean)
+  
+}
+
+mm_kmean <- get_best_cluster(sims_mm[1, ])
+
+
+sim_gaps <- apply(sims, MARGIN = 1, FUN = find_gaps) %>%
+  t()
+
+emp_gap <- find_gaps(ebsd$logwgt)
+```
