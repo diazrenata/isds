@@ -179,3 +179,41 @@ get_ssq_prop <- function(mean_size_vector, nbclumps = NULL) {
   return(prop)
 
 }
+
+#' Get elbow of kmeans
+#'
+#' @param mean_size_vector mean vect
+#' @param nbclumps clumps to try
+#'
+#' @return nb of clumps where the decrease in the within group sum of squares slows
+#' @export
+#'
+get_kmeans_elbow <- function(mean_size_vector, nbclumps = c(1:(length(mean_size_vector) -1))) {
+
+  within_ssqs <- list()
+
+  for(i in 1:length(nbclumps)) {
+    within_ssqs[[i]] <- kmeans(mean_size_vector, nbclumps[i])$tot.withinss
+  }
+
+  within_ssqs <- unlist(within_ssqs)
+
+  ssqs_slopes <- vector()
+
+  for(i in 2:(length(within_ssqs))) {
+    ssqs_slopes[i] <- abs(within_ssqs[i] - within_ssqs[i - 1])
+  }
+
+ ratios_of_slopes <- vector()
+
+  for(i in 2:(length(ssqs_slopes)))  {
+    ratios_of_slopes[i] <- ssqs_slopes[i]/ssqs_slopes[i - 1]
+  }
+
+
+
+  elbow <- min(which(ratios_of_slopes < .5)) - 1
+
+  return(elbow)
+
+}

@@ -97,7 +97,7 @@ raw_clumps
 
 all_log_ssq <- list() 
 for(i in 1:6) {
-  all_log_ssq[[i]] <- log_ssq <- all_log_bsds %>%
+  all_log_ssq[[i]] <-  all_log_bsds %>%
   group_by(source) %>%
   summarize(ssq_prop = get_ssq_prop(vals, nbclumps = i)) %>%
     ungroup() %>%
@@ -114,7 +114,7 @@ log_ssq_plot
 all_ssq <- list() 
 
 for(i in 1:10) {
-  all_ssq[[i]] <- ssq <- all_bsds %>%
+  all_ssq[[i]] <- all_bsds %>%
   group_by(source) %>%
   summarize(ssq_prop = get_ssq_prop(vals, nbclumps = i)) %>%
     ungroup() %>%
@@ -137,6 +137,22 @@ ssq_plot
 
 Maybe you could pick the nb clumps based on the elbow of the scree plot of the within group sum of squares?
 When the slope starts to become less negative, truncate?
+
+```{r elbows}
+raw_elbows <- all_bsds %>%
+  group_by(source) %>%
+  summarize(elbow = get_kmeans_elbow(vals)) %>%
+  ungroup()
+raw_elbows
+
+log_elbows <- all_log_bsds %>%
+  group_by(source) %>%
+  summarize(elbow = get_kmeans_elbow(vals)) %>%
+  ungroup()
+log_elbows
+
+```
+
 
 
 There's a lot to do, but at least for now it looks like multimodality actually comes through pretty sharply. Not on the log scale, though.
