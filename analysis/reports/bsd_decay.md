@@ -22,7 +22,7 @@ library(dplyr)
 library(tidyr)
 knitr::opts_chunk$set(echo = TRUE)
 
-toyp <- get_toy_portal_data()
+toyp <- get_toy_portal_data(years = 1990:2010)
 ```
 
     ## Loading in data version 1.90.0
@@ -40,25 +40,24 @@ uniform_log_bsd <- draw_uniform_bsd(s = nrow(ebsd), min = .75 * min(ebsd$logwgt)
 
 unimodal_log_bsd <- draw_unimodal_bsd(ebsd$logwgt)
 
-mmodal_log_bsd_full <- draw_multimodal_bsd(emp_vector = ebsd$logwgt,
-                                       max_sd_coeff = .5)
+mmodal_log_bsd_full <- draw_multimodal_bsd(emp_vector = ebsd$logwgt, min_sd_coeff = 1, max_sd_coeff = 2)
 
 mmodal_log_bsd <- mmodal_log_bsd_full$bsd
 
 
 uniform_bsd <- draw_uniform_bsd(s = nrow(ebsd), min = .75 * min(ebsd$meanwgt), max = 1.1 * max(ebsd$meanwgt))
 unimodal_bsd <- draw_unimodal_bsd(ebsd$meanwgt)
-mmodal_bsd_full <- draw_multimodal_bsd(emp_vector = ebsd$meanwgt, min_mode_gap = 20, min_sd_coeff = .3, max_sd_coeff = 1)
+mmodal_bsd_full <- draw_multimodal_bsd(emp_vector = ebsd$meanwgt, min_mode_gap = 20, min_sd_coeff = 1, max_sd_coeff = 3)
 mmodal_bsd <- mmodal_bsd_full$bsd
 ```
 
 ``` r
 all_log_bsds <- data.frame(
   vals = c(mmodal_log_bsd, uniform_log_bsd, unimodal_log_bsd, ebsd$logwgt),
-  source = c(rep("multimodal", 7),
-             rep("uniform", 7), 
-             rep("unimodal", 7),
-             rep("empirical", 7))
+  source = c(rep("multimodal", nrow(ebsd)),
+             rep("uniform", nrow(ebsd)), 
+             rep("unimodal", nrow(ebsd)),
+             rep("empirical", nrow(ebsd)))
 )
 
 
@@ -75,10 +74,10 @@ all_log_bsd_plot
 ``` r
 all_bsds <- data.frame(
   vals = c(mmodal_bsd, uniform_bsd, unimodal_bsd, ebsd$meanwgt),
-  source = c(rep("multimodal", 7),
-             rep("uniform", 7), 
-             rep("unimodal", 7),
-             rep("empirical", 7))
+  source = c(rep("multimodal", nrow(ebsd)),
+             rep("uniform", nrow(ebsd)), 
+             rep("unimodal", nrow(ebsd)),
+             rep("empirical", nrow(ebsd)))
 )
 
 
@@ -93,388 +92,56 @@ all_bsd_plot
 ![](bsd_decay_files/figure-markdown_github/visualize-2.png)
 
 ``` r
-raw_clumps <- all_bsds %>%
+# 
+# raw_ssq<- all_bsds %>%
+#   group_by(source) %>%
+#   summarize(ssq_prop = get_ssq_prop(vals))
+
+all_log_ssq <- list() 
+for(i in 1:6) {
+  all_log_ssq[[i]] <- log_ssq <- all_log_bsds %>%
   group_by(source) %>%
-  summarize(nbclumps = get_n_clumps(vals))
+  summarize(ssq_prop = get_ssq_prop(vals, nbclumps = i)) %>%
+    ungroup() %>%
+    mutate(nbclumps = i)
+}
+
+all_log_ssq <- bind_rows(all_log_ssq)
+
+log_ssq_plot <- ggplot(data =all_log_ssq, aes(x = nbclumps, y = ssq_prop, color = source)) + 
+  geom_line() +
+  theme_bw()
+log_ssq_plot
 ```
 
-    ## Package 'mclust' version 5.4.5
-    ## Type 'citation("mclust")' for citing this R package in publications.
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
+![](bsd_decay_files/figure-markdown_github/playing%20with%20kmeans-1.png)
 
 ``` r
-log_clumps <- all_log_bsds %>%
+all_ssq <- list() 
+
+for(i in 1:10) {
+  all_ssq[[i]] <- ssq <- all_bsds %>%
   group_by(source) %>%
-  summarize(nbclumps = get_n_clumps(vals))
+  summarize(ssq_prop = get_ssq_prop(vals, nbclumps = i)) %>%
+    ungroup() %>%
+    mutate(nbclumps = i)
+}
+
+all_ssq <- bind_rows(all_ssq)
+
+ssq_plot <- ggplot(data =all_ssq, aes(x = nbclumps, y = ssq_prop, color = source)) + 
+  geom_line() +
+  theme_bw()
+ssq_plot
 ```
 
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
+![](bsd_decay_files/figure-markdown_github/playing%20with%20kmeans-2.png)
 
 ``` r
-log_clumps
+#raw_ssq
+#log_ssq
 ```
 
-    ## # A tibble: 4 x 2
-    ##   source     nbclumps
-    ##   <fct>         <int>
-    ## 1 empirical         1
-    ## 2 multimodal        3
-    ## 3 uniform           1
-    ## 4 unimodal          1
+Maybe you could pick the nb clumps based on the elbow of the scree plot of the within group sum of squares? When the slope starts to become less negative, truncate?
 
-``` r
-raw_clumps
-```
-
-    ## # A tibble: 4 x 2
-    ##   source     nbclumps
-    ##   <fct>         <int>
-    ## 1 empirical         4
-    ## 2 multimodal        3
-    ## 3 uniform           2
-    ## 4 unimodal          4
-
-``` r
-raw_ssq<- all_bsds %>%
-  group_by(source) %>%
-  summarize(ssq_prop = get_ssq_prop(vals))
-```
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-``` r
-log_ssq <- all_log_bsds %>%
-  group_by(source) %>%
-  summarize(ssq_prop = get_ssq_prop(vals))
-```
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-    ## Warning in pastecs::turnpoints(density_estimates): value out of range in
-    ## 'gammafn'
-
-``` r
-raw_ssq
-```
-
-    ## # A tibble: 4 x 2
-    ##   source     ssq_prop
-    ##   <fct>         <dbl>
-    ## 1 empirical     0.995
-    ## 2 multimodal    1.000
-    ## 3 uniform       0.823
-    ## 4 unimodal      0.989
-
-``` r
-log_ssq
-```
-
-    ## # A tibble: 4 x 2
-    ##   source      ssq_prop
-    ##   <fct>          <dbl>
-    ## 1 empirical   0.      
-    ## 2 multimodal  9.69e- 1
-    ## 3 uniform     0.      
-    ## 4 unimodal   -1.26e-16
+There's a lot to do, but at least for now it looks like multimodality actually comes through pretty sharply. Not on the log scale, though.

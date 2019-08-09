@@ -164,8 +164,11 @@ get_n_clumps <- function(mean_size_vector) {
 #' @return btwn/total ssq for kmeans
 #' @export
 #'
-get_ssq_prop <- function(mean_size_vector) {
-  nbclumps <- get_n_clumps(mean_size_vector)
+get_ssq_prop <- function(mean_size_vector, nbclumps = NULL) {
+  if(is.null(nbclumps)) {
+    nbclumps <- get_n_clumps(mean_size_vector)
+  }
+
   km <- kmeans(mean_size_vector, nbclumps)
 
   btwn <- km$betweenss

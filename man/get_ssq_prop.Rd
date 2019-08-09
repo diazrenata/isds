@@ -4,7 +4,7 @@
 \alias{get_ssq_prop}
 \title{Get between/total ssq}
 \usage{
-get_ssq_prop(mean_size_vector)
+get_ssq_prop(mean_size_vector, nbclumps = NULL)
 }
 \arguments{
 \item{mean_size_vector}{mean size vector}

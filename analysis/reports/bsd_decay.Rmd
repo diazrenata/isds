@@ -10,7 +10,7 @@ library(dplyr)
 library(tidyr)
 knitr::opts_chunk$set(echo = TRUE)
 
-toyp <- get_toy_portal_data()
+toyp <- get_toy_portal_data(years = 1990:2010)
 
 ebsd <- toyp %>%
   group_by(species) %>%
@@ -24,15 +24,14 @@ uniform_log_bsd <- draw_uniform_bsd(s = nrow(ebsd), min = .75 * min(ebsd$logwgt)
 
 unimodal_log_bsd <- draw_unimodal_bsd(ebsd$logwgt)
 
-mmodal_log_bsd_full <- draw_multimodal_bsd(emp_vector = ebsd$logwgt,
-                                       max_sd_coeff = .5)
+mmodal_log_bsd_full <- draw_multimodal_bsd(emp_vector = ebsd$logwgt, min_sd_coeff = 1, max_sd_coeff = 2)
 
 mmodal_log_bsd <- mmodal_log_bsd_full$bsd
 
 
 uniform_bsd <- draw_uniform_bsd(s = nrow(ebsd), min = .75 * min(ebsd$meanwgt), max = 1.1 * max(ebsd$meanwgt))
 unimodal_bsd <- draw_unimodal_bsd(ebsd$meanwgt)
-mmodal_bsd_full <- draw_multimodal_bsd(emp_vector = ebsd$meanwgt, min_mode_gap = 20, min_sd_coeff = .3, max_sd_coeff = 1)
+mmodal_bsd_full <- draw_multimodal_bsd(emp_vector = ebsd$meanwgt, min_mode_gap = 20, min_sd_coeff = 1, max_sd_coeff = 3)
 mmodal_bsd <- mmodal_bsd_full$bsd
 ```
 
@@ -41,10 +40,10 @@ mmodal_bsd <- mmodal_bsd_full$bsd
 
 all_log_bsds <- data.frame(
   vals = c(mmodal_log_bsd, uniform_log_bsd, unimodal_log_bsd, ebsd$logwgt),
-  source = c(rep("multimodal", 7),
-             rep("uniform", 7), 
-             rep("unimodal", 7),
-             rep("empirical", 7))
+  source = c(rep("multimodal", nrow(ebsd)),
+             rep("uniform", nrow(ebsd)), 
+             rep("unimodal", nrow(ebsd)),
+             rep("empirical", nrow(ebsd)))
 )
 
 
@@ -58,10 +57,10 @@ all_log_bsd_plot
 
 all_bsds <- data.frame(
   vals = c(mmodal_bsd, uniform_bsd, unimodal_bsd, ebsd$meanwgt),
-  source = c(rep("multimodal", 7),
-             rep("uniform", 7), 
-             rep("unimodal", 7),
-             rep("empirical", 7))
+  source = c(rep("multimodal", nrow(ebsd)),
+             rep("uniform", nrow(ebsd)), 
+             rep("unimodal", nrow(ebsd)),
+             rep("empirical", nrow(ebsd)))
 )
 
 
@@ -75,7 +74,7 @@ all_bsd_plot
 
 ```
 
-```{r nb clumps}
+```{r nb clumps, include=F, eval = F}
 
 raw_clumps <- all_bsds %>%
   group_by(source) %>%
@@ -91,19 +90,56 @@ raw_clumps
 ```
 
 ```{r playing with kmeans}
+# 
+# raw_ssq<- all_bsds %>%
+#   group_by(source) %>%
+#   summarize(ssq_prop = get_ssq_prop(vals))
 
-raw_ssq<- all_bsds %>%
+all_log_ssq <- list() 
+for(i in 1:6) {
+  all_log_ssq[[i]] <- log_ssq <- all_log_bsds %>%
   group_by(source) %>%
-  summarize(ssq_prop = get_ssq_prop(vals))
+  summarize(ssq_prop = get_ssq_prop(vals, nbclumps = i)) %>%
+    ungroup() %>%
+    mutate(nbclumps = i)
+}
 
-log_ssq <- all_log_bsds %>%
+all_log_ssq <- bind_rows(all_log_ssq)
+
+log_ssq_plot <- ggplot(data =all_log_ssq, aes(x = nbclumps, y = ssq_prop, color = source)) + 
+  geom_line() +
+  theme_bw()
+log_ssq_plot
+
+all_ssq <- list() 
+
+for(i in 1:10) {
+  all_ssq[[i]] <- ssq <- all_bsds %>%
   group_by(source) %>%
-  summarize(ssq_prop = get_ssq_prop(vals))
+  summarize(ssq_prop = get_ssq_prop(vals, nbclumps = i)) %>%
+    ungroup() %>%
+    mutate(nbclumps = i)
+}
 
-raw_ssq
-log_ssq
+all_ssq <- bind_rows(all_ssq)
+
+ssq_plot <- ggplot(data =all_ssq, aes(x = nbclumps, y = ssq_prop, color = source)) + 
+  geom_line() +
+  theme_bw()
+ssq_plot
+
+
+#raw_ssq
+#log_ssq
 
 ```
+
+
+Maybe you could pick the nb clumps based on the elbow of the scree plot of the within group sum of squares?
+When the slope starts to become less negative, truncate?
+
+
+There's a lot to do, but at least for now it looks like multimodality actually comes through pretty sharply. Not on the log scale, though.
 
 
 ```{r scraps, include=F,eval=F}
