@@ -103,7 +103,7 @@ draw_multimodal_bsd <- function(emp_vector,
     modegaps <- find_gaps(modevals)
   }
 
-  sd_coeff <- runif(n = nmodes, min = min_sd_coeff, max = max_sd_coeff, replace = TRUE)
+  sd_coeff <- runif(n = nmodes, min = min_sd_coeff, max = max_sd_coeff)
 
   mode_p <- data.frame(
     val = seq(0, 5 * max(modevals), by = .01)
@@ -184,11 +184,12 @@ get_ssq_prop <- function(mean_size_vector, nbclumps = NULL) {
 #'
 #' @param mean_size_vector mean vect
 #' @param nbclumps clumps to try
+#' @param slope_cutoff slope ratio at which to cut off
 #'
 #' @return nb of clumps where the decrease in the within group sum of squares slows
 #' @export
 #'
-get_kmeans_elbow <- function(mean_size_vector, nbclumps = c(1:(length(mean_size_vector) -1))) {
+get_kmeans_elbow <- function(mean_size_vector, nbclumps = c(1:(length(mean_size_vector) -1)), slope_cutoff = .5) {
 
   within_ssqs <- list()
 
@@ -212,7 +213,7 @@ get_kmeans_elbow <- function(mean_size_vector, nbclumps = c(1:(length(mean_size_
 
 
 
-  elbow <- min(which(ratios_of_slopes < .5)) - 1
+  elbow <- min(which(ratios_of_slopes < slope_cutoff)) - 1
 
   return(elbow)
 

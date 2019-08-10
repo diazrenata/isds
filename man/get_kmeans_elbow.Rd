@@ -5,12 +5,14 @@
 \title{Get elbow of kmeans}
 \usage{
 get_kmeans_elbow(mean_size_vector,
-  nbclumps = c(1:(length(mean_size_vector) - 1)))
+  nbclumps = c(1:(length(mean_size_vector) - 1)), slope_cutoff = 0.5)
 }
 \arguments{
 \item{mean_size_vector}{mean vect}
 
 \item{nbclumps}{clumps to try}
+
+\item{slope_cutoff}{slope ratio at which to cut off}
 }
 \value{
 nb of clumps where the decrease in the within group sum of squares slows

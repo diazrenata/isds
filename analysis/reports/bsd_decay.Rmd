@@ -27,28 +27,17 @@ unimodal_log_bsd <- draw_unimodal_bsd(ebsd$logwgt)
 mmodal_log_bsd_full <- draw_multimodal_bsd(emp_vector = ebsd$logwgt, min_sd_coeff = .5, max_sd_coeff = .5)
 
 mmodal_log_bsd <- mmodal_log_bsd_full$bsd
-even_log_bsd <- seq(from = .75 * min(ebsd$logwgt), to = 1.1 *max(ebsd$logwgt),
-                    length.out = length(ebsd$logwgt))
-
-
-uniform_bsd <- draw_uniform_bsd(s = nrow(ebsd), min = .75 * min(ebsd$meanwgt), max = 1.1 * max(ebsd$meanwgt))
-unimodal_bsd <- draw_unimodal_bsd(ebsd$meanwgt)
-mmodal_bsd_full <- draw_multimodal_bsd(emp_vector = ebsd$meanwgt, min_mode_gap = 20, min_sd_coeff = .5, max_sd_coeff = .5)
-mmodal_bsd <- mmodal_bsd_full$bsd
-even_bsd <- seq(from = .75 * min(ebsd$meanwgt), to = 1.1 *max(ebsd$meanwgt),
-                length.out = length(ebsd$meanwgt))
 ```
 
 
 ```{r visualize}
 
 all_log_bsds <- data.frame(
-  vals = c(mmodal_log_bsd, uniform_log_bsd, unimodal_log_bsd, ebsd$logwgt), #, even_log_bsd),
+  vals = c(mmodal_log_bsd, uniform_log_bsd, unimodal_log_bsd, ebsd$logwgt),
   source = c(rep("multimodal", nrow(ebsd)),
              rep("uniform", nrow(ebsd)), 
              rep("unimodal", nrow(ebsd)),
-             rep("empirical", nrow(ebsd)))#,
-  #rep("even", nrow(ebsd)))
+             rep("empirical", nrow(ebsd)))
 )
 
 
@@ -59,48 +48,11 @@ all_log_bsd_plot <- ggplot(data = all_log_bsds, aes(x = vals, y = source, color 
 
 all_log_bsd_plot
 
-
-all_bsds <- data.frame(
-  vals = c(mmodal_bsd, uniform_bsd, unimodal_bsd, ebsd$meanwgt), #, even_bsd),
-  source = c(rep("multimodal", nrow(ebsd)),
-             rep("uniform", nrow(ebsd)), 
-             rep("unimodal", nrow(ebsd)),
-             rep("empirical", nrow(ebsd)))#,
-  #rep("even", nrow(ebsd)))
-)
-
-
-all_bsd_plot <- ggplot(data = all_bsds, aes(x = vals, y = source, color = source)) +
-  geom_point() +
-  theme_bw() +
-  theme(legend.position = "none")
-
-all_bsd_plot
-
-
 ```
 
-```{r nb clumps, include=F, eval = F}
 
-raw_clumps <- all_bsds %>%
-  group_by(source) %>%
-  summarize(nbclumps = get_n_clumps(vals))
-
-log_clumps <- all_log_bsds %>%
-  group_by(source) %>%
-  summarize(nbclumps = get_n_clumps(vals))
-
-log_clumps
-raw_clumps
-
-```
 
 ```{r playing with kmeans}
-# 
-# raw_ssq<- all_bsds %>%
-#   group_by(source) %>%
-#   summarize(ssq_prop = get_ssq_prop(vals))
-
 all_log_ssq <- list() 
 for(i in 1:6) {
   all_log_ssq[[i]] <-  all_log_bsds %>%
@@ -116,28 +68,6 @@ log_ssq_plot <- ggplot(data =all_log_ssq, aes(x = nbclumps, y = ssq_prop, color 
   geom_line() +
   theme_bw()
 log_ssq_plot
-
-all_ssq <- list() 
-
-for(i in 1:10) {
-  all_ssq[[i]] <- all_bsds %>%
-    group_by(source) %>%
-    summarize(ssq_prop = get_ssq_prop(vals, nbclumps = i)) %>%
-    ungroup() %>%
-    mutate(nbclumps = i)
-}
-
-all_ssq <- bind_rows(all_ssq)
-
-ssq_plot <- ggplot(data =all_ssq, aes(x = nbclumps, y = ssq_prop, color = source)) + 
-  geom_line() +
-  theme_bw()
-ssq_plot
-
-
-#raw_ssq
-#log_ssq
-
 ```
 
 
@@ -145,17 +75,19 @@ Maybe you could pick the nb clumps based on the elbow of the scree plot of the w
 When the slope starts to become less negative, truncate?
 
 ```{r elbows}
-raw_elbows <- all_bsds %>%
-  group_by(source) %>%
-  summarize(elbow = get_kmeans_elbow(vals)) %>%
-  ungroup()
-raw_elbows
-
 log_elbows <- all_log_bsds %>%
   group_by(source) %>%
-  summarize(elbow = get_kmeans_elbow(vals)) %>%
+  summarize(elbow = get_kmeans_elbow(vals, slope_cutoff = .5)) %>%
   ungroup()
 log_elbows
+
+log_elbows2 <- all_log_bsds %>%
+  group_by(source) %>%
+  summarize(elbow = get_kmeans_elbow(vals, slope_cutoff = .25)) %>%
+  ungroup()
+log_elbows2
+
+
 
 ```
 
@@ -195,17 +127,6 @@ for(i in 1:6) {
 }
 all_log_v_even <- bind_rows(all_log_v_even)
 
-all_v_even <- list()
-
-for(i in 1:6) {
-  all_v_even[[i]] <- all_bsds %>%
-     group_by(source) %>%
-    summarize(vs_even = get_ssq_vs_even(vals, nbclumps = i)) %>%
-    ungroup() %>%
-    mutate(nbclumps = i)
-}
-
-all_v_even <- bind_rows(all_v_even)
 
 log_v_even_plot <-  ggplot(data = all_log_v_even, aes(x = nbclumps, y = vs_even, color = source)) +
   geom_point() +
@@ -214,42 +135,6 @@ log_v_even_plot <-  ggplot(data = all_log_v_even, aes(x = nbclumps, y = vs_even,
 log_v_even_plot
 
 
-all_v_even_plot <-  ggplot(data = all_v_even, aes(x = nbclumps, y = vs_even, color = source)) +
-  geom_point() +
-  theme_bw() 
-all_v_even_plot
 ```
 
 
-
-
-
-```{r scraps, include=F,eval=F}
-
-
-get_best_cluster <- function(sim) {
-  kmeans_list <- list(
-    c2 = kmeans(unlist(sim)[1:7], 2),
-    c3 = kmeans(unlist(sim)[1:7], 3),
-    c4 = kmeans(unlist(sim)[1:7], 4)
-  )
-  
-  ss_vect <- c(kmeans_list$c2$betweenss / kmeans_list$c2$totss,
-               kmeans_list$c3$betweenss / kmeans_list$c3$totss,
-               kmeans_list$c4$betweenss / kmeans_list$c4$totss
-  )
-  
-  best_kmean <- kmeans_list[[ which(ss_vect == max(ss_vect))]]
-  
-  return(best_kmean)
-  
-}
-
-mm_kmean <- get_best_cluster(sims_mm[1, ])
-
-
-sim_gaps <- apply(sims, MARGIN = 1, FUN = find_gaps) %>%
-  t()
-
-emp_gap <- find_gaps(ebsd$logwgt)
-```
