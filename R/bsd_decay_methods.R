@@ -103,7 +103,7 @@ draw_multimodal_bsd <- function(emp_vector,
     modegaps <- find_gaps(modevals)
   }
 
-  sd_coeff <- runif(n = nmodes, min = min_sd_coeff, max = max_sd_coeff)
+  sd_coeff <- runif(n = nmodes, min = min_sd_coeff, max = max_sd_coeff, replace = TRUE)
 
   mode_p <- data.frame(
     val = seq(0, 5 * max(modevals), by = .01)
