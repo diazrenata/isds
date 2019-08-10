@@ -43,21 +43,26 @@ unimodal_log_bsd <- draw_unimodal_bsd(ebsd$logwgt)
 mmodal_log_bsd_full <- draw_multimodal_bsd(emp_vector = ebsd$logwgt, min_sd_coeff = 1, max_sd_coeff = 2)
 
 mmodal_log_bsd <- mmodal_log_bsd_full$bsd
+even_log_bsd <- seq(from = .75 * min(ebsd$logwgt), to = 1.1 *max(ebsd$logwgt),
+                    length.out = length(ebsd$logwgt))
 
 
 uniform_bsd <- draw_uniform_bsd(s = nrow(ebsd), min = .75 * min(ebsd$meanwgt), max = 1.1 * max(ebsd$meanwgt))
 unimodal_bsd <- draw_unimodal_bsd(ebsd$meanwgt)
 mmodal_bsd_full <- draw_multimodal_bsd(emp_vector = ebsd$meanwgt, min_mode_gap = 20, min_sd_coeff = 1, max_sd_coeff = 3)
 mmodal_bsd <- mmodal_bsd_full$bsd
+even_bsd <- seq(from = .75 * min(ebsd$meanwgt), to = 1.1 *max(ebsd$meanwgt),
+                    length.out = length(ebsd$meanwgt))
 ```
 
 ``` r
 all_log_bsds <- data.frame(
-  vals = c(mmodal_log_bsd, uniform_log_bsd, unimodal_log_bsd, ebsd$logwgt),
+  vals = c(mmodal_log_bsd, uniform_log_bsd, unimodal_log_bsd, ebsd$logwgt, even_log_bsd),
   source = c(rep("multimodal", nrow(ebsd)),
              rep("uniform", nrow(ebsd)), 
              rep("unimodal", nrow(ebsd)),
-             rep("empirical", nrow(ebsd)))
+             rep("empirical", nrow(ebsd)),
+             rep("even", nrow(ebsd)))
 )
 
 
@@ -73,11 +78,12 @@ all_log_bsd_plot
 
 ``` r
 all_bsds <- data.frame(
-  vals = c(mmodal_bsd, uniform_bsd, unimodal_bsd, ebsd$meanwgt),
+  vals = c(mmodal_bsd, uniform_bsd, unimodal_bsd, ebsd$meanwgt, even_bsd),
   source = c(rep("multimodal", nrow(ebsd)),
              rep("uniform", nrow(ebsd)), 
              rep("unimodal", nrow(ebsd)),
-             rep("empirical", nrow(ebsd)))
+             rep("empirical", nrow(ebsd)),
+             rep("even", nrow(ebsd)))
 )
 
 
@@ -99,7 +105,7 @@ all_bsd_plot
 
 all_log_ssq <- list() 
 for(i in 1:6) {
-  all_log_ssq[[i]] <- log_ssq <- all_log_bsds %>%
+  all_log_ssq[[i]] <-  all_log_bsds %>%
   group_by(source) %>%
   summarize(ssq_prop = get_ssq_prop(vals, nbclumps = i)) %>%
     ungroup() %>%
@@ -120,7 +126,7 @@ log_ssq_plot
 all_ssq <- list() 
 
 for(i in 1:10) {
-  all_ssq[[i]] <- ssq <- all_bsds %>%
+  all_ssq[[i]] <- all_bsds %>%
   group_by(source) %>%
   summarize(ssq_prop = get_ssq_prop(vals, nbclumps = i)) %>%
     ungroup() %>%
@@ -143,5 +149,39 @@ ssq_plot
 ```
 
 Maybe you could pick the nb clumps based on the elbow of the scree plot of the within group sum of squares? When the slope starts to become less negative, truncate?
+
+``` r
+raw_elbows <- all_bsds %>%
+  group_by(source) %>%
+  summarize(elbow = get_kmeans_elbow(vals)) %>%
+  ungroup()
+raw_elbows
+```
+
+    ## # A tibble: 5 x 2
+    ##   source     elbow
+    ##   <fct>      <dbl>
+    ## 1 empirical      2
+    ## 2 even           2
+    ## 3 multimodal     2
+    ## 4 uniform        2
+    ## 5 unimodal       2
+
+``` r
+log_elbows <- all_log_bsds %>%
+  group_by(source) %>%
+  summarize(elbow = get_kmeans_elbow(vals)) %>%
+  ungroup()
+log_elbows
+```
+
+    ## # A tibble: 5 x 2
+    ##   source     elbow
+    ##   <fct>      <dbl>
+    ## 1 empirical      2
+    ## 2 even           2
+    ## 3 multimodal     2
+    ## 4 uniform        2
+    ## 5 unimodal       2
 
 There's a lot to do, but at least for now it looks like multimodality actually comes through pretty sharply. Not on the log scale, though.
