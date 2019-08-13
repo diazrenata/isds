@@ -36,131 +36,58 @@ ebsd <- toyp %>%
 
 set.seed(1977)
 
-uniform_log_bsd <- draw_uniform_bsd(s = nrow(ebsd), min = .75 * min(ebsd$logwgt), max = 1.1 *max(ebsd$logwgt))
+nsims = 50
 
-unimodal_log_bsd <- draw_unimodal_bsd(ebsd$logwgt)
+uniform_log_bsd <- replicate(n = nsims, expr = draw_uniform_bsd(s = nrow(ebsd), min =  min(ebsd$logwgt), max =max(ebsd$logwgt)))
 
-mmodal_log_bsd_full <- draw_multimodal_bsd(emp_vector = ebsd$logwgt, min_sd_coeff = .5, max_sd_coeff = .5)
+uniform_log_bsd <- as.data.frame(uniform_log_bsd) %>%
+  tidyr::gather(key = "sim", value = "val") %>%
+  dplyr::mutate(sim = as.integer(substr(sim, start = 2, stop = nchar(sim))),
+                source = "uniform")
 
-mmodal_log_bsd <- mmodal_log_bsd_full$bsd
+unimodal_log_bsd <- replicate(n = nsims, expr = draw_unimodal_bsd(ebsd$logwgt))
+unimodal_log_bsd <- as.data.frame(unimodal_log_bsd) %>%
+  tidyr::gather(key = "sim", value = "val") %>%
+  dplyr::mutate(sim = as.integer(substr(sim, start = 2, stop = nchar(sim))),
+                source = "unimodal")
+
+mmodal_log_bsd_full <- replicate(n = nsims, expr = draw_multimodal_bsd(emp_vector = ebsd$logwgt, min_mode_gap = .5, min_sd_coeff = .2, max_sd_coeff = .2), simplify = F)
+
+mmodal_log_bsd <- lapply(mmodal_log_bsd_full, FUN = function(X) return(X$bsd))
+mmodal_log_bsd <- dplyr::bind_cols(mmodal_log_bsd) %>%
+   tidyr::gather(key = "sim", value = "val") %>%
+  dplyr::mutate(sim = as.integer(substr(sim, start = 2, stop = nchar(sim))),
+                source = "mmodal")
+
+empirical_log_bsd <- ebsd %>%
+  select(logwgt) %>%
+  mutate(sim = -99, source = "empirical") %>%
+  rename(val = logwgt)
+
+all_bsds <- bind_rows(empirical_log_bsd, mmodal_log_bsd, uniform_log_bsd, unimodal_log_bsd)
 ```
 
 ``` r
-all_log_bsds <- data.frame(
-  vals = c(mmodal_log_bsd, uniform_log_bsd, unimodal_log_bsd, ebsd$logwgt),
-  source = c(rep("multimodal", nrow(ebsd)),
-             rep("uniform", nrow(ebsd)), 
-             rep("unimodal", nrow(ebsd)),
-             rep("empirical", nrow(ebsd)))
-)
-
-
-all_log_bsd_plot <- ggplot(data = all_log_bsds, aes(x = vals, y = source, color = source)) +
-  geom_point() +
-  theme_bw() +
-  theme(legend.position = "none")
-
-all_log_bsd_plot
+bsd_modes <- all_bsds %>%
+  group_by(source, sim) %>%
+  summarize(nb_modes = get_n_clumps(val)) %>%
+  ungroup()
 ```
 
-![](bsd_decay_files/figure-markdown_github/visualize-1.png)
+    ## Package 'mclust' version 5.4.5
+    ## Type 'citation("mclust")' for citing this R package in publications.
 
 ``` r
-all_log_ssq <- list() 
-for(i in 1:6) {
-  all_log_ssq[[i]] <-  all_log_bsds %>%
-    group_by(source) %>%
-    summarize(ssq_prop = get_ssq_prop(vals, nbclumps = i)) %>%
-    ungroup() %>%
-    mutate(nbclumps = i)
-}
-
-all_log_ssq <- bind_rows(all_log_ssq)
-
-log_ssq_plot <- ggplot(data =all_log_ssq, aes(x = nbclumps, y = ssq_prop, color = source)) + 
-  geom_line() +
+modes_plot <- ggplot(data = bsd_modes, aes(x = nb_modes, color = source, fill = source)) +
+  geom_histogram() +
+  geom_point(data = bsd_modes[ which(bsd_modes$source == "empirical"), ], aes (x = nb_modes, y = nsims / 4), shape = 8, size = 3) + 
+  facet_grid(source ~ . ) +
   theme_bw()
-log_ssq_plot
+
+
+modes_plot
 ```
 
-![](bsd_decay_files/figure-markdown_github/playing%20with%20kmeans-1.png)
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
-Maybe you could pick the nb clumps based on the elbow of the scree plot of the within group sum of squares? When the slope starts to become less negative, truncate?
-
-``` r
-log_elbows <- all_log_bsds %>%
-  group_by(source) %>%
-  summarize(elbow = get_kmeans_elbow(vals, slope_cutoff = .5)) %>%
-  ungroup()
-log_elbows
-```
-
-    ## # A tibble: 4 x 2
-    ##   source     elbow
-    ##   <fct>      <dbl>
-    ## 1 empirical      2
-    ## 2 multimodal     2
-    ## 3 uniform        3
-    ## 4 unimodal       2
-
-``` r
-log_elbows2 <- all_log_bsds %>%
-  group_by(source) %>%
-  summarize(elbow = get_kmeans_elbow(vals, slope_cutoff = .25)) %>%
-  ungroup()
-log_elbows2
-```
-
-    ## # A tibble: 4 x 2
-    ##   source     elbow
-    ##   <fct>      <dbl>
-    ## 1 empirical      4
-    ## 2 multimodal     2
-    ## 3 uniform        3
-    ## 4 unimodal       4
-
-There's a lot to do, but at least for now it looks like multimodality actually comes through pretty sharply. Not on the log scale, though.
-
-What about the proportion of variation accounted for via clustering (within cluster SSQ / total SSQ) of the focal BSD vs. its completely-even counterpart?
-
-``` r
-get_ssq_vs_even <- function(bsd, nbclumps) {
-  
-  even_counterpart <- seq(min(bsd), max(bsd), length.out = length(bsd))
-  
-  this_kmeans <- kmeans(bsd, nbclumps)
-  this_even <- kmeans(even_counterpart, nbclumps)
-  
-  this_prop_var <- this_kmeans$betweenss / this_kmeans$totss
-  this_even_pv <- this_even$betweenss / this_even$totss
-  
-  return(this_prop_var - this_even_pv)
-  
-}
-
-
-
-all_log_v_even <- list() 
-for(i in 1:6) {
-  all_log_v_even[[i]] <-  all_log_bsds %>%
-    group_by(source) %>%
-    summarize(vs_even = get_ssq_vs_even(vals, nbclumps = i)) %>%
-    ungroup() %>%
-    mutate(nbclumps = i)
-}
-```
-
-    ## Warning: did not converge in 10 iterations
-
-``` r
-all_log_v_even <- bind_rows(all_log_v_even)
-
-
-log_v_even_plot <-  ggplot(data = all_log_v_even, aes(x = nbclumps, y = vs_even, color = source)) +
-  geom_point() +
-  theme_bw() 
-
-log_v_even_plot
-```
-
-![](bsd_decay_files/figure-markdown_github/versus%20even-1.png)
+![](bsd_decay_files/figure-markdown_github/plot%20nb%20modes-1.png)

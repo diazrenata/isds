@@ -11,7 +11,9 @@ library(tidyr)
 knitr::opts_chunk$set(echo = TRUE)
 
 toyp <- get_toy_portal_data(years = 1990:2010)
+```
 
+```{r get bsds}
 ebsd <- toyp %>%
   group_by(species) %>%
   summarize(meanwgt = mean(wgt)) %>%
@@ -20,91 +22,55 @@ ebsd <- toyp %>%
 
 set.seed(1977)
 
-uniform_log_bsd <- draw_uniform_bsd(s = nrow(ebsd), min =  min(ebsd$logwgt), max =max(ebsd$logwgt))
+nsims = 50
 
-unimodal_log_bsd <- draw_unimodal_bsd(ebsd$logwgt)
+uniform_log_bsd <- replicate(n = nsims, expr = draw_uniform_bsd(s = nrow(ebsd), min =  min(ebsd$logwgt), max =max(ebsd$logwgt)))
 
-mmodal_log_bsd_full <- draw_multimodal_bsd(emp_vector = ebsd$logwgt, min_mode_gap = .5, min_sd_coeff = .3, max_sd_coeff = .3)
+uniform_log_bsd <- as.data.frame(uniform_log_bsd) %>%
+  tidyr::gather(key = "sim", value = "val") %>%
+  dplyr::mutate(sim = as.integer(substr(sim, start = 2, stop = nchar(sim))),
+                source = "uniform")
 
-mmodal_log_bsd <- mmodal_log_bsd_full$bsd
+unimodal_log_bsd <- replicate(n = nsims, expr = draw_unimodal_bsd(ebsd$logwgt))
+unimodal_log_bsd <- as.data.frame(unimodal_log_bsd) %>%
+  tidyr::gather(key = "sim", value = "val") %>%
+  dplyr::mutate(sim = as.integer(substr(sim, start = 2, stop = nchar(sim))),
+                source = "unimodal")
+
+mmodal_log_bsd_full <- replicate(n = nsims, expr = draw_multimodal_bsd(emp_vector = ebsd$logwgt, min_mode_gap = .5, min_sd_coeff = .2, max_sd_coeff = .2), simplify = F)
+
+mmodal_log_bsd <- lapply(mmodal_log_bsd_full, FUN = function(X) return(X$bsd))
+mmodal_log_bsd <- dplyr::bind_cols(mmodal_log_bsd) %>%
+   tidyr::gather(key = "sim", value = "val") %>%
+  dplyr::mutate(sim = as.integer(substr(sim, start = 2, stop = nchar(sim))),
+                source = "mmodal")
+
+empirical_log_bsd <- ebsd %>%
+  select(logwgt) %>%
+  mutate(sim = -99, source = "empirical") %>%
+  rename(val = logwgt)
+
+all_bsds <- bind_rows(empirical_log_bsd, mmodal_log_bsd, uniform_log_bsd, unimodal_log_bsd)
+
+
 ```
 
-
-```{r visualize}
-
-all_log_bsds <- data.frame(
-  vals = c(mmodal_log_bsd, uniform_log_bsd, unimodal_log_bsd, ebsd$logwgt),
-  source = c(rep("multimodal", nrow(ebsd)),
-             rep("uniform", nrow(ebsd)), 
-             rep("unimodal", nrow(ebsd)),
-             rep("empirical", nrow(ebsd)))
-)
-
-
-all_log_bsd_plot <- ggplot(data = all_log_bsds, aes(x = vals, y = source, color = source)) +
-  geom_point() +
-  theme_bw() +
-  theme(legend.position = "none")
-
-all_log_bsd_plot
-
-```
-
-```{r best nb clumps}
-
-best_clumps <- all_log_bsds %>%
-  group_by(source) %>%
-  summarize(nb_clumps = get_n_clumps(vals)) %>%
+```{r get nb modes}
+bsd_modes <- all_bsds %>%
+  group_by(source, sim) %>%
+  summarize(nb_modes = get_n_clumps(val)) %>%
   ungroup()
 
-best_clumps
+```
+```{r plot nb modes}
 
-even_test <- seq(min(ebsd$logwgt), max(ebsd$logwgt), length.out = length(ebsd$logwgt))
+modes_plot <- ggplot(data = bsd_modes, aes(x = nb_modes, color = source, fill = source)) +
+  geom_histogram() +
+  geom_point(data = bsd_modes[ which(bsd_modes$source == "empirical"), ], aes (x = nb_modes, y = nsims / 4), shape = 8, size = 3) + 
+  facet_grid(source ~ . ) +
+  theme_bw()
 
-get_n_clumps(even_test)
+
+modes_plot
 
 ```
-
-What about the proportion of variation accounted for via clustering (within cluster SSQ / total SSQ) of the focal BSD vs. its completely-even counterpart? 
-
-
-#### old scraps
-```{r versus even, include = F, eval = F}
-
-get_ssq_vs_even <- function(bsd, nbclumps) {
-  
-  even_counterpart <- seq(min(bsd), max(bsd), length.out = length(bsd))
-  
-  this_kmeans <- kmeans(bsd, nbclumps)
-  this_even <- kmeans(even_counterpart, nbclumps)
-  
-  this_prop_var <- this_kmeans$betweenss / this_kmeans$totss
-  this_even_pv <- this_even$betweenss / this_even$totss
-  
-  return(this_prop_var - this_even_pv)
-  
-}
-
-
-
-all_log_v_even <- list() 
-for(i in 1:6) {
-  all_log_v_even[[i]] <-  all_log_bsds %>%
-    group_by(source) %>%
-    summarize(vs_even = get_ssq_vs_even(vals, nbclumps = i)) %>%
-    ungroup() %>%
-    mutate(nbclumps = i)
-}
-all_log_v_even <- bind_rows(all_log_v_even)
-
-
-log_v_even_plot <-  ggplot(data = all_log_v_even, aes(x = nbclumps, y = vs_even, color = source)) +
-  geom_point() +
-  theme_bw() 
-
-log_v_even_plot
-
-
-```
-
-

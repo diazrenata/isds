@@ -144,10 +144,12 @@ get_n_clumps <- function(mean_size_vector, max_nb_clumps = 4) {
   clump_aicc <- vector(length = max_nb_clumps)
 
   for(i in 1:max_nb_clumps){
-    clump_aicc[i] <- LDATS::AICc(Mclust(mean_size_vector, G =  i))
+      this_aicc <- try(LDATS::AICc(Mclust(mean_size_vector, G =  i)), silent = T)
+      clump_aicc[i] <- ifelse(is.numeric(this_aicc), this_aicc, NA)
   }
 
-  nbclumps <- which(clump_aicc == min(clump_aicc))
+
+  nbclumps <- ifelse(any(!is.na(clump_aicc)), which(clump_aicc == min(clump_aicc, na.rm = T)), NA)
 
   return(nbclumps)
 }
@@ -176,41 +178,3 @@ get_ssq_prop <- function(mean_size_vector, nbclumps = NULL) {
 
 }
 
-#' Get elbow of kmeans
-#'
-#' @param mean_size_vector mean vect
-#' @param nbclumps clumps to try
-#' @param slope_cutoff slope ratio at which to cut off
-#'
-#' @return nb of clumps where the decrease in the within group sum of squares slows
-#' @export
-#'
-get_kmeans_elbow <- function(mean_size_vector, nbclumps = c(1:(length(mean_size_vector) -1)), slope_cutoff = .5) {
-
-  within_ssqs <- list()
-
-  for(i in 1:length(nbclumps)) {
-    within_ssqs[[i]] <- kmeans(mean_size_vector, nbclumps[i])$tot.withinss
-  }
-
-  within_ssqs <- unlist(within_ssqs)
-
-  ssqs_slopes <- vector()
-
-  for(i in 2:(length(within_ssqs))) {
-    ssqs_slopes[i] <- abs(within_ssqs[i] - within_ssqs[i - 1])
-  }
-
- ratios_of_slopes <- vector()
-
-  for(i in 2:(length(ssqs_slopes)))  {
-    ratios_of_slopes[i] <- ssqs_slopes[i]/ssqs_slopes[i - 1]
-  }
-
-
-
-  elbow <- min(which(ratios_of_slopes < slope_cutoff)) - 1
-
-  return(elbow)
-
-}
