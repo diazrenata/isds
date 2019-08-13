@@ -20,11 +20,11 @@ ebsd <- toyp %>%
 
 set.seed(1977)
 
-uniform_log_bsd <- draw_uniform_bsd(s = nrow(ebsd), min = .75 * min(ebsd$logwgt), max = 1.1 *max(ebsd$logwgt))
+uniform_log_bsd <- draw_uniform_bsd(s = nrow(ebsd), min =  min(ebsd$logwgt), max =max(ebsd$logwgt))
 
 unimodal_log_bsd <- draw_unimodal_bsd(ebsd$logwgt)
 
-mmodal_log_bsd_full <- draw_multimodal_bsd(emp_vector = ebsd$logwgt, min_sd_coeff = .5, max_sd_coeff = .5)
+mmodal_log_bsd_full <- draw_multimodal_bsd(emp_vector = ebsd$logwgt, min_mode_gap = .5, min_sd_coeff = .3, max_sd_coeff = .3)
 
 mmodal_log_bsd <- mmodal_log_bsd_full$bsd
 ```
@@ -50,56 +50,26 @@ all_log_bsd_plot
 
 ```
 
+```{r best nb clumps}
 
-
-```{r playing with kmeans}
-all_log_ssq <- list() 
-for(i in 1:6) {
-  all_log_ssq[[i]] <-  all_log_bsds %>%
-    group_by(source) %>%
-    summarize(ssq_prop = get_ssq_prop(vals, nbclumps = i)) %>%
-    ungroup() %>%
-    mutate(nbclumps = i)
-}
-
-all_log_ssq <- bind_rows(all_log_ssq)
-
-log_ssq_plot <- ggplot(data =all_log_ssq, aes(x = nbclumps, y = ssq_prop, color = source)) + 
-  geom_line() +
-  theme_bw()
-log_ssq_plot
-```
-
-
-Maybe you could pick the nb clumps based on the elbow of the scree plot of the within group sum of squares?
-When the slope starts to become less negative, truncate?
-
-```{r elbows}
-log_elbows <- all_log_bsds %>%
+best_clumps <- all_log_bsds %>%
   group_by(source) %>%
-  summarize(elbow = get_kmeans_elbow(vals, slope_cutoff = .5)) %>%
+  summarize(nb_clumps = get_n_clumps(vals)) %>%
   ungroup()
-log_elbows
 
-log_elbows2 <- all_log_bsds %>%
-  group_by(source) %>%
-  summarize(elbow = get_kmeans_elbow(vals, slope_cutoff = .25)) %>%
-  ungroup()
-log_elbows2
+best_clumps
 
+even_test <- seq(min(ebsd$logwgt), max(ebsd$logwgt), length.out = length(ebsd$logwgt))
 
+get_n_clumps(even_test)
 
 ```
-
-
-
-There's a lot to do, but at least for now it looks like multimodality actually comes through pretty sharply. Not on the log scale, though.
-
 
 What about the proportion of variation accounted for via clustering (within cluster SSQ / total SSQ) of the focal BSD vs. its completely-even counterpart? 
 
 
-```{r versus even}
+#### old scraps
+```{r versus even, include = F, eval = F}
 
 get_ssq_vs_even <- function(bsd, nbclumps) {
   

@@ -132,26 +132,22 @@ draw_multimodal_bsd <- function(emp_vector,
 #' Get nb clumps
 #'
 #' @param mean_size_vector bsd
-#'
+#' @param max_nb_clumps max nb clumps to try
 #' @return nb clumps identified as nb Gs in GMM
 #' @export
 #'
 #' @importFrom pastecs turnpoints
-#'
-get_n_clumps <- function(mean_size_vector) {
+#' @importFrom LDATS AICc
+get_n_clumps <- function(mean_size_vector, max_nb_clumps = 4) {
   library(mclust)
-  clumps <- densityMclust(mean_size_vector, G = 1:4)
-  interval_size = 0.01
-  min_size = 0
-  max_size = max(mean_size_vector) * 5
-  density_evalpoints <- seq(min_size, max_size, by = interval_size)
 
-  density_estimates <- predict(clumps, newdata = density_evalpoints)
+  clump_aicc <- vector(length = max_nb_clumps)
 
-  density_modes <- pastecs::turnpoints(density_estimates)
+  for(i in 1:max_nb_clumps){
+    clump_aicc[i] <- LDATS::AICc(Mclust(mean_size_vector, G =  i))
+  }
 
-  nbclumps <- sum(density_modes$peaks)
-
+  nbclumps <- which(clump_aicc == min(clump_aicc))
 
   return(nbclumps)
 }
