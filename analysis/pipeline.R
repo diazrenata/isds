@@ -14,10 +14,10 @@ stdevs[[length(stdevs) + 1]] <- "norm"
 nsim = 10
 dats <- drake_plan(
   dat1  = target(get_toy_portal_data(), trigger = trigger(depend = rerun_things)),
- dat2 = target(get_toy_portal_data(years = c(1985, 1986)), trigger = trigger(depend = rerun_things)),
+  dat2 = target(get_toy_portal_data(years = c(1985, 1986)), trigger = trigger(depend = rerun_things)),
   dat3 = target(get_toy_portal_data(years = c(2000, 2001)), trigger = trigger(depend = rerun_things)),
   dat4 = target(get_toy_portal_data(years = c(2014, 2015)), trigger = trigger(depend = rerun_things))
- )
+)
 
 dat_targets <- list()
 
@@ -90,7 +90,7 @@ all <- rbind(dats, sims_pipeline,
              ids_pipeline,
              id_plots_pipeline,
              results_pipeline
-             )
+)
 
 
 ## Set up the cache and config

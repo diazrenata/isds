@@ -1,0 +1,121 @@
+---
+title: "BSD decay?"
+output: github_document
+---
+
+```{r setup, include = T, echo = T}
+library(isds)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+knitr::opts_chunk$set(echo = TRUE)
+
+toyp <- get_toy_portal_data(years = 1990:2010)
+
+set.seed(1977)
+
+nsims = 100
+
+coeffs <- c(0.01, 0.05, seq(.1, .7, by = .1))
+```
+
+```{r get bsds, include = F, echo = F}
+ebsd <- toyp %>%
+  group_by(species) %>%
+  summarize(meanwgt = mean(wgt)) %>%
+  ungroup() %>%
+  mutate(logwgt = log(meanwgt))
+
+
+mmodal_log_bsd_fulls <- lapply(coeffs, FUN = function(coeff, nsims) return(replicate(n = nsims, expr = draw_multimodal_bsd(emp_vector = ebsd$logwgt, min_mode_gap = .5, min_sd_coeff = coeff, max_sd_coeff = coeff),simplify = F)), nsims = nsims)
+
+mmodal_log_bsd <- lapply(mmodal_log_bsd_fulls, FUN = function(X) return(lapply(X, FUN = function(Y) return(Y$bsd))))
+
+mmodal_bsds <- lapply(mmodal_log_bsd, FUN = function(X) return(dplyr::bind_cols(X) %>%
+   tidyr::gather(key = "sim", value = "val") %>%
+  dplyr::mutate(sim = as.integer(substr(sim, start = 2, stop = nchar(sim))),
+                source = "mmodal"))) 
+
+names(mmodal_bsds) <- coeffs
+
+mmodal_bsds <- bind_rows(mmodal_bsds, .id = "coeff")
+
+empirical_log_bsd <- ebsd %>%
+  select(logwgt) %>%
+  mutate(sim = -99, source = "empirical") %>%
+  rename(val = logwgt)
+
+all_bsds <- bind_rows(empirical_log_bsd, mmodal_bsds)
+
+
+```
+
+```{r get nb modes, include = F, echo = F}
+bsd_modes <- all_bsds %>%
+  group_by(source, sim, coeff) %>%
+  summarize(nb_modes = get_n_clumps(val),
+            nb_modes_bic = Mclust(val, G = c(1:5))$G) %>%
+  ungroup()
+
+```
+
+```{r plot nb modes, echo = F}
+
+modes_plot <- ggplot(data = bsd_modes[ which(bsd_modes$source != 
+                                               "empirical"), ], aes(x = nb_modes, fill = coeff)) +
+  geom_histogram(stat = "count") +
+  geom_vline(xintercept = as.numeric(bsd_modes[which(bsd_modes$source == "empirical"), "nb_modes"])) +
+  facet_wrap(coeff ~ . ) +
+  theme_bw() +
+  ggtitle("Nb modes with AICc")
+
+
+modes_plot
+
+
+modes_bic_plot <- ggplot(data = bsd_modes[ which(bsd_modes$source != 
+                                               "empirical"), ], aes(x = nb_modes_bic, fill = coeff)) +
+  geom_histogram(stat = "count") +
+  geom_vline(xintercept = as.numeric(bsd_modes[which(bsd_modes$source == "empirical"), "nb_modes_bic"])) +
+  facet_wrap(coeff ~ . ) +
+  theme_bw() +
+  ggtitle("Nb modes with BIC")
+
+modes_bic_plot
+
+```
+
+```{r densities}
+
+single_bsds <- lapply(coeffs, FUN = function(X)  return(filter(all_bsds, sim == sample.int(n = nsims, size = 1), coeff == X)))
+
+single_bsds <- bind_rows(single_bsds) %>%
+  left_join(bsd_modes, by = c("coeff", "sim", "source")) %>%
+  mutate(facet_name = paste0("coeff: ", coeff, "; ", nb_modes, " mode(s)"))
+
+single_bsd_density_plots <- ggplot(data = single_bsds, aes(x = val, color = coeff)) +
+  geom_density() + 
+  facet_wrap(facet_name ~ .) +
+  theme_bw()
+
+single_bsd_density_plots
+
+single_bsd_histograms <- ggplot(data = single_bsds, aes(x = val, fill = coeff, color = coeff)) +
+  geom_histogram() + 
+  facet_wrap(facet_name ~ .) +
+  theme_bw()
+
+single_bsd_histograms
+empirical_density_plot <- ggplot(data = filter(all_bsds, source == "empirical"), aes (x = val)) +
+  geom_density() +
+  ggtitle(paste0("Empirical BSD: ", filter(bsd_modes, source == "empirical")$nb_modes, " mode(s)")) +
+  theme_bw()
+
+empirical_count_plot <-  ggplot(data = filter(all_bsds, source == "empirical"), aes (x = val)) +
+  geom_histogram() +
+  ggtitle(paste0("Empirical BSD: ", filter(bsd_modes, source == "empirical")$nb_modes, " mode(s)")) +
+  theme_bw()
+
+gridExtra::grid.arrange(grobs = list(empirical_density_plot, empirical_count_plot), nrow = 1)
+
+```
