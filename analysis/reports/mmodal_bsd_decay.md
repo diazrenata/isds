@@ -39,8 +39,12 @@ coeffs <- c(0.01, 0.05, seq(.1, .7, by = .1))
 
 ![](mmodal_bsd_decay_files/figure-markdown_github/plot%20nb%20modes-1.png)
 
+    ## Warning: Ignoring unknown parameters: binwidth, bins, pad
+
+![](mmodal_bsd_decay_files/figure-markdown_github/plot%20nb%20modes-2.png)
+
 ``` r
-single_bsds <- lapply(coeffs, FUN = function(X)  return(filter(all_bsds, sim == sample.int(n = 50, size = 1), coeff == X)))
+single_bsds <- lapply(coeffs, FUN = function(X)  return(filter(all_bsds, sim == sample.int(n = nsims, size = 1), coeff == X)))
 
 single_bsds <- bind_rows(single_bsds) %>%
   left_join(bsd_modes, by = c("coeff", "sim", "source")) %>%

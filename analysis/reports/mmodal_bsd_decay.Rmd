@@ -53,7 +53,8 @@ all_bsds <- bind_rows(empirical_log_bsd, mmodal_bsds)
 ```{r get nb modes, include = F, echo = F}
 bsd_modes <- all_bsds %>%
   group_by(source, sim, coeff) %>%
-  summarize(nb_modes = get_n_clumps(val)) %>%
+  summarize(nb_modes = get_n_clumps(val),
+            nb_modes_bic = Mclust(val, G = c(1:5))$G) %>%
   ungroup()
 
 ```
@@ -65,16 +66,28 @@ modes_plot <- ggplot(data = bsd_modes[ which(bsd_modes$source !=
   geom_histogram(stat = "count") +
   geom_vline(xintercept = as.numeric(bsd_modes[which(bsd_modes$source == "empirical"), "nb_modes"])) +
   facet_wrap(coeff ~ . ) +
-  theme_bw() 
+  theme_bw() +
+  ggtitle("Nb modes with AICc")
 
 
 modes_plot
+
+
+modes_bic_plot <- ggplot(data = bsd_modes[ which(bsd_modes$source != 
+                                               "empirical"), ], aes(x = nb_modes_bic, fill = coeff)) +
+  geom_histogram(stat = "count") +
+  geom_vline(xintercept = as.numeric(bsd_modes[which(bsd_modes$source == "empirical"), "nb_modes_bic"])) +
+  facet_wrap(coeff ~ . ) +
+  theme_bw() +
+  ggtitle("Nb modes with BIC")
+
+modes_bic_plot
 
 ```
 
 ```{r densities}
 
-single_bsds <- lapply(coeffs, FUN = function(X)  return(filter(all_bsds, sim == sample.int(n = 50, size = 1), coeff == X)))
+single_bsds <- lapply(coeffs, FUN = function(X)  return(filter(all_bsds, sim == sample.int(n = nsims, size = 1), coeff == X)))
 
 single_bsds <- bind_rows(single_bsds) %>%
   left_join(bsd_modes, by = c("coeff", "sim", "source")) %>%
