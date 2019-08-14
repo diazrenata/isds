@@ -22,7 +22,7 @@ ebsd <- toyp %>%
 
 set.seed(1977)
 
-nsims = 50
+nsims = 100
 
 uniform_log_bsd <- replicate(n = nsims, expr = draw_uniform_bsd(s = nrow(ebsd), min =  min(ebsd$logwgt), max =max(ebsd$logwgt)))
 
@@ -58,7 +58,8 @@ all_bsds <- bind_rows(empirical_log_bsd, mmodal_log_bsd, uniform_log_bsd, unimod
 ```{r get nb modes}
 bsd_modes <- all_bsds %>%
   group_by(source, sim) %>%
-  summarize(nb_modes = get_n_clumps(val)) %>%
+  summarize(nb_modes = get_n_clumps(val),
+            nb_modes_bic = Mclust(val, G = c(1:5))$G) %>%
   ungroup()
 
 ```
@@ -72,5 +73,42 @@ modes_plot <- ggplot(data = bsd_modes, aes(x = nb_modes, color = source, fill = 
 
 
 modes_plot
+
+```
+
+
+```{r single bsd plots}
+
+single_bsds <- lapply(unique(all_bsds$source), FUN = function(X)  return(filter(all_bsds, sim == sample.int(n = nsims, size = 1), source == X)))
+
+single_bsds <- bind_rows(single_bsds) %>%
+  left_join(bsd_modes, by = c("sim", "source")) %>%
+  mutate(facet_name = paste0("source: ", source, "; ", nb_modes, " mode(s); ", nb_modes_bic, " mode(s) w BIC"))
+
+single_bsd_density_plots <- ggplot(data = single_bsds, aes(x = val, color = source)) +
+  geom_density() + 
+  facet_wrap(facet_name ~ .) +
+  theme_bw()
+
+single_bsd_density_plots
+
+single_bsd_histograms <- ggplot(data = single_bsds, aes(x = val, fill = source, color = source)) +
+  geom_histogram() + 
+  facet_wrap(facet_name ~ .) +
+  theme_bw()
+
+single_bsd_histograms
+
+empirical_density_plot <- ggplot(data = filter(all_bsds, source == "empirical"), aes (x = val)) +
+  geom_density() +
+  ggtitle(paste0("Empirical BSD: ", filter(bsd_modes, source == "empirical")$nb_modes, " mode(s)")) +
+  theme_bw()
+
+empirical_count_plot <-  ggplot(data = filter(all_bsds, source == "empirical"), aes (x = val)) +
+  geom_histogram() +
+  ggtitle(paste0("Empirical BSD: ", filter(bsd_modes, source == "empirical")$nb_modes, " mode(s)")) +
+  theme_bw()
+
+gridExtra::grid.arrange(grobs = list(empirical_density_plot, empirical_count_plot), nrow = 1)
 
 ```
