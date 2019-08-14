@@ -15,7 +15,6 @@ Imports:
     drake,
     ggplot2,
     here,
-    LDATS,
     magrittr,
     mclust,
     meteR,

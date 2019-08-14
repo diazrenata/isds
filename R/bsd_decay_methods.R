@@ -137,14 +137,13 @@ draw_multimodal_bsd <- function(emp_vector,
 #' @export
 #'
 #' @importFrom pastecs turnpoints
-#' @importFrom LDATS AICc
 get_n_clumps <- function(mean_size_vector, max_nb_clumps = 4) {
   library(mclust)
 
   clump_aicc <- vector(length = max_nb_clumps)
 
   for(i in 1:max_nb_clumps){
-      this_aicc <- try(LDATS::AICc(Mclust(mean_size_vector, G =  i)), silent = T)
+      this_aicc <- try(AICc(Mclust(mean_size_vector, G =  i)), silent = T)
       clump_aicc[i] <- ifelse(is.numeric(this_aicc), this_aicc, NA)
   }
 
@@ -176,5 +175,22 @@ get_ssq_prop <- function(mean_size_vector, nbclumps = NULL) {
 
   return(prop)
 
+}
+
+
+#' AICc (from LDATS)
+#' Directly copied from weecology/LDATS because installing LDATS is weird on Travis.
+#' @param object model
+#'
+#' @return AICc
+#' @export
+#'
+AICc <- function (object)
+{
+  aic <- AIC(object)
+  ll <- logLik(object)
+  np <- attr(ll, "df")
+  no <- attr(ll, "nobs")
+  aic + (2 * np^2 + 2 * np)/(no - np - 1)
 }
 
