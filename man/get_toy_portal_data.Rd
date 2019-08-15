@@ -5,10 +5,12 @@
 \title{Get toy Portal data
 Get an arbitrary year of Portal control plot data - for use in developing & testing methods, not for actual analysis}
 \usage{
-get_toy_portal_data(years = c(1994, 1995))
+get_toy_portal_data(years = c(1994, 1995), download = F)
 }
 \arguments{
 \item{years}{vector of years to pull}
+
+\item{download}{T/F, download or load from working_data/toy_portal}
 }
 \value{
 Portal control rodents

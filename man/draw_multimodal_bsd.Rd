@@ -4,22 +4,22 @@
 \alias{draw_multimodal_bsd}
 \title{Draw multimodal BSD}
 \usage{
-draw_multimodal_bsd(emp_vector, min_buffer_coeff = 0.75,
-  max_buffer_coeff = 1.1, min_mode_gap = 0.5, min_sd_coeff = 0.1,
+draw_multimodal_bsd(emp_vector, min_buffer_coeff = 1,
+  max_buffer_coeff = 1, min_mode_gap_coeff = 1.5, min_sd_coeff = 0.1,
   max_sd_coeff = 1, return_full = TRUE)
 }
 \arguments{
 \item{emp_vector}{base vector}
 
-\item{min_buffer_coeff}{defaults to .75}
+\item{min_buffer_coeff}{defaults to 1}
 
-\item{max_buffer_coeff}{defaults to 1.1}
+\item{max_buffer_coeff}{defaults to 1}
 
-\item{min_mode_gap}{defaults to .5 - makes sense if vector is on log scale}
+\item{min_mode_gap_coeff}{defaults to 1.5 (larger mode must be at leas 150 percent of smaller mode)}
 
-\item{min_sd_coeff}{defaults to .1 - makes sense if on log scale}
+\item{min_sd_coeff}{defaults to .2}
 
-\item{max_sd_coeff}{defaults to 1}
+\item{max_sd_coeff}{defaults to .2}
 
 \item{return_full}{return nmodes and mean_p (TRUE) or just the vector?}
 }

@@ -48,17 +48,17 @@ draw_unimodal_bsd <- function(emp_vector) {
 #'
 #' @param bsd vector of species means
 #'
-#' @return vector of length length(bsd) - 1, gaps between means
+#' @return vector of length length(bsd) - 1, ratios of means
 #' @export
 #'
-find_gaps <- function(bsd) {
+find_gaps_scaled <- function(bsd) {
 
   bsd <- sort(bsd)
 
   gaps <- vector(length = length(bsd) - 1)
 
   for(i in 1:(length(gaps))) {
-    gaps[i] = bsd[i + 1] - bsd[i]
+    gaps[i] = bsd[i + 1] / bsd[i]
   }
 
   return(gaps)
@@ -68,40 +68,53 @@ find_gaps <- function(bsd) {
 #' Draw multimodal BSD
 #'
 #' @param emp_vector base vector
-#' @param min_buffer_coeff defaults to .75
-#' @param max_buffer_coeff defaults to 1.1
-#' @param min_mode_gap defaults to .5 - makes sense if vector is on log scale
-#' @param min_sd_coeff defaults to .1 - makes sense if on log scale
-#' @param max_sd_coeff defaults to 1
+#' @param min_buffer_coeff defaults to 1
+#' @param max_buffer_coeff defaults to 1
+#' @param min_mode_gap_coeff defaults to 1.5 (larger mode must be at leas 150 percent of smaller mode)
+#' @param min_sd_coeff defaults to .2
+#' @param max_sd_coeff defaults to .2
 #' @param return_full return nmodes and mean_p (TRUE) or just the vector?
 #'
 #' @return list of vector of mean_sizes length S drawn from multimodal distribution; nmodes; mode_p distribution
 #' @export
 #'
 draw_multimodal_bsd <- function(emp_vector,
-                                min_buffer_coeff = .75,
-                                max_buffer_coeff = 1.1,
-                                min_mode_gap = .5,
+                                min_buffer_coeff = 1,
+                                max_buffer_coeff = 1,
+                                min_mode_gap_coeff = 1.5,
                                 min_sd_coeff = .1,
                                 max_sd_coeff = 1,
                                 return_full = TRUE) {
 
   nmodes <- sample(c(2,3,4), size = 1)
 
-  modevals <- runif(n = nmodes,
-                    min =emp_vector * min_buffer_coeff,
-                    max = emp_vector * max_buffer_coeff)
+  modevals = vector(length = nmodes)
 
-  modegaps <- find_gaps(modevals)
+  for(i in 1:length(modevals)) {
 
-  while(min(modegaps) <= min_mode_gap) {
+    this_min = max(min(emp_vector), min_mode_gap_coeff * modevals[i - 1])
 
-    modevals <- runif(n = nmodes,
-                      min =emp_vector * min_buffer_coeff,
-                      max = emp_vector * max_buffer_coeff)
+    max_coeff = min_mode_gap_coeff ^ (nmodes - i)
 
-    modegaps <- find_gaps(modevals)
+    this_max = max(emp_vector) / max_coeff
+
+    modevals[i] = runif(n = 1, min = this_min, max = this_max)
   }
+
+  # modevals <- runif(n = nmodes,
+  #                   min =emp_vector * min_buffer_coeff,
+  #                   max = emp_vector * max_buffer_coeff)
+  #
+  # modegaps <- find_gaps_scaled(modevals)
+  #
+  # while(min(modegaps) <= min_mode_gap_coeff) {
+  #
+  #   modevals <- runif(n = nmodes,
+  #                     min =emp_vector * min_buffer_coeff,
+  #                     max = emp_vector * max_buffer_coeff)
+  #
+  #   modegaps <- find_gaps_scaled(modevals)
+  # }
 
   sd_coeff <- runif(n = nmodes, min = min_sd_coeff, max = max_sd_coeff)
 
@@ -143,7 +156,7 @@ get_n_clumps <- function(mean_size_vector, max_nb_clumps = 4) {
   clump_aicc <- vector(length = max_nb_clumps)
 
   for(i in 1:max_nb_clumps){
-      this_aicc <- try(AICc(Mclust(mean_size_vector, G =  i)), silent = T)
+      this_aicc <- try(AICc(Mclust(mean_size_vector, G =  i, modelNames = "V")), silent = T)
       clump_aicc[i] <- ifelse(is.numeric(this_aicc), this_aicc, NA)
   }
 

@@ -36,22 +36,22 @@ ebsd <- toyp %>%
 
 set.seed(1977)
 
-nsims = 100
+nsims = 1
 
-uniform_log_bsd <- replicate(n = nsims, expr = draw_uniform_bsd(s = nrow(ebsd), min =  min(ebsd$logwgt), max =max(ebsd$logwgt)))
+uniform_log_bsd <- replicate(n = nsims, expr = draw_uniform_bsd(s = nrow(ebsd), min =  min(ebsd$meanwgt), max =max(ebsd$meanwgt)))
 
 uniform_log_bsd <- as.data.frame(uniform_log_bsd) %>%
   tidyr::gather(key = "sim", value = "val") %>%
   dplyr::mutate(sim = as.integer(substr(sim, start = 2, stop = nchar(sim))),
                 source = "uniform")
 
-unimodal_log_bsd <- replicate(n = nsims, expr = draw_unimodal_bsd(ebsd$logwgt))
+unimodal_log_bsd <- replicate(n = nsims, expr = draw_unimodal_bsd(ebsd$meanwgt))
 unimodal_log_bsd <- as.data.frame(unimodal_log_bsd) %>%
   tidyr::gather(key = "sim", value = "val") %>%
   dplyr::mutate(sim = as.integer(substr(sim, start = 2, stop = nchar(sim))),
                 source = "unimodal")
 
-mmodal_log_bsd_full <- replicate(n = nsims, expr = draw_multimodal_bsd(emp_vector = ebsd$logwgt, min_mode_gap = .5, min_sd_coeff = .2, max_sd_coeff = .2), simplify = F)
+mmodal_log_bsd_full <- replicate(n = nsims, expr = draw_multimodal_bsd(emp_vector = ebsd$meanwgt, min_mode_gap_coeff = 1.5, min_sd_coeff = .2, max_sd_coeff = .2), simplify = F)
 
 mmodal_log_bsd <- lapply(mmodal_log_bsd_full, FUN = function(X) return(X$bsd))
 mmodal_log_bsd <- dplyr::bind_cols(mmodal_log_bsd) %>%
@@ -60,9 +60,9 @@ mmodal_log_bsd <- dplyr::bind_cols(mmodal_log_bsd) %>%
                 source = "mmodal")
 
 empirical_log_bsd <- ebsd %>%
-  select(logwgt) %>%
+  select(meanwgt) %>%
   mutate(sim = -99, source = "empirical") %>%
-  rename(val = logwgt)
+  rename(val = meanwgt)
 
 all_bsds <- bind_rows(empirical_log_bsd, mmodal_log_bsd, uniform_log_bsd, unimodal_log_bsd)
 ```
@@ -140,3 +140,12 @@ gridExtra::grid.arrange(grobs = list(empirical_density_plot, empirical_count_plo
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
 ![](bsd_decay_files/figure-markdown_github/single%20bsd%20plots-3.png)
+
+``` r
+print(filter(bsd_modes, source == "empirical"))
+```
+
+    ## # A tibble: 1 x 4
+    ##   source      sim nb_modes nb_modes_bic
+    ##   <chr>     <dbl>    <int>        <dbl>
+    ## 1 empirical   -99        1            2
