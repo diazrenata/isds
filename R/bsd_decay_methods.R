@@ -26,11 +26,13 @@ draw_uniform_bsd <- function(s, min, max) {
 #' @importFrom dplyr filter mutate
 draw_unimodal_bsd <- function(emp_vector) {
 
-  bsdk <- ks::kde(emp_vector)
+  library(mclust)
+
+  bsdgmm <- densityMclust(emp_vector, G = 1, modelNames = "V")
 
   bsdkp <- data.frame(
-    eval = bsdk$eval.points,
-    estimate = bsdk$estimate
+    eval = seq(0, 2* (max(emp_vector)), by = .1),
+    estimate = predict(bsdgmm, newdata = seq(0, 2* (max(emp_vector)), by = .1))
   )
 
   bsdkp <- bsdkp %>%

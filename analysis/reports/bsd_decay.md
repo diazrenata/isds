@@ -25,8 +25,6 @@ knitr::opts_chunk$set(echo = TRUE)
 toyp <- get_toy_portal_data(years = 1990:2010)
 ```
 
-    ## Loading in data version 1.90.0
-
 ``` r
 ebsd <- toyp %>%
   group_by(species) %>%
@@ -46,6 +44,12 @@ uniform_log_bsd <- as.data.frame(uniform_log_bsd) %>%
                 source = "uniform")
 
 unimodal_log_bsd <- replicate(n = nsims, expr = draw_unimodal_bsd(ebsd$meanwgt))
+```
+
+    ## Package 'mclust' version 5.4.5
+    ## Type 'citation("mclust")' for citing this R package in publications.
+
+``` r
 unimodal_log_bsd <- as.data.frame(unimodal_log_bsd) %>%
   tidyr::gather(key = "sim", value = "val") %>%
   dplyr::mutate(sim = as.integer(substr(sim, start = 2, stop = nchar(sim))),
@@ -74,9 +78,6 @@ bsd_modes <- all_bsds %>%
             nb_modes_bic = Mclust(val, G = c(1:5))$G) %>%
   ungroup()
 ```
-
-    ## Package 'mclust' version 5.4.5
-    ## Type 'citation("mclust")' for citing this R package in publications.
 
 ``` r
 modes_plot <- ggplot(data = bsd_modes, aes(x = nb_modes, color = source, fill = source)) +
@@ -147,5 +148,5 @@ print(filter(bsd_modes, source == "empirical"))
 
     ## # A tibble: 1 x 4
     ##   source      sim nb_modes nb_modes_bic
-    ##   <chr>     <dbl>    <int>        <dbl>
+    ##   <chr>     <dbl>    <int>        <int>
     ## 1 empirical   -99        1            2

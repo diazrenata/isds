@@ -23,11 +23,7 @@ library(tidyr)
 knitr::opts_chunk$set(echo = TRUE)
 
 toyp <- get_toy_portal_data(years = 1990:2010)
-```
 
-    ## Loading in data version 1.90.0
-
-``` r
 set.seed(1977)
 
 nsims = 100

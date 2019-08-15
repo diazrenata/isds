@@ -27,7 +27,7 @@ ebsd <- toyp %>%
   mutate(logwgt = log(meanwgt))
 
 
-mmodal_log_bsd_fulls <- lapply(coeffs, FUN = function(coeff, nsims) return(replicate(n = nsims, expr = draw_multimodal_bsd(emp_vector = ebsd$logwgt, min_mode_gap = .5, min_sd_coeff = coeff, max_sd_coeff = coeff),simplify = F)), nsims = nsims)
+mmodal_log_bsd_fulls <- lapply(coeffs, FUN = function(coeff, nsims) return(replicate(n = nsims, expr = draw_multimodal_bsd(emp_vector = ebsd$meanwgt, min_mode_gap_coeff = 1, min_sd_coeff = coeff, max_sd_coeff = coeff),simplify = F)), nsims = nsims)
 
 mmodal_log_bsd <- lapply(mmodal_log_bsd_fulls, FUN = function(X) return(lapply(X, FUN = function(Y) return(Y$bsd))))
 
@@ -41,9 +41,9 @@ names(mmodal_bsds) <- coeffs
 mmodal_bsds <- bind_rows(mmodal_bsds, .id = "coeff")
 
 empirical_log_bsd <- ebsd %>%
-  select(logwgt) %>%
+  select(meanwgt) %>%
   mutate(sim = -99, source = "empirical") %>%
-  rename(val = logwgt)
+  rename(val = meanwgt)
 
 all_bsds <- bind_rows(empirical_log_bsd, mmodal_bsds)
 
