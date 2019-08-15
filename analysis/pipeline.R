@@ -4,19 +4,9 @@ expose_imports(isds)
 
 rerun_things <- TRUE
 
-stdevs <- as.list(seq(0.05, 0.35, by = 0.1))
-stdevs[[length(stdevs) + 1]] <- c(0.01, 0.4)
-stdevs[[length(stdevs) + 1]] <- "norm"
-
-# #stdevs = c(0.01, 0.25)
-# # thresholds_to_try = seq(.01, .31, by = 0.02)
-# stdev_range = list(c(0.01, 0.4))
 nsim = 10
 dats <- drake_plan(
-  dat1  = target(get_toy_portal_data(), trigger = trigger(depend = rerun_things)),
-  dat2 = target(get_toy_portal_data(years = c(1985, 1986)), trigger = trigger(depend = rerun_things)),
-  dat3 = target(get_toy_portal_data(years = c(2000, 2001)), trigger = trigger(depend = rerun_things)),
-  dat4 = target(get_toy_portal_data(years = c(2014, 2015)), trigger = trigger(depend = rerun_things))
+  dat1  = target(get_toy_portal_data(), trigger = trigger(depend = rerun_things))
 )
 
 dat_targets <- list()
@@ -25,21 +15,11 @@ for(i in 1:nrow(dats)) {
   dat_targets[[i]] <- as.name(dats$target[i])
 }
 
-sims_pipeline <- drake_plan(
-  sims = target(generate_sim_draws(community_dat, dat_name, stdevs, nsim),
-                transform = map(community_dat = !!dat_targets,
-                                dat_name = !!dats$target,
-                                stdevs = stdevs,
-                                nsim = nsim),
-                trigger = trigger(depend = rerun_things)
-  )
+bsd_pipeline <- drake_plan(
+  bsd = target(make_bsd(community = community),
+                transform = map(community = !!dat_targets))
 )
 
-for(i in 1:nrow(sims_pipeline)) {
-  sims_pipeline$target[i] <- unlist(strsplit(sims_pipeline$target[i], split = "sims_"))[2]
-  sims_pipeline$target[i] <- unlist(strsplit(sims_pipeline$target[i], split = "_"))[1]
-  sims_pipeline$target[i] <- paste0("sims_", sims_pipeline$target[i])
-}
 
 sim_targets <- list()
 

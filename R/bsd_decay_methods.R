@@ -209,3 +209,20 @@ AICc <- function (object)
   aic + (2 * np^2 + 2 * np)/(no - np - 1)
 }
 
+#' Make BSD
+#' From community dat with species and wgt columns
+#' @param community df with species and wgt columns per individual
+#' @return df with species, meanwgt, logwgt columns
+#' @export
+#' @importFrom dplyr group_by summarize ungroup mutate
+#'
+make_bsd <- function (community)
+{
+  bsd <- community %>%
+    dplyr::group_by(species) %>%
+    dplyr::summarize(meanwgt = mean(wgt)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(logwgt = log(meanwgt))
+
+  return(bsd)
+}
