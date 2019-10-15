@@ -4,12 +4,14 @@
 \alias{get_n_clumps}
 \title{Get nb clumps}
 \usage{
-get_n_clumps(mean_size_vector, max_nb_clumps = 4)
+get_n_clumps(mean_size_vector, max_nb_clumps = 4, measurer = "aicc")
 }
 \arguments{
 \item{mean_size_vector}{bsd}
 
 \item{max_nb_clumps}{max nb clumps to try}
+
+\item{measurer}{"aicc" or "bic"}
 }
 \value{
 nb clumps identified as nb Gs in GMM

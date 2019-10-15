@@ -135,9 +135,9 @@ draw_multimodal_bsd <- function(emp_vector,
   mean_sizes <- sample(mode_p$val, size = length(emp_vector), replace = T, prob = mode_p$sum)
 
   if(return_full) {
-  return(list(bsd = mean_sizes,
-              nmodes = nmodes,
-              mode_p = mode_p))
+    return(list(bsd = mean_sizes,
+                nmodes = nmodes,
+                mode_p = mode_p))
 
   } else {
     return(mean_sizes)
@@ -148,24 +148,68 @@ draw_multimodal_bsd <- function(emp_vector,
 #'
 #' @param mean_size_vector bsd
 #' @param max_nb_clumps max nb clumps to try
+#' @param measurer "aicc" or "bic"
 #' @return nb clumps identified as nb Gs in GMM
 #' @export
 #'
 #' @importFrom pastecs turnpoints
-get_n_clumps <- function(mean_size_vector, max_nb_clumps = 4) {
+get_n_clumps <- function(mean_size_vector, max_nb_clumps = 4, measurer = "aicc") {
   library(mclust)
 
-  clump_aicc <- vector(length = max_nb_clumps)
+  if(measurer == "aicc") {
+    clump_score <- vector(length = max_nb_clumps)
 
-  for(i in 1:max_nb_clumps){
-      this_aicc <- try(AICc(Mclust(mean_size_vector, G =  i, modelNames = "V")), silent = T)
-      clump_aicc[i] <- ifelse(is.numeric(this_aicc), this_aicc, NA)
+    for(i in 1:max_nb_clumps){
+      this_score <- try(AICc(Mclust(mean_size_vector, G =  i, modelNames = "V")), silent = T)
+      clump_score[i] <- ifelse(is.numeric(this_score), this_score, NA)
+      nbclumps <- ifelse(any(!is.na(clump_score)), which(clump_score == min(clump_score, na.rm = T)), NA)
+
+    }
+  } else if (measurer == "bic") {
+    clump_score <- Mclust(mean_size_vector, G= 1:max_nb_clumps, modelNames = "V")$BIC[,1]
+    nbclumps <- ifelse(any(!is.na(clump_score)), which(clump_score == max(clump_score, na.rm = T)), NA)
+
   }
 
 
-  nbclumps <- ifelse(any(!is.na(clump_aicc)), which(clump_aicc == min(clump_aicc, na.rm = T)), NA)
 
   return(nbclumps)
+}
+
+
+#' Get nb modes
+#'
+#' @param size_vector bsd
+#' @param max_nb_clumps max nb modes to try
+#' @param measurer "aicc" or "bic"
+#' @return nb modes identified as nb turnpoints in best GMM via selector function
+#' @export
+#'
+#' @importFrom pastecs turnpoints
+get_n_modes <- function(size_vector, max_nb_clumps = 4, measurer = "aicc") {
+  library(mclust)
+
+  if(measurer == "aicc") {
+    clump_score <- vector(length = max_nb_clumps)
+
+    for(i in 1:max_nb_clumps){
+      this_score <- try(AICc(Mclust(size_vector, G =  i, modelNames = "V")), silent = T)
+      clump_score[i] <- ifelse(is.numeric(this_score), this_score, NA)
+      nbclumps <- ifelse(any(!is.na(clump_score)), which(clump_score == min(clump_score, na.rm = T)), NA)
+
+    }
+  } else if (measurer == "bic") {
+    clump_score <- Mclust(size_vector, G= 1:max_nb_clumps, modelNames = "V")$BIC[,1]
+    nbclumps <- ifelse(any(!is.na(clump_score)), which(clump_score == max(clump_score, na.rm = T)), NA)
+  }
+  this_gmm <- densityMclust(size_vector, G = nbclumps, modelNames = "V")
+
+  gmm_smooth <- seq( .8 * (min(size_vector, na.rm = T)), 1.2 * (max(size_vector, na.rm = T)), by = 0.01)
+  gmm_smooth <- predict(this_gmm, newdata = gmm_smooth)
+
+  nbmodes <- try(sum(try(pastecs::turnpoints(gmm_smooth)$peaks), silent = T), silent = T)
+
+  return(nbmodes)
 }
 
 

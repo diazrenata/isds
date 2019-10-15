@@ -1,0 +1,159 @@
+---
+title: "Major questions"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+library(isds)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+knitr::opts_chunk$set(echo = FALSE)
+toyp <- get_toy_portal_data(years = 1990)
+set.seed(1977)
+```
+
+## Can we differentiate between an empirical BSD and uniform?
+
+```{r plot empirical and uniform BSDs}
+
+bsd_dat <- toyp %>%
+  group_by(species) %>%
+  summarize(empirical = mean(wgt)) %>%
+  ungroup() %>%
+  select(-species) %>%
+  arrange(empirical) %>%
+  mutate(uniform = sort(runif(n = length(unique(toyp$species)), min = .8 * (min(toyp$wgt)), max = 1.2 * (max(toyp$wgt))))) %>%
+  tidyr::gather(key = "source", value = "meanwgt")
+
+bsds_plot <- ggplot(data = bsd_dat, aes(x = meanwgt, y = source, color = source)) +
+  geom_point() +
+  theme_bw() +
+  scale_color_viridis_d(end = .8)
+
+bsds_plot
+```
+
+```{r fit gaussians to bsds}
+library(mclust)
+
+emp_gauss <- densityMclust(filter(bsd_dat, source == "empirical")$meanwgt, G =  1:5, modelNames = c("V"))
+plot(emp_gauss, what = "density")
+
+unif_gauss <-  densityMclust(filter(bsd_dat, source == "uniform")$meanwgt, G =  1:5, modelNames = c("V"))
+plot(unif_gauss, what = "density")
+
+# get nb clumps by AIC and BIC
+
+bsd_clumps <- bsd_dat %>%
+  group_by(source) %>%
+  summarize(AICc_nbclumps = get_n_clumps(meanwgt, max_nb_clumps = 5, measurer = "aicc"),
+         BIC_nbclumps = get_n_clumps(meanwgt, max_nb_clumps = 5, measurer = "bic")) %>%
+  ungroup()
+
+bsd_clumps
+
+```
+
+
+## Can we differentiate between an empirical ISD and uniform?
+
+```{r plot empirical and uniform ISDs}
+
+isd_dat <- toyp %>%
+  select(-species) %>%
+  arrange(wgt) %>%
+  rename(empirical = wgt) %>%
+  mutate(uniform = round(runif(n = nrow(toyp), min = .8 * (min(toyp$wgt)), max = 1.2 * (max(toyp$wgt))))) %>%
+  tidyr::gather(key = "source", value = "wgt")
+
+isds_plot <- ggplot(data = isd_dat, aes(x = wgt, fill = source)) +
+  geom_histogram() +
+  theme_bw() +
+  facet_wrap(vars(source), nrow = 2) +
+  scale_fill_viridis_d(end = .8)
+
+isds_plot
+```
+
+
+```{r fit gaussians to isds}
+library(mclust)
+
+emp_gauss <- densityMclust(filter(isd_dat, source == "empirical")$wgt, G =  1:8, modelNames = c("V"))
+plot(emp_gauss, what = "density")
+
+unif_gauss <-  densityMclust(filter(isd_dat, source == "uniform")$wgt, G =  1:8, modelNames = c("V"))
+plot(unif_gauss, what = "density")
+
+# get nb clumps by AIC and BIC
+
+isd_clumps <- isd_dat %>%
+  group_by(source) %>%
+  summarize(AICc_nbclumps = get_n_modes(wgt, max_nb_clumps = 8, measurer = "aicc"),
+         BIC_nbclumps = get_n_modes(wgt, max_nb_clumps =8, measurer = "bic")) %>%
+  ungroup()
+
+isd_clumps
+
+```
+## Can we differentiate between an empirical ISD and a minimally-constrained uniform?
+
+By "minimally-constrained uniform", I mean the following assumptions/steps:
+
+* Species' mean body sizes are drawn at random
+* Sd scales as .1 body size (generous)
+* Abundance is a logseries (parameter derives only from S and N and provisionally seems like a pretty good fit even compared to the feasible set) matched to species at random
+
+```{r minimally constrained uniform}
+
+head(isd_dat)
+
+fish <- vegan::fisherfit(x = summarize(group_by(toyp, species), N = sum(n()))$N)
+
+  alpha <- fish$estimate
+  k <- fish$nuisance
+ls_vals <- 1:(nrow(toyp) - length(unique(toyp$species)))
+ls_probs <- alpha * k^ls_vals/ls_vals
+
+sim_comm <- filter(bsd_dat, source == "uniform") %>%
+  mutate(sd = .1 * meanwgt,
+         n = sample.int(max(ls_vals), size = n(), prob = ls_probs),
+         source = "uniform_constrained") %>%
+  mutate(sorted_n = sort(n, decreasing = T))
+
+sim_comm_long <- apply(as.matrix(sim_comm), MARGIN = 1, FUN = function(thisrow) 
+  return(data.frame(wgt = rnorm(n = as.numeric(thisrow[4]), mean = as.numeric(thisrow[2]), sd = as.numeric(thisrow[3])))))
+sim_comm_sorted <- apply(as.matrix(sim_comm), MARGIN = 1, FUN = function(thisrow) 
+  return(data.frame(wgt = rnorm(n = as.numeric(thisrow[5]), mean = as.numeric(thisrow[2]), sd = as.numeric(thisrow[3])))))
+
+sim_comm <- dplyr::bind_rows(sim_comm_long) %>%
+  mutate(source = "uniform_constrained") 
+sim_comm_sorted <- dplyr::bind_rows(sim_comm_sorted) %>%
+  mutate(source = "uniform_sortedN")
+sim_comm <- dplyr::bind_rows(sim_comm_sorted, sim_comm)
+
+isd_dat <- bind_rows(isd_dat, sim_comm)
+
+
+isds_plot2 <- ggplot(data = isd_dat, aes(x = wgt, fill = source)) +
+  geom_histogram() +
+  theme_bw() +
+  facet_wrap(vars(source), nrow = 3) +
+  scale_fill_viridis_d(end = .8)
+
+isds_plot2
+
+
+
+isd_clumps2 <- isd_dat %>%
+  group_by(source) %>%
+  summarize(AICc_nbclumps = get_n_modes(wgt, max_nb_clumps = 8, measurer = "aicc"),
+         BIC_nbclumps = get_n_modes(wgt, max_nb_clumps =8, measurer = "bic")) %>%
+  ungroup()
+
+isd_clumps2
+```
+
+### what if we sort the SAD
+
