@@ -1,15 +1,23 @@
----
-title: "Intraspecific variation"
-output: github_document
----
+Intraspecific variation
+================
 
-```{r load data}
-
+``` r
 library(replicatebecs)
 
 download_raw_paper_data()
-process_raw_data()
+```
 
+    ## [1] TRUE
+
+``` r
+process_raw_data()
+```
+
+    ## Loading in data version 1.136.0
+
+    ## [1] TRUE
+
+``` r
 communities <- load_paper_data()
 communities <- dplyr::bind_rows(communities, .id = "community")
 
@@ -69,25 +77,21 @@ each_species_p <- data.frame(
 each_species_p <- each_species_p %>%
   dplyr::mutate(signif = (p >= 0.05),
                 sd_scaled = sd / mean)
-
 ```
 
-Generally failing a Shapiro-Wilk test for normality. 
+Generally failing a Shapiro-Wilk test for normality.
 
 Plotting...
 
-```{r plotting, eval = F}
-
+``` r
 for(i in 1:length(each_species)){
   print(hist(each_species[[i]]$individual_sizes))
 }
 ```
 
-
 Plotting mean size v. sd
 
-```{r size v sd plot}
-
+``` r
 library(ggplot2)
 
 size_sd_plot <- ggplot(data = each_species_p, aes(x = mean, y = sd)) + 
@@ -95,13 +99,31 @@ size_sd_plot <- ggplot(data = each_species_p, aes(x = mean, y = sd)) +
   theme_bw()
 
 size_sd_plot
+```
 
+    ## Warning: Removed 15 rows containing missing values (geom_point).
+
+![](intraspp_variation_files/figure-markdown_github/size%20v%20sd%20plot-1.png)
+
+``` r
 size_sd_scaled_plot <- ggplot(data = each_species_p, aes(x = mean, y = sd_scaled)) + 
   geom_point() + 
   theme_bw()
 size_sd_scaled_plot
-
-mean(each_species_p$sd_scaled, na.rm = T)
-sd(each_species_p$sd_scaled, na.rm = T)
-
 ```
+
+    ## Warning: Removed 15 rows containing missing values (geom_point).
+
+![](intraspp_variation_files/figure-markdown_github/size%20v%20sd%20plot-2.png)
+
+``` r
+mean(each_species_p$sd_scaled, na.rm = T)
+```
+
+    ## [1] 0.2402606
+
+``` r
+sd(each_species_p$sd_scaled, na.rm = T)
+```
+
+    ## [1] 0.115946
