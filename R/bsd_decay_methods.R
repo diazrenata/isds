@@ -207,34 +207,66 @@ get_n_modes <- function(size_vector, max_nb_clumps = 4, measurer = "aicc") {
   gmm_smooth <- seq( .8 * (min(size_vector, na.rm = T)), 1.2 * (max(size_vector, na.rm = T)), by = 0.01)
   gmm_smooth <- predict(this_gmm, newdata = gmm_smooth)
 
-  nbmodes <- try(sum(try(pastecs::turnpoints(gmm_smooth)$peaks), silent = T), silent = T)
+  nbmodes <- sum(pastecs::turnpoints(gmm_smooth)$peaks)
 
   return(nbmodes)
 }
 
 
-#' Get between/total ssq
+#' Get nb individuals  in each mode
 #'
-#' @param mean_size_vector mean size vector
-#'
-#' @return btwn/total ssq for kmeans
+#' @param size_vector isd
+#' @param max_nb_gaussians nb modes to use
+#' @param measurer "aicc" or "bic"
+#' @return nb modes identified as nb turnpoints in best GMM via selector function
 #' @export
 #'
-get_ssq_prop <- function(mean_size_vector, nbclumps = NULL) {
-  if(is.null(nbclumps)) {
-    nbclumps <- get_n_clumps(mean_size_vector)
+#' @importFrom pastecs turnpoints
+get_nind_permode <- function(size_vector, max_nb_gaussians = 8, measurer = "bic") {
+  library(mclust)
+
+  if(measurer == "aicc") {
+    clump_score <- vector(length = max_nb_gaussians)
+
+    for(i in 1:max_nb_gaussians){
+      this_score <- try(AICc(Mclust(size_vector, G =  i, modelNames = "V")), silent = T)
+      clump_score[i] <- ifelse(is.numeric(this_score), this_score, NA)
+      nbclumps <- ifelse(any(!is.na(clump_score)), which(clump_score == min(clump_score, na.rm = T)), NA)
+
+    }
+  } else if (measurer == "bic") {
+    clump_score <- Mclust(size_vector, G= 1:max_nb_gaussians, modelNames = "V")$BIC[,1]
+    nbclumps <- ifelse(any(!is.na(clump_score)), which(clump_score == max(clump_score, na.rm = T)), NA)
+  }
+  this_gmm <- densityMclust(size_vector, G = nbclumps, modelNames = "V")
+
+  gmm_smooth_vals <- seq( .8 * (min(size_vector, na.rm = T)), 1.2 * (max(size_vector, na.rm = T)), by = 0.01)
+  gmm_smooth <- predict(this_gmm, newdata = gmm_smooth_vals)
+
+  minima <- gmm_smooth_vals[ which(pastecs::turnpoints(gmm_smooth)$pits)]
+
+  minima_tally <- matrix(nrow = length(size_vector), ncol = sum(pastecs::turnpoints(gmm_smooth)$peaks), data = size_vector)
+  colnames(minima_tally) <- 1:ncol(minima_tally)
+  for(i in 1:ncol(minima_tally)) {
+    if(i == 1) {
+      lims <- c(0, minima[i])
+    } else if(i == ncol(minima_tally)) {
+      lims <- c(minima[i - 1], max(size_vector) + 1)
+    } else{
+      lims <- c(minima[i - 1], minima[i])
+    }
+    minima_tally[, i] <- dplyr::between(minima_tally[, i], lims[1], lims[2])
   }
 
-  km <- kmeans(mean_size_vector, nbclumps)
-
-  btwn <- km$betweenss
-  tot <- km$totss
-
-  prop <- btwn/tot
-
-  return(prop)
-
+  minima_tally <- minima_tally %>%
+    as.data.frame() %>%
+    tidyr::gather(key = "mode", value = "in_or_out") %>%
+    dplyr::group_by(mode) %>%
+    dplyr::summarize(nind = sum(in_or_out)) %>%
+    dplyr::ungroup()
+  return(minima_tally)
 }
+
 
 
 #' AICc (from LDATS)

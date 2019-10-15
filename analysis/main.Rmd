@@ -34,7 +34,7 @@ bsds_plot <- ggplot(data = bsd_dat, aes(x = meanwgt, y = source, color = source)
 bsds_plot
 ```
 
-```{r fit gaussians to bsds}
+```{r fit gaussians to bsds, warning=FALSE}
 library(mclust)
 
 emp_gauss <- densityMclust(filter(bsd_dat, source == "empirical")$meanwgt, G =  1:5, modelNames = c("V"))
@@ -47,8 +47,8 @@ plot(unif_gauss, what = "density")
 
 bsd_clumps <- bsd_dat %>%
   group_by(source) %>%
-  summarize(AICc_nbclumps = get_n_clumps(meanwgt, max_nb_clumps = 5, measurer = "aicc"),
-         BIC_nbclumps = get_n_clumps(meanwgt, max_nb_clumps = 5, measurer = "bic")) %>%
+  summarize(AICc_nbclumps = get_n_modes(meanwgt, max_nb_clumps = 5, measurer = "aicc"),
+         BIC_nbclumps = get_n_modes(meanwgt, max_nb_clumps = 5, measurer = "bic")) %>%
   ungroup()
 
 bsd_clumps
@@ -77,7 +77,7 @@ isds_plot
 ```
 
 
-```{r fit gaussians to isds}
+```{r fit gaussians to isds, warning=FALSE}
 library(mclust)
 
 emp_gauss <- densityMclust(filter(isd_dat, source == "empirical")$wgt, G =  1:8, modelNames = c("V"))
@@ -106,7 +106,7 @@ By "minimally-constrained uniform", I mean the following assumptions/steps:
 * Abundance is a logseries (parameter derives only from S and N and provisionally seems like a pretty good fit even compared to the feasible set) matched to species at random
 * "sorted" = if we sort the SAD decreasing with increasing body size
 
-```{r minimally constrained uniform}
+```{r minimally constrained uniform, warning=FALSE}
 
 head(isd_dat)
 
@@ -118,7 +118,7 @@ ls_vals <- 1:(nrow(toyp) - length(unique(toyp$species)))
 ls_probs <- alpha * k^ls_vals/ls_vals
 
 sim_comm <- filter(bsd_dat, source == "uniform") %>%
-  mutate(sd = .1 * meanwgt,
+  mutate(sd = .25 * meanwgt,
          n = sample.int(max(ls_vals), size = n(), prob = ls_probs),
          source = "uniform_constrained") %>%
   mutate(sorted_n = sort(n, decreasing = T))
@@ -154,6 +154,22 @@ isd_clumps2 <- isd_dat %>%
   ungroup()
 
 isd_clumps2
+
+
 ```
 
 
+OK, so the histograms "look" different but the number of turnpoints do not differ. The "looking" different here is the number of individuals per mode. We can calculate this as the number of individuals below/between each minimum. 
+
+```{r nind btwn minima, warning=FALSE}
+
+isd_nindpermode <- lapply(as.matrix(unique(isd_dat$source)), FUN = function(a_source, isd_dat) 
+  return(get_nind_permode(size_vector = filter(isd_dat, source == a_source)$wgt)), isd_dat = isd_dat) 
+names(isd_nindpermode) <- unique(isd_dat$source)
+  
+isd_nindpermode <- isd_nindpermode %>%
+  bind_rows(.id = "source")
+
+isd_nindpermode
+
+```
