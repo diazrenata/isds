@@ -104,6 +104,7 @@ By "minimally-constrained uniform", I mean the following assumptions/steps:
 * Species' mean body sizes are drawn at random
 * Sd scales as .1 body size (generous)
 * Abundance is a logseries (parameter derives only from S and N and provisionally seems like a pretty good fit even compared to the feasible set) matched to species at random
+* "sorted" = if we sort the SAD decreasing with increasing body size
 
 ```{r minimally constrained uniform}
 
@@ -155,5 +156,4 @@ isd_clumps2 <- isd_dat %>%
 isd_clumps2
 ```
 
-### what if we sort the SAD
 
