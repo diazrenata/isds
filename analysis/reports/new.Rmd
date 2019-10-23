@@ -1,0 +1,59 @@
+---
+title: "New workflow"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(isds)
+library(ggplot2)
+source(here::here("analysis", "fxns.R"))
+```
+
+```{r load isd}
+
+portal <- get_toy_portal_data(years = c(1980:1985), download = F)
+
+head(portal)
+
+portal <- get_clumps(portal, max_n_clumps = length(unique(portal[,1]))) %>%
+  mutate(source = "empirical")
+
+nsims = 5
+```
+
+```{r sims}
+uniform_clumps <- replicate(nsims, sim_wrapper(portal, "uniform"), simplify = F)
+names(uniform_clumps) <- 1:nsims
+
+c_clumps <- replicate(nsims, sim_wrapper(portal, "constrained"), simplify = F)
+names(c_clumps) <- 1:nsims
+
+c_d_clumps <- replicate(nsims, sim_wrapper(portal, "constrained_density"), simplify = F)
+names(c_d_clumps) <- 1:nsims
+
+```
+
+```{r plot}
+
+all_sim_clumps <- bind_rows(
+  list(uniform = bind_rows(uniform_clumps, .id = "sim"), 
+  constrained = bind_rows(c_clumps, .id = "sim"), 
+  constrained_density = bind_rows(c_d_clumps, .id = "sim")), .id = "source")
+
+empirical_plot <- ggplot(data = portal, aes(x = wgt, fill = clump, group = clump)) +
+   geom_density() +
+  scale_fill_viridis_d(end = .8) +
+  theme_bw()
+
+clump_plot <- ggplot(data = all_sim_clumps, aes(x = wgt, fill = clump, group = clump)) +
+  geom_density() +
+  facet_wrap(vars(source, sim), nrow = 3) +
+  scale_fill_viridis_d(end = .8) +
+  theme_bw()
+
+empirical_plot
+clump_plot
+
+```
