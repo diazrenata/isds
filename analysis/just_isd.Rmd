@@ -10,49 +10,7 @@ library(dplyr)
 library(tidyr)
 knitr::opts_chunk$set(echo = FALSE)
 toyp <- get_toy_portal_data(years = 1990)
-set.seed(1977)
-```
-
-## Can we differentiate between an empirical BSD and uniform?
-
-```{r plot empirical and uniform BSDs}
-
-bsd_dat <- toyp %>%
-  group_by(species) %>%
-  summarize(empirical = mean(wgt)) %>%
-  ungroup() %>%
-  select(-species) %>%
-  arrange(empirical) %>%
-  mutate(uniform = sort(runif(n = length(unique(toyp$species)), min = .8 * (min(toyp$wgt)), max = 1.2 * (max(toyp$wgt))))) %>%
-  tidyr::gather(key = "source", value = "meanwgt")
-
-bsds_plot <- ggplot(data = bsd_dat, aes(x = meanwgt, y = source, color = source)) +
-  geom_point() +
-  theme_bw() +
-  scale_color_viridis_d(end = .8)
-
-bsds_plot
-```
-
-```{r fit gaussians to bsds, warning=FALSE}
-library(mclust)
-
-emp_gauss <- densityMclust(filter(bsd_dat, source == "empirical")$meanwgt, G =  1:5, modelNames = c("V"))
-plot(emp_gauss, what = "density")
-
-unif_gauss <-  densityMclust(filter(bsd_dat, source == "uniform")$meanwgt, G =  1:5, modelNames = c("V"))
-plot(unif_gauss, what = "density")
-
-# get nb clumps by AIC and BIC
-
-bsd_clumps <- bsd_dat %>%
-  group_by(source) %>%
-  summarize(AICc_nbclumps = get_n_modes(meanwgt, max_nb_clumps = 5, measurer = "aicc"),
-         BIC_nbclumps = get_n_modes(meanwgt, max_nb_clumps = 5, measurer = "bic")) %>%
-  ungroup()
-
-bsd_clumps
-
+set.seed(410)
 ```
 
 
@@ -107,6 +65,15 @@ By "minimally-constrained uniform", I mean the following assumptions/steps:
 * "sorted" = if we sort the SAD decreasing with increasing body size
 
 ```{r minimally constrained uniform, warning=FALSE}
+
+bsd_dat <- toyp %>%
+  group_by(species) %>%
+  summarize(empirical = mean(wgt)) %>%
+  ungroup() %>%
+  select(-species) %>%
+  arrange(empirical) %>%
+  mutate(uniform = sort(runif(n = length(unique(toyp$species)), min = .8 * (min(toyp$wgt)), max = 1.2 * (max(toyp$wgt))))) %>%
+  tidyr::gather(key = "source", value = "meanwgt")
 
 fish <- vegan::fisherfit(x = summarize(group_by(toyp, species), N = sum(n()))$N)
 

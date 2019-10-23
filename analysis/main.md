@@ -52,8 +52,6 @@ By "minimally-constrained uniform", I mean the following assumptions/steps:
     ## 5 empirical   9
     ## 6 empirical   9
 
-    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-
 ![](main_files/figure-markdown_github/minimally%20constrained%20uniform-1.png)
 
     ## # A tibble: 4 x 3
@@ -80,3 +78,5 @@ OK, so the histograms "look" different but the number of turnpoints do not diffe
     ##  9 uniform_sortedN     2       185
     ## 10 uniform_constrained 1        83
     ## 11 uniform_constrained 2       257
+
+![](main_files/figure-markdown_github/nind%20btwn%20minima-1.png)
