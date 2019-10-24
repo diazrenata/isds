@@ -32,11 +32,23 @@ all_summary <- bind_rows(summaries, .id = "dat")
 
 ```
 
+```{r emp plot}
+
+emp_plot <- ggplot(data = filter(all, source == "empirical"), aes(x = wgt, fill = as.factor(clump), group = clump)) +
+  #geom_histogram(binwidth = 1) +
+  geom_density() +
+  scale_fill_viridis_d(end = .8) +
+  theme_bw()
+
+emp_plot
+
+```
+
 ```{r plot}
 
-clump_plot <- ggplot(data = all, aes(x = wgt, fill = source, group = clump)) +
+clump_plot <- ggplot(data = filter(all, sim %in% c(1, 2, 3, 139, 164), source != "empirical"), aes(x = wgt, fill = source, group = clump)) +
   geom_histogram(binwidth = 1) +
-  facet_wrap(vars(source, sim)) +
+  facet_wrap(vars(source, sim), ncol = 5) +
   scale_fill_viridis_d(end = .8) +
   theme_bw()
 

@@ -4,7 +4,7 @@ library(isds)
 expose_imports(isds)
 source(here::here("analysis", "fxns.R"))
 
-nsim <- 2
+nsim <- 200
 
 sims_to_run <- c("uniform", "constrained", "constrained_density", "none")
 #
@@ -26,7 +26,7 @@ isds <- drake_plan(
   s = target(repeat_sims(ntimes = !!nsim, isd = emp, type = some_types),
          #    transform = cross(emp, some_types = !!sims_to_run)),
          transform = map(some_types = !!sims_to_run)),
-  all = target(dplyr::bind_rows(s),
+  all = target(dplyr::distinct(dplyr::bind_rows(s)),
                transform = combine(s)),#, .by = emp)),
   summary = target(summarize_clumps(all),
                    transform = map(all))
