@@ -1,0 +1,70 @@
+---
+title: "New workflow"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warnings = FALSE, error = FALSE)
+library(dplyr)
+library(ggplot2)
+library(drake)
+```
+
+```{r load}
+
+## Set up the cache and config
+db <- DBI::dbConnect(RSQLite::SQLite(), here::here("drake", "drake-cache.sqlite"))
+cache <- storr::storr_dbi("datatable", "keystable", db)
+# 
+# all_emp <-  as.list(cached(cache = cache)[ which(substr(cached(cache = cache), 0, 7) == "all_emp")])
+# emp <- lapply(all_emp, readd, character_only = T, cache = cache)
+# names(emp) <- all_emp
+# 
+# all <- bind_rows(emp, .id = "dat")
+
+loadd(all, cache = cache)
+
+all_summaries <- as.list(cached(cache = cache)[ which(grepl(cached(cache = cache), pattern = "summary"))])
+summaries <- lapply(all_summaries, readd, character_only = T, cache = cache)
+names(summaries) <- all_summaries
+
+all_summary <- bind_rows(summaries, .id = "dat")
+
+```
+
+```{r plot}
+
+clump_plot <- ggplot(data = all, aes(x = wgt, fill = source, group = clump)) +
+  geom_histogram(binwidth = 1) +
+  facet_wrap(vars(source, sim)) +
+  scale_fill_viridis_d(end = .8) +
+  theme_bw()
+
+
+clump_plot
+
+```
+
+```{r summarize sims}
+
+nclumps_summary_plot <- ggplot(data = filter(all_summary, source != "empirical"), aes(x = nclumps, fill = source, group = source)) +
+  geom_histogram(binwidth = 1) +
+  theme_bw() +
+  geom_vline(xintercept = filter(all_summary, source == "empirical")$nclumps[1]) +
+  facet_wrap(vars(source), ncol = 1) +
+  xlim(-1, max(all_summary$nclumps) + 2) +
+  scale_fill_viridis_d(end = .8) +
+  theme(legend.position = "none")
+
+
+indwidth_summary_plot <- ggplot(data = filter(all_summary, source != "empirical"), aes(x = mean_ind_width, fill = source, group = source)) +
+  geom_histogram() +
+  theme_bw() +
+  geom_vline(xintercept = filter(all_summary, source == "empirical")$mean_ind_width[1]) +
+  facet_wrap(vars(source), ncol = 1) +
+  scale_fill_viridis_d(end = .8) +
+  theme(legend.position = "none")
+
+gridExtra::grid.arrange(grobs = list(nclumps_summary_plot, indwidth_summary_plot), ncol = 2)
+
+```

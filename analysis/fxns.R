@@ -34,7 +34,11 @@ sample_constrained_isd <- function(isd, size_relationship = "none") {
   return(this_isd)
 }
 
-get_clumps <- function(isd, max_n_clumps) {
+get_clumps <- function(isd, max_n_clumps = NULL) {
+
+  if(is.null(max_n_clumps)) {
+    max_n_clumps <- length(unique(isd$species))
+  }
 
   library(mclust)
 
@@ -56,9 +60,13 @@ get_clumps <- function(isd, max_n_clumps) {
 
   for(i in 1:nclumps) {
     if(i == 1) {
-      clumps[[i]] <- c(i, -50, id$wgt[which(id$is_minimum)[1]])
+      if(nclumps == 1) {
+        clumps[[i]] <- c(i, -50, max(id$wgt) * 10)
+      } else {
+        clumps[[i]] <- c(i, -50, id$wgt[which(id$is_minimum)[1]])
+      }
     } else if(i == nclumps) {
-      clumps[[i]] <- c(i, id$wgt[which(id$is_minimum)[nclumps - 1]], max(id$wgt)*2)
+      clumps[[i]] <- c(i, id$wgt[which(id$is_minimum)[nclumps - 1]], max(id$wgt)*10)
     } else {
       clumps[[i]] <- c(i, id$wgt[which(id$is_minimum)[i - 1]],
                        id$wgt[which(id$is_minimum)[i]])
@@ -75,7 +83,10 @@ get_clumps <- function(isd, max_n_clumps) {
     }
   }
 
-  isd$clump <- as.factor(isd$clump)
+  if(!("source" %in% colnames(isd))) {
+    isd$source <- "empirical"
+    isd$sim <- -99
+  }
   return(isd)
 }
 
@@ -93,11 +104,43 @@ sim_wrapper <- function(isd, type) {
 
     sampled <- sample_constrained_isd(isd, size_relationship = "negative")
 
+  } else if (type == "none") {
+    return(isd)
   } else {
     return(NA)
   }
 
+  sampled$source = type
+
   clumps <- get_clumps(sampled, max_n_clumps = length(unique(isd$species)))
 
   return(clumps)
+}
+
+repeat_sims <- function(ntimes, isd, type) {
+  sims <- replicate(n = ntimes, expr = sim_wrapper(isd, type = type), simplify = F)
+  names(sims) <- 1:ntimes
+  sims <- bind_rows(sims, .id = "sim")
+  sims$sim <- as.numeric(sims$sim)
+  return(sims)
+}
+
+summarize_clumps <- function(isd) {
+
+  isd <- isd %>%
+    mutate(clump = as.integer(clump)) %>%
+    group_by(source, sim, clump) %>%
+    summarize(nind = n(),
+              clump_min = min(wgt),
+              clump_max = max(wgt)) %>%
+    ungroup() %>%
+    mutate(clump_width = clump_max - clump_min) %>%
+    mutate(ind_width = nind / clump_width) %>%
+    group_by(source, sim) %>%
+    summarize(nclumps = max(clump),
+              mean_ind_width = mean(ind_width)) %>%
+    ungroup()
+
+  return(isd)
+
 }

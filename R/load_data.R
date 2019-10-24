@@ -17,7 +17,8 @@ get_toy_portal_data <- function(years = c(1994, 1995), download = F) {
   portal_data = portal_data %>%
     dplyr::filter(year %in% years, treatment == "control", !is.na(wgt)) %>%
     dplyr::select(species, wgt) %>%
-    dplyr::mutate(species = as.character(species))
+    dplyr::mutate(species = as.factor(species)) %>%
+    dplyr::mutate(species = as.numeric(species))
 
   return(portal_data)
 }
