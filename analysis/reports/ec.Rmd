@@ -1,0 +1,61 @@
+---
+title: "Annual statevars"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warnings = FALSE, error = FALSE)
+library(dplyr)
+library(isds)
+library(ggplot2)
+```
+
+```{r load annual data}
+
+portal <- get_toy_portal_data(years = c(1980:1985), download = F)
+years <- as.list(1980:2018)
+
+control_dat <- lapply(years, get_toy_portal_data)
+excl_dat <- lapply(years, get_toy_portal_data, chosen_treatment="exclosure")
+
+get_e_tot <- function(e_vect) {
+  e_vect <- 5.69 * (e_vect ^ .75)
+  
+  return(sum(e_vect))
+}
+
+names(control_dat) <- years
+names(excl_dat) <- years
+
+control_dat <- bind_rows(control_dat, .id = "year")
+excl_dat <- bind_rows(excl_dat, .id = "year")
+
+control_dat$source <- "control"
+excl_dat$source <- "exclosure"
+
+annual_dat <- bind_rows(control_dat, excl_dat) %>%
+  group_by(year, source) %>%
+  summarize(etot = get_e_tot(wgt),
+            nspp = length(unique(species)),
+            nind = n()) %>%
+  ungroup() %>%
+  tidyr::gather(-year, -source, key = "var", value = "var_val")
+  
+
+```
+
+```{r plot, fig.width = 15, fig.height = 6}
+
+annual_dat_plot <- ggplot(data = annual_dat, aes(x = year, y = var_val, color = source, group = source)) +
+  geom_point() +
+  geom_line() +
+  theme_bw() +
+  scale_color_viridis_d(end = .5) +
+  geom_vline(xintercept = 2015) +
+  facet_wrap(vars(var), scales = "free_y") +
+  theme(legend.position = "bottom")
+
+annual_dat_plot
+
+```
+

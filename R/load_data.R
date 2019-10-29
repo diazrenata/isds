@@ -3,10 +3,11 @@
 #' @return Portal control rodents
 #' @param years vector of years to pull
 #' @param download T/F, download or load from working_data/toy_portal
+#' @param chosen_treatment default control
 #' @export
 #' @importFrom portalr summarise_individual_rodents
 #' @importFrom dplyr filter select
-get_toy_portal_data <- function(years = c(1994, 1995), download = F) {
+get_toy_portal_data <- function(years = c(1994, 1995), download = F, chosen_treatment = "control") {
 
   if(download) {
   portal_data <- portalr::summarise_individual_rodents(clean = T, type = "Granivores", unknowns = F, time = "date")
@@ -15,7 +16,7 @@ get_toy_portal_data <- function(years = c(1994, 1995), download = F) {
     }
 
   portal_data = portal_data %>%
-    dplyr::filter(year %in% years, treatment == "control", !is.na(wgt)) %>%
+    dplyr::filter(year %in% years, treatment == chosen_treatment, !is.na(wgt)) %>%
     dplyr::select(species, wgt) %>%
     dplyr::mutate(species = as.factor(species)) %>%
     dplyr::mutate(species = as.numeric(species))
