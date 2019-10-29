@@ -132,13 +132,15 @@ summarize_clumps <- function(isd) {
     group_by(source, sim, clump) %>%
     summarize(nind = n(),
               clump_min = min(wgt),
-              clump_max = max(wgt)) %>%
+              clump_max = max(wgt),
+              clump_sd = sd(wgt)) %>%
     ungroup() %>%
     mutate(clump_width = clump_max - clump_min) %>%
     mutate(ind_width = nind / clump_width) %>%
     group_by(source, sim) %>%
     summarize(nclumps = max(clump),
-              mean_ind_width = mean(ind_width)) %>%
+              mean_ind_width = mean(ind_width),
+              mean_sd = mean(clump_sd))%>%
     ungroup()
 
   return(isd)

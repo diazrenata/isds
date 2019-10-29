@@ -48,7 +48,7 @@ emp_plot
 
 clump_plot <- ggplot(data = filter(all, sim %in% c(1, 2, 3, 139, 164), source != "empirical"), aes(x = wgt, fill = source, group = clump)) +
   geom_histogram(binwidth = 1) +
-  facet_wrap(vars(source, sim), ncol = 5) +
+  facet_wrap(vars(source, sim), ncol = 5, scales = "free_y") +
   scale_fill_viridis_d(end = .8) +
   theme_bw()
 
@@ -77,6 +77,42 @@ indwidth_summary_plot <- ggplot(data = filter(all_summary, source != "empirical"
   scale_fill_viridis_d(end = .8) +
   theme(legend.position = "none")
 
-gridExtra::grid.arrange(grobs = list(nclumps_summary_plot, indwidth_summary_plot), ncol = 2)
+sd_summary_plot <-  ggplot(data = filter(all_summary, source != "empirical"), aes(x = mean_sd, fill = source, group = source)) +
+  geom_histogram() +
+  theme_bw() +
+  geom_vline(xintercept = filter(all_summary, source == "empirical")$mean_sd[1]) +
+  facet_wrap(vars(source), ncol = 1) +
+  scale_fill_viridis_d(end = .8) +
+  theme(legend.position = "none")
+
+gridExtra::grid.arrange(grobs = list(nclumps_summary_plot, indwidth_summary_plot, sd_summary_plot), ncol = 3)
 
 ```
+
+
+### More closely on how these metrics work
+
+* Sd is familiar but not great, because if there are many modes with few individuals each, you get a low sd, similar to if you have a mode with a lot of individuals concentrated in a tight space.
+* Thus me gravitating towards the nb individuals/width of clump metric. This is basically "how pointy is the clump" and helps distinguish 4 pointy clumps from 4 loose clumps.
+
+So, let's plot all our simulated ISDs in order of most to least average pointiness, and color code them by pointyness. A pointiness gut check. 
+
+
+```{r sort by pointiness, fig.width = 10, fig.height = 10}
+
+pointy_ranks <- all_summary %>%
+  arrange(desc(mean_ind_width)) %>%
+  mutate(pointy_rank = as.factor(row_number())) %>%
+  select(source, sim, mean_ind_width, pointy_rank)
+
+all_pointy <- left_join(all, pointy_ranks, by = c("source", "sim")) %>%
+  filter(as.integer(pointy_rank) %% 15 == 0)
+
+pointy_plot <- ggplot(data = all_pointy, aes(x = wgt, fill = mean_ind_width)) +
+  geom_histogram(binwidth = 5) + 
+  theme_bw() +
+  facet_wrap(vars(pointy_rank)) +
+  scale_fill_viridis_c(option = "magma", end = .8)
+pointy_plot
+```
+
