@@ -9,6 +9,7 @@ New workflow
 
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
 ![](new_drake_files/figure-markdown_github/summarize%20sims-1.png)
 
@@ -20,3 +21,5 @@ New workflow
 So, let's plot all our simulated ISDs in order of most to least average pointiness, and color code them by pointyness. A pointiness gut check.
 
 ![](new_drake_files/figure-markdown_github/sort%20by%20pointiness-1.png)
+
+![](new_drake_files/figure-markdown_github/sort%20by%20prop%20pointiness-1.png)

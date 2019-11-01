@@ -86,7 +86,17 @@ sd_summary_plot <-  ggplot(data = filter(all_summary, source != "empirical"), ae
   scale_fill_viridis_d(end = .8) +
   theme(legend.position = "none")
 
-gridExtra::grid.arrange(grobs = list(nclumps_summary_plot, indwidth_summary_plot, sd_summary_plot), ncol = 3)
+
+
+indwidthprop_summary_plot <- ggplot(data = filter(all_summary, source != "empirical"), aes(x = mean_ind_width_prop, fill = source, group = source)) +
+  geom_histogram() +
+  theme_bw() +
+  geom_vline(xintercept = filter(all_summary, source == "empirical")$mean_ind_width[1]) +
+  facet_wrap(vars(source), ncol = 1) +
+  scale_fill_viridis_d(end = .8) +
+  theme(legend.position = "none")
+
+gridExtra::grid.arrange(grobs = list(nclumps_summary_plot, indwidth_summary_plot, indwidthprop_summary_plot, sd_summary_plot), ncol = 4)
 
 ```
 
@@ -117,3 +127,22 @@ pointy_plot <- ggplot(data = all_pointy, aes(x = wgt, fill = mean_ind_width)) +
 pointy_plot
 ```
 
+
+
+```{r sort by prop pointiness, fig.width = 10, fig.height = 10}
+
+pointy_prop_ranks <- all_summary %>%
+  arrange(desc(mean_ind_width_prop)) %>%
+  mutate(pointy_rank = as.factor(row_number())) %>%
+  select(source, sim, mean_ind_width_prop, pointy_rank)
+
+all_pointy_prop <- left_join(all, pointy_prop_ranks, by = c("source", "sim")) %>%
+  filter(as.integer(pointy_rank) %% 15 == 0)
+
+pointy_prop_plot <- ggplot(data = all_pointy_prop, aes(x = wgt, fill = mean_ind_width_prop)) +
+  geom_histogram(binwidth = 5) + 
+  theme_bw() +
+  facet_wrap(vars(pointy_rank)) +
+  scale_fill_viridis_c(option = "magma", end = .8)
+pointy_prop_plot
+```

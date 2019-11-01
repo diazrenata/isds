@@ -133,16 +133,32 @@ summarize_clumps <- function(isd) {
     summarize(nind = n(),
               clump_min = min(wgt),
               clump_max = max(wgt),
-              clump_sd = sd(wgt)) %>%
+              clump_sd = sd(wgt),
+              clump_mean = mean(wgt)) %>%
     ungroup() %>%
     mutate(clump_width = clump_max - clump_min) %>%
+    mutate(clump_width_prop = clump_width / clump_mean) %>%
     mutate(ind_width = nind / clump_width) %>%
+    mutate(ind_width_prop = ind_width / clump_width_prop) %>%
     group_by(source, sim) %>%
     summarize(nclumps = max(clump),
               mean_ind_width = mean(ind_width),
-              mean_sd = mean(clump_sd))%>%
+              mean_sd = mean(clump_sd),
+              mean_ind_width_prop = mean(ind_width_prop))%>%
     ungroup()
 
   return(isd)
 
+}
+
+
+make_cdf <- function(isd_df) {
+
+  cdf <- data.frame(wgt = seq(min(isd_df$wgt), max(isd_df$wgt), by = .1),
+                    cum_ind = NA)
+  for(i in 1:nrow(cdf)) {
+    cdf$cum_ind[i] <- sum(isd_df$wgt <= cdf$wgt[i]) / nrow(isd_df)
+  }
+
+  return(cdf)
 }
