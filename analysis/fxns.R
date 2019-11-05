@@ -152,10 +152,18 @@ summarize_clumps <- function(isd) {
 }
 
 
-make_cdf <- function(isd_df) {
+make_cdf <- function(isd_df, edge_ref = NULL) {
+
+  if(!is.null(edge_ref)) {
+
+    cdf <- data.frame(wgt = seq(min(edge_ref$wgt), max(edge_ref$wgt), by = .1),
+                      cum_ind = NA)
+  } else {
 
   cdf <- data.frame(wgt = seq(min(isd_df$wgt), max(isd_df$wgt), by = .1),
                     cum_ind = NA)
+  }
+
   for(i in 1:nrow(cdf)) {
     cdf$cum_ind[i] <- sum(isd_df$wgt <= cdf$wgt[i]) / nrow(isd_df)
   }
