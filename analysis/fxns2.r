@@ -21,11 +21,37 @@ integrate_gmm <- function(gmm) {
 
 }
 
+
+integrate_gmm2 <- function(gmm) {
+
+  density_range <- range(gmm$data)
+
+  id <- data.frame(ratio = seq(floor(.5 * density_range[1]), floor(1.25 * density_range[2]), by = .01),
+                   density = NA)
+
+  id$density <- predict(gmm, id$ratio)
+
+  id$density <- id$density / sum(id$density)
+
+  #id<- dplyr::filter(id, density >= .01 * max(id$density))
+
+  return(id)
+
+}
+
 count_peaks <- function(id) {
 
   npeaks <- sum(pastecs::turnpoints(id$density)$peaks)
 
   return(npeaks)
+}
+
+get_peaks <- function(id) {
+
+  peaks <- id$ratio[ which(pastecs::turnpoints(id$density)$peaks)]
+
+  return(peaks)
+
 }
 
 apply_cutoff <- function(id, cutoff = 1, nind = NULL) {
@@ -130,7 +156,7 @@ sample_constrained_isd <- function(isd, size_relationship = "none") {
   this_sad$sd <- .25 * this_sad$meanwgt
   this_sad$species <- 1:nspp
 
-  this_isd <- apply(as.matrix(this_sad), MARGIN = 1, FUN = function(this_row) return(data.frame(species = this_row[4], wgt = rnorm(n = this_row[1], mean = this_row[2], sd = this_row[3]))))
+  this_isd <- apply(as.matrix(this_sad), MARGIN = 1, FUN = function(this_row) return(data.frame(species = this_row[4], wgt = rnorm(n = this_row[1], mean = this_row[2], sd = this_row[3]), row.names = NULL)))
 
   this_isd <- dplyr::bind_rows(this_isd)
 
@@ -141,14 +167,65 @@ sample_constrained_isd <- function(isd, size_relationship = "none") {
 
 
 drops_wrapper <- function(isd, cutoffs) {
-  this_gmm <- fit_gmm(isd)
+  this_gmm <- fit_gmm(isd, max_g = 4)
   this_id <- integrate_gmm(this_gmm)
 
   drops <- lapply(cutoffs, FUN = apply_cutoff, id = this_id, nind = 4199)
   drops_summaries <- lapply(drops, summarize_drops)
 
   drops_summaries <- bind_rows(drops_summaries)
+  drops_summaries$npeaks <- count_peaks(this_id)
 
   return(drops_summaries)
+
+}
+
+
+sample_ratio <- function(isd, nsamples) {
+
+  random_comparisons <- replicate(nsamples, expr = sort(sample.int(n = nrow(isd), size = 2, replace = F)))  %>%
+    t() %>%
+    as.data.frame() %>%
+    distinct()
+
+  colnames(random_comparisons) = c("rowindex", "comparisonindex")
+
+  isd_comparisons <- isd %>%
+    mutate(rowindex = row_number()) %>%
+    right_join(random_comparisons, by = "rowindex")
+
+  pairing <- isd %>%
+    mutate(comparisonindex = row_number()) %>%
+    rename(comparisonwgt = wgt) %>%
+    select(-species)
+
+  isd_comparisons <- left_join(isd_comparisons, pairing, by = "comparisonindex")
+
+  isd_comparisons <- isd_comparisons %>%
+    mutate(ratio1 = wgt/comparisonwgt,
+           ratio2 = comparisonwgt/wgt,
+           difference = abs(comparisonwgt - wgt)) %>%
+    mutate(ratio = ifelse(ratio1 > ratio2, ratio1, ratio2)) %>%
+    select(-ratio1, -ratio2)
+
+  return(isd_comparisons)
+}
+
+integrate_kde <- function(isd, band = 10) {
+ this_kde <- ks::kde(isd$wgt, H = band)
+
+ density_range <- range(this_kde$x)
+
+ id <- data.frame(wgt = seq(floor(.5 * density_range[1]), floor(1.25 * density_range[2]), by = 1),
+                  density = NA)
+
+ id$density <- predict(this_kde, x = id$wgt)
+
+ id$density <- id$density / sum(id$density)
+
+ #id<- dplyr::filter(id, density >= .01 * max(id$density))
+
+ return(id)
+
 
 }

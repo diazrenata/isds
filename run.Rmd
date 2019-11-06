@@ -29,7 +29,7 @@ portal_id <- integrate_gmm(portal_gmm)
 portal_drops <- drops_wrapper(portal_isd, cutoffs = c(1, 5, 10)) %>%
   mutate(source = "empirical", sim = NA)
 
-nsamples = 100
+nsamples = 10
 
 set.seed(1)
 uniform_isds <- replicate(nsamples, expr = sample_uniform_isd(portal_isd), simplify = F)
@@ -61,13 +61,21 @@ ndrops_plot <- ggplot(data = all_drop_summaries, aes(x = ndrops, fill = cutoff))
   facet_grid(rows = vars(source), cols = vars(cutoff), switch = "y")
 
 ndrops_plot
+# 
+# dropwidth_plot <-ggplot(data = all_drop_summaries, aes(x = mean_drop_width, fill = cutoff)) +
+#   geom_histogram(binwidth = 5) +
+#   theme_bw() +
+#   scale_fill_viridis_d(end = .8) +
+#   facet_grid(rows = vars(source), cols = vars(cutoff), switch = "y")
+# 
+# dropwidth_plot
 
-dropwidth_plot <-ggplot(data = all_drop_summaries, aes(x = mean_drop_width, fill = cutoff)) +
-  geom_histogram(binwidth = 5) +
+npeaks_plot <- ggplot(data = distinct(select(all_drop_summaries, source, sim, npeaks)), aes(x = npeaks)) +
+  geom_histogram(binwidth = 1) +
   theme_bw() +
   scale_fill_viridis_d(end = .8) +
-  facet_grid(rows = vars(source), cols = vars(cutoff), switch = "y")
+  facet_grid(rows = vars(source), switch = "y")
 
-dropwidth_plot
+npeaks_plot
 
 ```
