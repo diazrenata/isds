@@ -199,9 +199,9 @@ nchunks_plot <- ggplot(data = filter(all, chunk_rank %% 10 == 1), aes(x = wgt, y
 er_plot <- ggplot(data =filter(all, sim <= 25), aes(x = wgt, y = density, color = nchunks)) +
   geom_point() +
   theme_bw() +
-  scale_color_viridis_d(option = "magma", end = .8) +
+  scale_color_viridis_d(option = "plasma", end = .8) +
   xlim(0, 200) +
-  facet_wrap(vars(edges_rank))
+  facet_wrap(vars(edges_rank), scales = "free_y")
 er_plot
 
 ```
