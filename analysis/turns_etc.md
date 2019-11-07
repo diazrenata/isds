@@ -178,7 +178,7 @@ nchunks_plot <- ggplot(data = filter(all, chunk_rank %% 10 == 1), aes(x = wgt, y
 ```
 
 ``` r
-er_plot <- ggplot(data =filter(all, sim <= 25), aes(x = wgt, y = density, color = nchunks)) +
+er_plot <- ggplot(data =filter(all, sim <= 25), aes(x = wgt, y = density, color = nchunks, shape = in_most)) +
   geom_point() +
   theme_bw() +
   scale_color_viridis_d(option = "plasma", end = .8) +
