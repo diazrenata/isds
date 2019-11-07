@@ -196,7 +196,7 @@ nchunks_plot <- ggplot(data = filter(all, chunk_rank %% 10 == 1), aes(x = wgt, y
 
 ```{r by edge ratio plot, fig.dim=c(40,40)}
 
-er_plot <- ggplot(data =filter(all, sim <= 25), aes(x = wgt, y = density, color = nchunks, shape = in_most)) +
+er_plot <- ggplot(data =filter(all, sim <= 25), aes(x = wgt, y = density, color = nchunks, alpha = in_most)) +
   geom_point() +
   theme_bw() +
   scale_color_viridis_d(option = "plasma", end = .8) +
