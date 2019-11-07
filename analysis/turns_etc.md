@@ -182,11 +182,8 @@ er_plot <- ggplot(data =filter(all, sim <= 25), aes(x = wgt, y = density, color 
   geom_point() +
   theme_bw() +
   scale_color_viridis_d(option = "plasma", end = .8) +
-  xlim(0, 200) +
-  facet_wrap(vars(edges_rank), scales = "free_y")
+  facet_wrap(vars(edges_rank), scales = "free")
 er_plot
 ```
-
-    ## Warning: Removed 23102 rows containing missing values (geom_point).
 
 ![](turns_etc_files/figure-markdown_github/by%20edge%20ratio%20plot-1.png)
