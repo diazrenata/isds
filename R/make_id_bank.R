@@ -3,7 +3,7 @@ library(ggplot2)
 library(dplyr)
 
 source(here::here("analysis", "fxns2.r"))
-portal_isd <- get_toy_portal_data(years = c(1980:1985), chosen_treatment = "control") %>%
+portal_isd <- get_toy_portal_data(years = c(1990:1995), chosen_treatment = "control") %>%
   mutate(sim = NA, source = "empirical")
 portal_kde <- integrate_kde(portal_isd, band = 10) %>%
   mutate(source = "empirical", sim = NA)
@@ -64,8 +64,8 @@ constrained_s_isds <- bind_rows(constrained_s_isds, .id = "sim") %>%
 all_isds <- bind_rows(uniform_isds, constrained_isds, constrained_s_isds, portal_isd)
 
 
-save.image("sim_bank.RData")
+save.image("sim_bank_1990s.RData")
 
-write.csv(all_isds, file = "all_isds.csv", row.names = F)
-write.csv(all_kdes, file = "all_kdes.csv", row.names = F)
-write.csv(all_gmms, file = "all_gmms.csv", row.names = F)
+write.csv(all_isds, file = "all_isds_1990s.csv", row.names = F)
+write.csv(all_kdes, file = "all_kdes_1990s.csv", row.names = F)
+write.csv(all_gmms, file = "all_gmms_1990s.csv", row.names = F)
