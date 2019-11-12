@@ -231,7 +231,7 @@ gmm_er_plot
 
     ## Warning: Using alpha for a discrete variable is not advised.
 
-![](turns_etc_files/figure-markdown_github/by%20edge%20ratio%20plot%20alpha-1.png)
+![](turns_etc_files/figure-markdown_github/by%20edge%20ratio%20plot%20alpha%20better-1.png)
 
 ``` r
 kde_er_plot <- ggplot(data =filter(all, smoother == "kde", as.numeric(nchunks) > 1), aes(x = wgt, y = density, color = chunk_dominance, alpha = in_most)) +
@@ -245,4 +245,4 @@ kde_er_plot
 
     ## Warning: Using alpha for a discrete variable is not advised.
 
-![](turns_etc_files/figure-markdown_github/by%20edge%20ratio%20plot%20alpha-2.png)
+![](turns_etc_files/figure-markdown_github/by%20edge%20ratio%20plot%20alpha%20better-2.png)
