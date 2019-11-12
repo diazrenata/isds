@@ -224,7 +224,7 @@ nchunks_plot <- ggplot(data = filter(all, chunk_rank %% 10 == 1), aes(x = wgt, y
 ```
 
 ``` r
-gmm_er_plot <- ggplot(data =filter(all, smoother == "gmm", as.numeric(nchunks) > 1), aes(x = wgt, y = density, color = chunk_dominance, alpha = in_most)) +
+gmm_er_plot <- ggplot(data =filter(all, smoother == "gmm", as.numeric(nchunks) > 1, in_most), aes(x = wgt, y = density, color = chunk_dominance, alpha = in_most)) +
   geom_point() +
   theme_bw() +
   scale_color_viridis_c(end = .8) +
@@ -238,7 +238,7 @@ gmm_er_plot
 ![](turns_etc_files/figure-markdown_github/by%20edge%20ratio%20plot%20alpha%20no%20uniform-1.png)
 
 ``` r
-gmm_er_plot_nou <- ggplot(data =filter(all, smoother == "gmm", source != "uniform"), aes(x = wgt, y = density, color = chunk_dominance, alpha = in_most)) +
+gmm_er_plot_nou <- ggplot(data =filter(all, smoother == "gmm", source != "uniform", in_most), aes(x = wgt, y = density, color = chunk_dominance, alpha = in_most)) +
   geom_point() +
   theme_bw() +
   scale_color_viridis_c(end = .8) +
@@ -252,7 +252,7 @@ gmm_er_plot_nou
 ![](turns_etc_files/figure-markdown_github/by%20edge%20ratio%20plot%20alpha%20no%20uniform-2.png)
 
 ``` r
-kde_er_plot <- ggplot(data =filter(all, smoother == "kde", as.numeric(nchunks) > 1), aes(x = wgt, y = density, color = chunk_dominance, alpha = in_most)) +
+kde_er_plot <- ggplot(data =filter(all, smoother == "kde", as.numeric(nchunks) > 1,in_most), aes(x = wgt, y = density, color = chunk_dominance, alpha = in_most)) +
   geom_point() +
   theme_bw() +
   scale_color_viridis_c(end = .8) +
@@ -266,7 +266,7 @@ kde_er_plot
 ![](turns_etc_files/figure-markdown_github/by%20edge%20ratio%20plot%20alpha%20no%20uniform-3.png)
 
 ``` r
-kde_er_plot_nou <- ggplot(data =filter(all, smoother == "kde", source != "uniform"), aes(x = wgt, y = density, color = chunk_dominance, alpha = in_most)) +
+kde_er_plot_nou <- ggplot(data =filter(all, smoother == "kde", source != "uniform",in_most), aes(x = wgt, y = density, color = chunk_dominance, alpha = in_most)) +
   geom_point() +
   theme_bw() +
   scale_color_viridis_c(end = .8) +
