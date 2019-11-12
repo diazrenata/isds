@@ -238,7 +238,7 @@ nchunks_plot <- ggplot(data = filter(all, chunk_rank %% 10 == 1), aes(x = wgt, y
 ```
 
 
-```{r by edge ratio plot alpha, fig.dim=c(40,20)}
+```{r by edge ratio plot alpha no uniform, fig.dim=c(40,20)}
 
 gmm_er_plot <- ggplot(data =filter(all, smoother == "gmm", as.numeric(nchunks) > 1), aes(x = wgt, y = density, color = chunk_dominance, alpha = in_most)) +
   geom_point() +
@@ -248,6 +248,13 @@ gmm_er_plot <- ggplot(data =filter(all, smoother == "gmm", as.numeric(nchunks) >
   ggtitle("GMMs")
 gmm_er_plot
 
+gmm_er_plot_nou <- ggplot(data =filter(all, smoother == "gmm", source != "uniform"), aes(x = wgt, y = density, color = chunk_dominance, alpha = in_most)) +
+  geom_point() +
+  theme_bw() +
+  scale_color_viridis_c(end = .8) +
+  facet_grid(rows = vars(nchunks), cols = vars(dominance_rank), scales= "free") +
+  ggtitle("GMMs")
+gmm_er_plot_nou
 
 kde_er_plot <- ggplot(data =filter(all, smoother == "kde", as.numeric(nchunks) > 1), aes(x = wgt, y = density, color = chunk_dominance, alpha = in_most)) +
   geom_point() +
@@ -256,5 +263,14 @@ kde_er_plot <- ggplot(data =filter(all, smoother == "kde", as.numeric(nchunks) >
   facet_grid(rows = vars(nchunks), cols = vars(dominance_rank), scales= "free_x") +
   ggtitle("KDEs")
 kde_er_plot
+
+
+kde_er_plot_nou <- ggplot(data =filter(all, smoother == "kde", source != "uniform"), aes(x = wgt, y = density, color = chunk_dominance, alpha = in_most)) +
+  geom_point() +
+  theme_bw() +
+  scale_color_viridis_c(end = .8) +
+  facet_grid(rows = vars(nchunks), cols = vars(dominance_rank), scales= "free_x") +
+  ggtitle("KDEs")
+kde_er_plot_nou
 
 ```
