@@ -238,7 +238,7 @@ nchunks_plot <- ggplot(data = filter(all, chunk_rank %% 10 == 1), aes(x = wgt, y
 ```
 
 
-```{r by edge ratio plot alpha, fig.dim=c(40,40)}
+```{r by edge ratio plot alpha, fig.dim=c(20,40)}
 
 gmm_er_plot <- ggplot(data =filter(all, smoother == "gmm", as.numeric(nchunks) > 1), aes(x = wgt, y = density, color = chunk_dominance, alpha = in_most)) +
   geom_point() +
