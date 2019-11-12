@@ -153,8 +153,14 @@ summarize_chunks <- function(in_most_df) {
   chunk_dom <- vegan::diversity(in_most_evenness$chunk_sum, index = "simpson")
   
   
+  in_most_evenness_cutoff <- in_most_evenness %>%
+    filter(chunk_sum / sum(in_most_evenness$chunk_sum) >= .1)
   
-  output <- data.frame(sim = in_most_df$sim[1], source = in_most_df$source[1], smoother = in_most_df$smoother[1], nchunks = nchunks, edges_ratio = edges_ratio, chunk_dominance = chunk_dom, stringsAsFactors = F)
+  cutoff_chunk_dom = vegan::diversity(in_most_evenness_cutoff$chunk_sum, index = "simpson")
+  
+  nchunks_cutoff <- nrow(in_most_evenness_cutoff)
+  
+  output <- data.frame(sim = in_most_df$sim[1], source = in_most_df$source[1], smoother = in_most_df$smoother[1], nchunks = nchunks, edges_ratio = edges_ratio, chunk_dominance = chunk_dom, cutoff_dom = cutoff_chunk_dom, nchunks_cutoff = nchunks_cutoff, stringsAsFactors = F)
   
   return(output)
 }
@@ -205,11 +211,16 @@ all_chunks <- all_chunks %>%
   mutate(within_nchunks_e_r = row_number()) %>%
   arrange(desc(chunk_dominance)) %>%
   mutate(dominance_rank = row_number()) %>%
+  ungroup() %>%
+  group_by(smoother, nchunks_cutoff) %>%
+  arrange(desc(cutoff_dom)) %>%
+  mutate(cutoff_dominance_rank = row_number()) %>%
   ungroup()
 
 
 all <- left_join(all, all_chunks, by = c("sim", "smoother", "source")) %>%
-  mutate(nchunks = as.factor(nchunks)) %>%
+  mutate(nchunks = as.factor(nchunks),
+         nchunks_cutoff = as.factor(nchunks_cutoff)) %>%
   group_by(sim, smoother, source) %>%
   mutate(p_sd = sd(density)) %>%
   ungroup()
@@ -278,3 +289,33 @@ kde_er_plot_nou
     ## Warning: Using alpha for a discrete variable is not advised.
 
 ![](turns_etc_files/figure-markdown_github/by%20edge%20ratio%20plot%20alpha%20no%20uniform-4.png)
+
+try removing low-value chunks
+
+``` r
+gmm_er_plot_co <- ggplot(data =filter(all, smoother == "gmm", source != "uniform"), aes(x = wgt, y = density, color = cutoff_dom, alpha = in_most)) +
+  geom_point() +
+  theme_bw() +
+  scale_color_viridis_c(end = .8) +
+  facet_grid(rows = vars(nchunks_cutoff), cols = vars(cutoff_dominance_rank), scales= "free") +
+  ggtitle("GMMs")
+gmm_er_plot_co
+```
+
+    ## Warning: Using alpha for a discrete variable is not advised.
+
+![](turns_etc_files/figure-markdown_github/remove%20lowval%20chunks-1.png)
+
+``` r
+kde_er_plot_co <- ggplot(data =filter(all, smoother == "kde", as.numeric(nchunks) > 1,in_most), aes(x = wgt, y = density, color = cutoff_dom, alpha = in_most)) +
+  geom_point() +
+  theme_bw() +
+  scale_color_viridis_c(end = .8) +
+  facet_grid(rows = vars(nchunks_cutoff), cols = vars(cutoff_dominance_rank), scales= "free_x") +
+  ggtitle("KDEs")
+kde_er_plot_co
+```
+
+    ## Warning: Using alpha for a discrete variable is not advised.
+
+![](turns_etc_files/figure-markdown_github/remove%20lowval%20chunks-2.png)
