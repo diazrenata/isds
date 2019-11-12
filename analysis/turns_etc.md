@@ -124,8 +124,12 @@ summarize_chunks <- function(in_most_df) {
   nchunks <- 0
   in_most_df$chunk <- NA
   
-  for(i in 2:nrow(in_most_df)) {
-    if(all(in_most_df$in_most[i], in_most_df$in_most[i - 1] == FALSE)) {
+  for(i in 1:nrow(in_most_df)) {
+    if(i == 1) {
+      if(in_most_df$in_most[i]) {
+        nchunks <- nchunks + 1
+      }
+    } else if(all(in_most_df$in_most[i], in_most_df$in_most[i - 1] == FALSE)) {
       nchunks <- nchunks + 1
     }
     
