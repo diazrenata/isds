@@ -122,10 +122,15 @@ all <- bind_rows(all_kdes, all_gmms)
 summarize_chunks <- function(in_most_df) {
   
   nchunks <- 0
+  in_most_df$chunk <- NA
   
   for(i in 2:nrow(in_most_df)) {
     if(all(in_most_df$in_most[i], in_most_df$in_most[i - 1] == FALSE)) {
       nchunks <- nchunks + 1
+    }
+    
+    if(all(nchunks > 0, in_most_df$in_most[i])) {
+    in_most_df$chunk[i] <- nchunks
     }
   }
   
@@ -134,14 +139,42 @@ summarize_chunks <- function(in_most_df) {
   
   edges_ratio <- max_in_most/min_in_most
   
-  output <- data.frame(sim = in_most_df$sim[1], source = in_most_df$source[1], smoother = in_most_df$smoother[1], nchunks = nchunks, edges_ratio = edges_ratio, stringsAsFactors = F)
+
+  in_most_evenness <- in_most_df %>%
+    filter(in_most) %>%
+    group_by(chunk) %>%
+    summarize(chunk_sum = sum(density)) %>%
+    ungroup()
+  
+  chunk_dom <- vegan::diversity(in_most_evenness$chunk_sum, index = "simpson")
+  
+  
+  
+  output <- data.frame(sim = in_most_df$sim[1], source = in_most_df$source[1], smoother = in_most_df$smoother[1], nchunks = nchunks, edges_ratio = edges_ratio, chunk_dominance = chunk_dom, stringsAsFactors = F)
   
   return(output)
 }
+# 
+# add_chunk <- function(in_most_df) {
+#   
+#   nchunks <- 0
+#   in_most_df$chunk <- NA
+#   
+#   for(i in 2:nrow(in_most_df)) {
+#     if(all(in_most_df$in_most[i], in_most_df$in_most[i - 1] == FALSE)) {
+#       nchunks <- nchunks + 1
+#     }
+#     
+#     if(nchunks > 0) {
+#     in_most_df$chunk[i] <- nchunks
+#     }
+#   }
+#   return(in_most_df)
+# }
 
 all_chunks <- list() 
 
-for(i in 1:min(length(unique(all$sim)), 30)) {
+for(i in 1:min(30, length(unique(all$sim)))) {
   for(j in 1:length(unique(all$smoother))) {
     for(k in 1:length(unique(all$source))) {
       this_df <- filter(all, sim == unique(all$sim)[i],
@@ -162,11 +195,20 @@ all_chunks <- all_chunks %>%
   arrange(desc(nchunks)) %>%
   mutate(chunk_rank = row_number()) %>%
   arrange(desc(edges_ratio)) %>%
-  mutate(edges_rank = row_number())
+  mutate(edges_rank = row_number()) %>%
+  group_by(smoother, nchunks) %>%
+  arrange(desc(edges_ratio)) %>%
+  mutate(within_nchunks_e_r = row_number()) %>%
+  arrange(desc(chunk_dominance)) %>%
+  mutate(dominance_rank = row_number()) %>%
+  ungroup()
 
 
 all <- left_join(all, all_chunks, by = c("sim", "smoother", "source")) %>%
-  mutate(nchunks = as.factor(nchunks))
+  mutate(nchunks = as.factor(nchunks)) %>%
+  group_by(sim, smoother, source) %>%
+  mutate(p_sd = sd(density)) %>%
+  ungroup()
 ```
 
 ``` r
@@ -178,14 +220,29 @@ nchunks_plot <- ggplot(data = filter(all, chunk_rank %% 10 == 1), aes(x = wgt, y
 ```
 
 ``` r
-er_plot <- ggplot(data =filter(all, sim <= 25), aes(x = wgt, y = density, color = nchunks, alpha = in_most)) +
+gmm_er_plot <- ggplot(data =filter(all, smoother == "gmm", as.numeric(nchunks) > 1), aes(x = wgt, y = density, color = chunk_dominance, alpha = in_most)) +
   geom_point() +
   theme_bw() +
-  scale_color_viridis_d(option = "plasma", end = .8) +
-  facet_wrap(vars(edges_rank), scales = "free")
-er_plot
+  scale_color_viridis_c(end = .8) +
+  facet_grid(rows = vars(nchunks), cols = vars(dominance_rank), scales= "free") +
+  ggtitle("GMMs")
+gmm_er_plot
 ```
 
     ## Warning: Using alpha for a discrete variable is not advised.
 
 ![](turns_etc_files/figure-markdown_github/by%20edge%20ratio%20plot%20alpha-1.png)
+
+``` r
+kde_er_plot <- ggplot(data =filter(all, smoother == "kde", as.numeric(nchunks) > 1), aes(x = wgt, y = density, color = chunk_dominance, alpha = in_most)) +
+  geom_point() +
+  theme_bw() +
+  scale_color_viridis_c(end = .8) +
+  facet_grid(rows = vars(nchunks), cols = vars(dominance_rank), scales= "free_x") +
+  ggtitle("KDEs")
+kde_er_plot
+```
+
+    ## Warning: Using alpha for a discrete variable is not advised.
+
+![](turns_etc_files/figure-markdown_github/by%20edge%20ratio%20plot%20alpha-2.png)
