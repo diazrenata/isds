@@ -21,5 +21,8 @@ Imports:
     pastecs,
     portalr,
     rlang,
+    scads,
     testthat,
     tidyr
+Remotes: 
+    diazrenata/scads
