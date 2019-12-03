@@ -11,3 +11,4 @@ drake/*
 .drake/
 .drake/*
 sim_bank*
+analysis/sims.csv
