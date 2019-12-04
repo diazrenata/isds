@@ -83,64 +83,49 @@ all_comb_plots <- ggplot(all_species, aes(x = size_class, y = ind_proportional, 
 all_comb_plots
 ```
 
-```{r density plots, fig.dim = c(25,25)}
+```{r p given density}
 
+library(mclust)
+all_comb <- expand.grid(1:9, 1:9)  %>%
+ # filter(Var1 != Var2) %>%
+  mutate(p = NA)
 
-species_density <- lapply(as.list(1:length(unique(one_sim$species))),
-                          FUN = function(species_i, sim_data) 
-                            return(data.frame(
-                              x = density(filter(sim_data, as.numeric(species) == species_i)$wgt, from = 0, to = 1.5 * max(sim_data$wgt), n = 8192)$x,
-                              y = density(filter(sim_data, as.numeric(species) == species_i)$wgt, from = 0, to = 1.5 * max(sim_data$wgt), n =8192)$y,
-                              species = species_i,
-                              nind = nrow(filter(sim_data, as.numeric(species) == species_i))
-                            )),
-                          sim_data = one_sim)
+for(i in 1:nrow(all_comb)) {
+  sp1 = all_comb[i, 1]
+  sp2 = all_comb[i, 2]
 
-species_density <- bind_rows(species_density)
+reference_isd <- filter(one_sim, species == sp1)
 
-species_density <- species_density %>%
-  group_by(species) %>%
-  mutate(total_d = sum(y)) %>%
-  ungroup() %>%
-  mutate(prop_d = y / total_d,
-         prop_d_scaled = y * nind / total_d)
+reference_density <- densityMclust(reference_isd$wgt, modelNames = "V")
 
-density_plots <- ggplot(data = species_density, aes(x = x, y = prop_d, color = species)) +
+id <- data.frame(wgt = seq(0, floor(1.25 * max(one_sim$wgt)), by = .1),
+                density = NA)
+
+id$density <- predict(reference_density, newdata = id$wgt)
+
+id$density <- id$density / sum(id$density) 
+
+id$wgt = round(id$wgt, digits = 1)
+
+sp2_p <- filter(one_sim, species == sp2) %>%
+  mutate(wgt = round(wgt, digits = 1)) %>%
+  left_join(id, by = "wgt")
+
+illust <- ggplot(data = id, aes(x = wgt, y = density)) +
   geom_point() +
-  facet_wrap(vars(species)) +
-  theme_bw()
-density_plots
-
-
-density_plots_scaled <- ggplot(data = species_density, aes(x = x, y = prop_d_scaled, color = species)) +
-  geom_point() +
-  facet_wrap(vars(species)) +
-  theme_bw()
-density_plots_scaled
-
-all_densities <- expand.grid(1:9, 1:9) %>% rename(sp1 = Var1, sp2 = Var2) %>%
-  filter(sp1 < sp2) %>%
-  as.matrix()
-
-densities_intersections <- apply(all_densities, MARGIN = 1, FUN = function(spvect, density_dat)
-  return(data.frame(
-    x = filter(density_dat, species == spvect[1])$x,
-    y = filter(density_dat, species == spvect[1])$prop_d_scaled *
-      filter(density_dat, species == spvect[2])$prop_d_scaled,
-    sp1 = spvect[1],
-    sp2 = spvect[2]
-  )),
-  density_dat = species_density)
-
-
-densities_intersections = bind_rows(densities_intersections)
-
-intersection_plots <- ggplot(densities_intersections, aes(x = x, y = y)) +
-  geom_point(data = densities_intersections) +
-  geom_line(data = densities_intersections) +
+  geom_point(data = sp2_p, aes(x = wgt, y = mean(id$density)), color = "red", alpha = .1) +
+  geom_point(x = mean(sp2_p$wgt), y = mean(sp2_p$density), color = "green") +
   theme_bw() +
-  facet_wrap(vars(sp1, sp2)) +
-  theme(strip.text = element_blank())
+  ggtitle(mean(sp2_p$density))
 
-intersection_plots
+print(illust)
+
+all_comb$p[i] <- mean(log(sp2_p$density))
+}
+
+phist <- ggplot(data = all_comb, aes(x = p)) +
+  geom_histogram() +
+  theme_bw()
+
+phist
 ```

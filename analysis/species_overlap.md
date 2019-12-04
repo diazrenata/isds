@@ -81,215 +81,55 @@ all_comb_plots
 ![](species_overlap_files/figure-markdown_github/all%20comb-1.png)
 
 ``` r
-species_density <- lapply(as.list(1:length(unique(one_sim$species))),
-                          FUN = function(species_i, sim_data) 
-                            return(data.frame(
-                              x = density(filter(sim_data, as.numeric(species) == species_i)$wgt, from = 0, to = 1.5 * max(sim_data$wgt), n = 8192)$x,
-                              y = density(filter(sim_data, as.numeric(species) == species_i)$wgt, from = 0, to = 1.5 * max(sim_data$wgt), n =8192)$y,
-                              species = species_i,
-                              nind = nrow(filter(sim_data, as.numeric(species) == species_i))
-                            )),
-                          sim_data = one_sim)
+library(mclust)
+```
 
-species_density <- bind_rows(species_density)
+    ## Package 'mclust' version 5.4.5
+    ## Type 'citation("mclust")' for citing this R package in publications.
 
-species_density <- species_density %>%
-  group_by(species) %>%
-  mutate(total_d = sum(y)) %>%
-  ungroup() %>%
-  mutate(prop_d = y / total_d,
-         prop_d_scaled = y * nind / total_d)
+``` r
+all_comb <- expand.grid(1:9, 1:9)  %>%
+  filter(Var1 != Var2) %>%
+  mutate(p = NA)
 
-density_plots <- ggplot(data = species_density, aes(x = x, y = prop_d, color = species)) +
+for(i in 1:nrow(all_comb)) {
+  sp1 = all_comb[i, 1]
+  sp2 = all_comb[i, 2]
+
+reference_isd <- filter(one_sim, species == sp1)
+
+reference_density <- densityMclust(reference_isd$wgt, modelNames = "V")
+
+id <- data.frame(wgt = seq(0, floor(1.25 * max(one_sim$wgt)), by = .1),
+                density = NA)
+
+id$density <- predict(reference_density, newdata = id$wgt)
+
+id$density <- id$density / sum(id$density) 
+
+id$wgt = round(id$wgt, digits = 1)
+
+sp2_p <- filter(one_sim, species == sp2) %>%
+  mutate(wgt = round(wgt, digits = 1)) %>%
+  left_join(id, by = "wgt")
+
+illust <- ggplot(data = id, aes(x = wgt, y = density)) +
   geom_point() +
-  facet_wrap(vars(species)) +
-  theme_bw()
-density_plots
-```
-
-![](species_overlap_files/figure-markdown_github/density%20plots-1.png)
-
-``` r
-density_plots_scaled <- ggplot(data = species_density, aes(x = x, y = prop_d_scaled, color = species)) +
-  geom_point() +
-  facet_wrap(vars(species)) +
-  theme_bw()
-density_plots_scaled
-```
-
-![](species_overlap_files/figure-markdown_github/density%20plots-2.png)
-
-``` r
-all_densities <- expand.grid(1:9, 1:9) %>% rename(sp1 = Var1, sp2 = Var2) %>%
-  filter(sp1 < sp2) %>%
-  as.matrix()
-
-densities_intersections <- apply(all_densities, MARGIN = 1, FUN = function(spvect, density_dat)
-  return(data.frame(
-    x = filter(density_dat, species == spvect[1])$x,
-    y = filter(density_dat, species == spvect[1])$prop_d_scaled *
-      filter(density_dat, species == spvect[2])$prop_d_scaled,
-    sp1 = spvect[1],
-    sp2 = spvect[2]
-  )),
-  density_dat = species_density)
-```
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-    ## Warning in data.frame(x = filter(density_dat, species == spvect[1])$x, y =
-    ## filter(density_dat, : row names were found from a short variable and have
-    ## been discarded
-
-``` r
-densities_intersections = bind_rows(densities_intersections)
-
-intersection_plots <- ggplot(densities_intersections, aes(x = x, y = y)) +
-  geom_point(data = densities_intersections) +
-  geom_line(data = densities_intersections) +
+  geom_point(data = sp2_p, aes(x = wgt, y = mean(id$density)), color = "red", alpha = .1) +
+  geom_point(x = mean(sp2_p$wgt), y = mean(sp2_p$density), color = "green") +
   theme_bw() +
-  facet_wrap(vars(sp1, sp2)) +
-  theme(strip.text = element_blank())
+  ggtitle(mean(sp2_p$density))
 
-intersection_plots
+print(illust)
+
+all_comb$p[i] <- mean(sp2_p$density)
+}
 ```
 
-![](species_overlap_files/figure-markdown_github/density%20plots-3.png)
+![](species_overlap_files/figure-markdown_github/p%20given%20density-1.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-2.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-3.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-4.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-5.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-6.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-7.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-8.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-9.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-10.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-11.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-12.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-13.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-14.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-15.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-16.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-17.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-18.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-19.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-20.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-21.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-22.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-23.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-24.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-25.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-26.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-27.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-28.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-29.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-30.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-31.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-32.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-33.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-34.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-35.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-36.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-37.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-38.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-39.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-40.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-41.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-42.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-43.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-44.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-45.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-46.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-47.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-48.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-49.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-50.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-51.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-52.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-53.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-54.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-55.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-56.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-57.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-58.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-59.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-60.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-61.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-62.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-63.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-64.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-65.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-66.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-67.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-68.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-69.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-70.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-71.png)![](species_overlap_files/figure-markdown_github/p%20given%20density-72.png)
+
+``` r
+hist(all_comb$p)
+```
+
+![](species_overlap_files/figure-markdown_github/p%20given%20density-73.png)
