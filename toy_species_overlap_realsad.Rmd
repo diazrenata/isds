@@ -133,7 +133,8 @@ Scenarios:
 set.seed(2)
 means_62 <- c(20, 21, 22, 80, 81, 82) 
 sds_62 <- .2 * means_62
-an_sad <- c(50, 50, 50, 50, 50, 50)
+#an_sad <- c(50, 50, 50, 50, 50, 50)
+an_sad <- unlist(scads::sample_METE(s = 6, n = 200, nsamples = 1))
 
 an_sad[ which(an_sad == 1)] <- 2
 
@@ -161,6 +162,17 @@ six_two_o <- ggplot(data = six_two_overlap, aes(x = overlap)) +
   theme_bw()
 
 six_two_o
+
+six_two_o_e <- list()
+for(i in 1:nrow(six_two_overlap)) {
+  six_two_o_e[[i]] <- rep(six_two_overlap$overlap[i], times = round(six_two_overlap$hm_abund[i]))
+}
+six_two_o_e <- data.frame(
+  overlap = unlist(six_two_o_e))
+six_two_hm <- ggplot(data = six_two_o_e, aes(x= overlap)) +
+  geom_histogram(boundary = 0) + geom_vline(xintercept = c(0, 1), color = "red") + xlim(-.15, 1.15) +
+  theme_bw()
+six_two_hm
 
 ```
 
@@ -194,6 +206,16 @@ six_six_o <- ggplot(data = six_six_overlap, aes(x = overlap)) +
 
 six_six_o
 
+six_six_o_e <- list()
+for(i in 1:nrow(six_six_overlap)) {
+  six_six_o_e[[i]] <- rep(six_six_overlap$overlap[i], times = round(six_six_overlap$hm_abund[i]))
+}
+six_six_o_e <- data.frame(
+  overlap = unlist(six_six_o_e))
+six_six_hm <- ggplot(data = six_six_o_e, aes(x= overlap)) +
+  geom_histogram(boundary = 0) + geom_vline(xintercept = c(0, 1), color = "red") + xlim(-.15, 1.15) +
+  theme_bw()
+six_six_hm
 ```
 ### Two groups of two overlapping with two that span the overlap
 
@@ -226,7 +248,16 @@ two_two_two_o <- ggplot(data = two_two_two_overlap, aes(x = overlap)) +
   theme_bw()
 
 two_two_two_o
-
+two_two_two_o_e <- list()
+for(i in 1:nrow(two_two_two_overlap)) {
+  two_two_two_o_e[[i]] <- rep(two_two_two_overlap$overlap[i], times = round(two_two_two_overlap$hm_abund[i]))
+}
+two_two_two_o_e <- data.frame(
+  overlap = unlist(two_two_two_o_e))
+two_two_hm <- ggplot(data = two_two_two_o_e, aes(x= overlap)) +
+  geom_histogram(boundary = 0) + geom_vline(xintercept = c(0, 1), color = "red") + xlim(-.15, 1.15) +
+  theme_bw()
+two_two_hm
 ```
 
 #### Six species, one group
@@ -261,6 +292,17 @@ six_one_o <- ggplot(data = six_one_overlap, aes(x = overlap)) +
 
 six_one_o
 
+six_one_o_e <- list()
+for(i in 1:nrow(six_one_overlap)) {
+  six_one_o_e[[i]] <- rep(six_one_overlap$overlap[i], times = round(six_one_overlap$hm_abund[i]))
+}
+six_one_o_e <- data.frame(
+  overlap = unlist(six_one_o_e))
+six_one_hm <- ggplot(data = six_one_o_e, aes(x= overlap)) +
+  geom_histogram(boundary = 0) + geom_vline(xintercept = c(0, 1), color = "red") + xlim(-.15, 1.15) +
+  theme_bw()
+six_one_hm
+
 ```
 
 #### Six overlapping
@@ -294,4 +336,15 @@ six_ov_o <- ggplot(data = six_ov_overlap, aes(x = overlap)) +
   theme_bw()
 
 six_ov_o
+
+six_ov_o_e <- list()
+for(i in 1:nrow(six_ov_overlap)) {
+  six_ov_o_e[[i]] <- rep(six_ov_overlap$overlap[i], times = round(six_ov_overlap$hm_abund[i]))
+}
+six_ov_o_e <- data.frame(
+  overlap = unlist(six_ov_o_e))
+six_ov_hm <- ggplot(data = six_ov_o_e, aes(x= overlap)) +
+  geom_histogram(boundary = 0) + geom_vline(xintercept = c(0, 1), color = "red") + xlim(-.15, 1.15) +
+  theme_bw()
+six_ov_hm
 ```

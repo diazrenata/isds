@@ -33,7 +33,7 @@ comm_plot_all <- ggplot(data = comm, aes(x = wgt)) +
 comm_plot_all
 ```
 
-![](toy_species_overlap_files/figure-markdown_github/make%20toy-1.png)
+![](toy_species_overlap_realsad_files/figure-markdown_github/make%20toy-1.png)
 
 ``` r
 comm_plot <- ggplot(data = comm, aes(x = wgt, fill = species, group = species)) +
@@ -44,7 +44,7 @@ comm_plot <- ggplot(data = comm, aes(x = wgt, fill = species, group = species)) 
 comm_plot
 ```
 
-![](toy_species_overlap_files/figure-markdown_github/make%20toy-2.png)
+![](toy_species_overlap_realsad_files/figure-markdown_github/make%20toy-2.png)
 
 Scenarios:
 
@@ -54,7 +54,8 @@ Scenarios:
 set.seed(2)
 means_62 <- c(20, 21, 22, 80, 81, 82) 
 sds_62 <- .2 * means_62
-an_sad <- c(50, 50, 50, 50, 50, 50)
+#an_sad <- c(50, 50, 50, 50, 50, 50)
+an_sad <- unlist(scads::sample_METE(s = 6, n = 200, nsamples = 1))
 
 an_sad[ which(an_sad == 1)] <- 2
 
@@ -69,7 +70,7 @@ six_two_plot_all <- ggplot(data = six_two, aes(x = wgt)) +
 six_two_plot_all
 ```
 
-![](toy_species_overlap_files/figure-markdown_github/six%20in%20two-1.png)
+![](toy_species_overlap_realsad_files/figure-markdown_github/six%20in%20two-1.png)
 
 ``` r
 six_two_plot <- ggplot(data = six_two, aes(x = wgt, fill = species, group = species)) +
@@ -80,7 +81,7 @@ six_two_plot <- ggplot(data = six_two, aes(x = wgt, fill = species, group = spec
 six_two_plot
 ```
 
-![](toy_species_overlap_files/figure-markdown_github/six%20in%20two-2.png)
+![](toy_species_overlap_realsad_files/figure-markdown_github/six%20in%20two-2.png)
 
 ``` r
 six_two_overlap <- get_overlap(six_two)
@@ -96,7 +97,26 @@ six_two_o
 
     ## Warning: Removed 2 rows containing missing values (geom_bar).
 
-![](toy_species_overlap_files/figure-markdown_github/six%20in%20two-3.png)
+![](toy_species_overlap_realsad_files/figure-markdown_github/six%20in%20two-3.png)
+
+``` r
+six_two_o_e <- list()
+for(i in 1:nrow(six_two_overlap)) {
+  six_two_o_e[[i]] <- rep(six_two_overlap$overlap[i], times = round(six_two_overlap$hm_abund[i]))
+}
+six_two_o_e <- data.frame(
+  overlap = unlist(six_two_o_e))
+six_two_hm <- ggplot(data = six_two_o_e, aes(x= overlap)) +
+  geom_histogram(boundary = 0) + geom_vline(xintercept = c(0, 1), color = "red") + xlim(-.15, 1.15) +
+  theme_bw()
+six_two_hm
+```
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+    ## Warning: Removed 2 rows containing missing values (geom_bar).
+
+![](toy_species_overlap_realsad_files/figure-markdown_github/six%20in%20two-4.png)
 
 #### Six nonoverlapping species
 
@@ -114,7 +134,7 @@ six_six_plot_all <- ggplot(data = six_six, aes(x = wgt)) +
 six_six_plot_all
 ```
 
-![](toy_species_overlap_files/figure-markdown_github/six%20in%20six-1.png)
+![](toy_species_overlap_realsad_files/figure-markdown_github/six%20in%20six-1.png)
 
 ``` r
 six_six_plot <- ggplot(data = six_six, aes(x = wgt, fill = species, group = species)) +
@@ -125,7 +145,7 @@ six_six_plot <- ggplot(data = six_six, aes(x = wgt, fill = species, group = spec
 six_six_plot
 ```
 
-![](toy_species_overlap_files/figure-markdown_github/six%20in%20six-2.png)
+![](toy_species_overlap_realsad_files/figure-markdown_github/six%20in%20six-2.png)
 
 ``` r
 six_six_overlap <- get_overlap(six_six)
@@ -141,7 +161,26 @@ six_six_o
 
     ## Warning: Removed 2 rows containing missing values (geom_bar).
 
-![](toy_species_overlap_files/figure-markdown_github/six%20in%20six-3.png) \#\#\# Two groups of two overlapping with two that span the overlap
+![](toy_species_overlap_realsad_files/figure-markdown_github/six%20in%20six-3.png)
+
+``` r
+six_six_o_e <- list()
+for(i in 1:nrow(six_six_overlap)) {
+  six_six_o_e[[i]] <- rep(six_six_overlap$overlap[i], times = round(six_six_overlap$hm_abund[i]))
+}
+six_six_o_e <- data.frame(
+  overlap = unlist(six_six_o_e))
+six_six_hm <- ggplot(data = six_six_o_e, aes(x= overlap)) +
+  geom_histogram(boundary = 0) + geom_vline(xintercept = c(0, 1), color = "red") + xlim(-.15, 1.15) +
+  theme_bw()
+six_six_hm
+```
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+    ## Warning: Removed 2 rows containing missing values (geom_bar).
+
+![](toy_species_overlap_realsad_files/figure-markdown_github/six%20in%20six-4.png) \#\#\# Two groups of two overlapping with two that span the overlap
 
 ``` r
 means_222 <- c(31, 32, 45, 60, 85, 86)
@@ -157,7 +196,7 @@ two_two_two_plot_all <- ggplot(data = two_two_two, aes(x = wgt)) +
 two_two_two_plot_all
 ```
 
-![](toy_species_overlap_files/figure-markdown_github/two%20in%20two%20plus%20two-1.png)
+![](toy_species_overlap_realsad_files/figure-markdown_github/two%20in%20two%20plus%20two-1.png)
 
 ``` r
 two_two_two_plot <- ggplot(data = two_two_two, aes(x = wgt, fill = species, group = species)) +
@@ -168,7 +207,7 @@ two_two_two_plot <- ggplot(data = two_two_two, aes(x = wgt, fill = species, grou
 two_two_two_plot
 ```
 
-![](toy_species_overlap_files/figure-markdown_github/two%20in%20two%20plus%20two-2.png)
+![](toy_species_overlap_realsad_files/figure-markdown_github/two%20in%20two%20plus%20two-2.png)
 
 ``` r
 two_two_two_overlap <- get_overlap(two_two_two)
@@ -184,7 +223,26 @@ two_two_two_o
 
     ## Warning: Removed 2 rows containing missing values (geom_bar).
 
-![](toy_species_overlap_files/figure-markdown_github/two%20in%20two%20plus%20two-3.png)
+![](toy_species_overlap_realsad_files/figure-markdown_github/two%20in%20two%20plus%20two-3.png)
+
+``` r
+two_two_two_o_e <- list()
+for(i in 1:nrow(two_two_two_overlap)) {
+  two_two_two_o_e[[i]] <- rep(two_two_two_overlap$overlap[i], times = round(two_two_two_overlap$hm_abund[i]))
+}
+two_two_two_o_e <- data.frame(
+  overlap = unlist(two_two_two_o_e))
+two_two_hm <- ggplot(data = two_two_two_o_e, aes(x= overlap)) +
+  geom_histogram(boundary = 0) + geom_vline(xintercept = c(0, 1), color = "red") + xlim(-.15, 1.15) +
+  theme_bw()
+two_two_hm
+```
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+    ## Warning: Removed 2 rows containing missing values (geom_bar).
+
+![](toy_species_overlap_realsad_files/figure-markdown_github/two%20in%20two%20plus%20two-4.png)
 
 #### Six species, one group
 
@@ -202,7 +260,7 @@ six_one_plot_all <- ggplot(data = six_one, aes(x = wgt)) +
 six_one_plot_all
 ```
 
-![](toy_species_overlap_files/figure-markdown_github/six%20one-1.png)
+![](toy_species_overlap_realsad_files/figure-markdown_github/six%20one-1.png)
 
 ``` r
 six_one_plot <- ggplot(data = six_one, aes(x = wgt, fill = species, group = species)) +
@@ -213,7 +271,7 @@ six_one_plot <- ggplot(data = six_one, aes(x = wgt, fill = species, group = spec
 six_one_plot
 ```
 
-![](toy_species_overlap_files/figure-markdown_github/six%20one-2.png)
+![](toy_species_overlap_realsad_files/figure-markdown_github/six%20one-2.png)
 
 ``` r
 six_one_overlap <- get_overlap(six_one)
@@ -229,7 +287,26 @@ six_one_o
 
     ## Warning: Removed 2 rows containing missing values (geom_bar).
 
-![](toy_species_overlap_files/figure-markdown_github/six%20one-3.png)
+![](toy_species_overlap_realsad_files/figure-markdown_github/six%20one-3.png)
+
+``` r
+six_one_o_e <- list()
+for(i in 1:nrow(six_one_overlap)) {
+  six_one_o_e[[i]] <- rep(six_one_overlap$overlap[i], times = round(six_one_overlap$hm_abund[i]))
+}
+six_one_o_e <- data.frame(
+  overlap = unlist(six_one_o_e))
+six_one_hm <- ggplot(data = six_one_o_e, aes(x= overlap)) +
+  geom_histogram(boundary = 0) + geom_vline(xintercept = c(0, 1), color = "red") + xlim(-.15, 1.15) +
+  theme_bw()
+six_one_hm
+```
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+    ## Warning: Removed 2 rows containing missing values (geom_bar).
+
+![](toy_species_overlap_realsad_files/figure-markdown_github/six%20one-4.png)
 
 #### Six overlapping
 
@@ -247,7 +324,7 @@ six_ov_plot_all <- ggplot(data = six_ov, aes(x = wgt)) +
 six_ov_plot_all
 ```
 
-![](toy_species_overlap_files/figure-markdown_github/six%20overlap-1.png)
+![](toy_species_overlap_realsad_files/figure-markdown_github/six%20overlap-1.png)
 
 ``` r
 six_ov_plot <- ggplot(data = six_ov, aes(x = wgt, fill = species, group = species)) +
@@ -258,7 +335,7 @@ six_ov_plot <- ggplot(data = six_ov, aes(x = wgt, fill = species, group = specie
 six_ov_plot
 ```
 
-![](toy_species_overlap_files/figure-markdown_github/six%20overlap-2.png)
+![](toy_species_overlap_realsad_files/figure-markdown_github/six%20overlap-2.png)
 
 ``` r
 six_ov_overlap <- get_overlap(six_ov)
@@ -274,4 +351,23 @@ six_ov_o
 
     ## Warning: Removed 2 rows containing missing values (geom_bar).
 
-![](toy_species_overlap_files/figure-markdown_github/six%20overlap-3.png)
+![](toy_species_overlap_realsad_files/figure-markdown_github/six%20overlap-3.png)
+
+``` r
+six_ov_o_e <- list()
+for(i in 1:nrow(six_ov_overlap)) {
+  six_ov_o_e[[i]] <- rep(six_ov_overlap$overlap[i], times = round(six_ov_overlap$hm_abund[i]))
+}
+six_ov_o_e <- data.frame(
+  overlap = unlist(six_ov_o_e))
+six_ov_hm <- ggplot(data = six_ov_o_e, aes(x= overlap)) +
+  geom_histogram(boundary = 0) + geom_vline(xintercept = c(0, 1), color = "red") + xlim(-.15, 1.15) +
+  theme_bw()
+six_ov_hm
+```
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+    ## Warning: Removed 2 rows containing missing values (geom_bar).
+
+![](toy_species_overlap_realsad_files/figure-markdown_github/six%20overlap-4.png)
