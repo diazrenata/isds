@@ -87,6 +87,19 @@ pair_harmonic_mean <- function(species_vects){
   return(hm)
 }
 
+#' Total abundance of two species
+#'
+#' @param species_vects wgt vectors
+#'
+#' @return total n
+#' @export
+#'
+pair_total_abund <- function(species_vects) {
+  total_abund <- sum(unlist(lapply(species_vects, FUN = length)))
+
+  return(total_abund)
+}
+
 #' Community level overlap
 #'
 #' @param community_df full community df
@@ -106,6 +119,8 @@ community_overlap <- function(community_df) {
   all_pairings$overlap <- unlist(all_pair_overlaps)
 
   all_pairings$hm <- unlist(all_pair_hms)
+
+  all_pairings$total_n <- unlist(lapply(all_species_pairs, FUN = pair_total_abund))
 
   return(all_pairings)
 }

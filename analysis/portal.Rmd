@@ -45,7 +45,13 @@ r_o_w_h <- ggplot(data = real_overlap_weighted, aes(x = weighted_overlap)) +
   theme_bw() +
   xlim(-.2, 1.2)
 
-gridExtra::grid.arrange(grobs = list(r_o_h, r_o_w_h), nrow = 1)
+real_overlap_n_weighted <- data.frame(
+  weighted_overlap = rep(real_overlap$overlap, times = round(real_overlap$total_n)))
+r_o_w_n_h <- ggplot(data = real_overlap_n_weighted, aes(x = weighted_overlap)) +
+  geom_histogram(boundary = 0) +
+  theme_bw() +
+  xlim(-.2, 1.2)
+gridExtra::grid.arrange(grobs = list(r_o_h, r_o_w_h, r_o_w_n_h), nrow = 1)
 ```
 
 ```{r complete overlap}
@@ -104,16 +110,27 @@ o_s_h <- ggplot(data = overlapped_overlaps, aes(x = overlap)) +
   xlim(-.2, 1.2) +
   facet_wrap(vars(sim), scales = "free_y")
 
-overlapped_overlaps_weighted <- data.frame(
+overlapped_overlaps_hm_weighted <- data.frame(
   sim = rep(overlapped_overlaps$sim, times = round(overlapped_overlaps$hm)),
   overlap_w = rep(overlapped_overlaps$overlap, times = round(overlapped_overlaps$hm))
 )
 
-o_s_w_h <- ggplot(data = overlapped_overlaps_weighted, aes(x = overlap_w)) +
+o_s_w_h <- ggplot(data = overlapped_overlaps_hm_weighted, aes(x = overlap_w)) +
+    geom_histogram(boundary = 0) +
+  theme_bw() +
+  xlim(-.2, 1.2) +
+  facet_wrap(vars(sim), scales = "free_y")
+
+overlapped_overlaps_n_weighted <- data.frame(
+  sim = rep(overlapped_overlaps$sim, times = round(overlapped_overlaps$total_n)),
+  overlap_w = rep(overlapped_overlaps$overlap, times = round(overlapped_overlaps$total_n))
+)
+o_s_w_n_h <- ggplot(data = overlapped_overlaps_n_weighted, aes(x = overlap_w)) +
     geom_histogram(boundary = 0) +
   theme_bw() +
   xlim(-.2, 1.2) +
   facet_wrap(vars(sim), scales = "free_y")
 o_s_h
 o_s_w_h
+o_s_w_n_h
 ```
