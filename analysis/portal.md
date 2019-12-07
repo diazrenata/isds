@@ -23,7 +23,7 @@ gridExtra::grid.arrange(grobs = list(isd_plot, sbsds_plot), nrow = 1)
 real_overlap <- community_overlap(sample_community)
 
 r_o_h <- ggplot(data = real_overlap, aes(x = overlap)) +
-  geom_histogram(boundary = 0) +
+  stat_ecdf() +
   theme_bw() +
   xlim(-.2, 1.2)
 
@@ -31,32 +31,32 @@ real_overlap_weighted <- data.frame(
   weighted_overlap = rep(real_overlap$overlap, times = round(real_overlap$hm)))
 
 r_o_w_h <- ggplot(data = real_overlap_weighted, aes(x = weighted_overlap)) +
-  geom_histogram(boundary = 0) +
+  stat_ecdf() +
   theme_bw() +
   xlim(-.2, 1.2)
 
 real_overlap_n_weighted <- data.frame(
   weighted_overlap = rep(real_overlap$overlap, times = round(real_overlap$total_n)))
 r_o_w_n_h <- ggplot(data = real_overlap_n_weighted, aes(x = weighted_overlap)) +
-  geom_histogram(boundary = 0) +
+  stat_ecdf() +
   theme_bw() +
   xlim(-.2, 1.2)
 gridExtra::grid.arrange(grobs = list(r_o_h, r_o_w_h, r_o_w_n_h), nrow = 1)
 ```
 
-    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-
-    ## Warning: Removed 2 rows containing missing values (geom_bar).
-
-    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-
-    ## Warning: Removed 2 rows containing missing values (geom_bar).
-
-    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-
-    ## Warning: Removed 2 rows containing missing values (geom_bar).
-
 ![](portal_files/figure-markdown_github/overlap%20real-1.png)
+
+``` r
+real_overlap_p_weighted <- data.frame(
+  weighted_overlap = rep(real_overlap$overlap, times = round(real_overlap$prod_n)))
+r_o_w_p_h <- ggplot(data = real_overlap_p_weighted, aes(x = weighted_overlap)) +
+  stat_ecdf() +
+  theme_bw() +
+  xlim(-.2, 1.2)
+gridExtra::grid.arrange(grobs = list(r_o_h, r_o_w_h, r_o_w_n_h, r_o_w_p_h), nrow = 1)
+```
+
+![](portal_files/figure-markdown_github/overlap%20real-2.png)
 
 ``` r
 sad <- sample_community %>%
@@ -119,7 +119,7 @@ overlapped_overlaps <- bind_rows(overlapped_overlaps, .id = "sim") %>%
 
 
 o_s_h <- ggplot(data = overlapped_overlaps, aes(x = overlap)) +
-  geom_histogram(boundary = 0) +
+  stat_ecdf() +
   theme_bw() +
   xlim(-.2, 1.2) +
   facet_wrap(vars(sim), scales = "free_y")
@@ -130,7 +130,7 @@ overlapped_overlaps_hm_weighted <- data.frame(
 )
 
 o_s_w_h <- ggplot(data = overlapped_overlaps_hm_weighted, aes(x = overlap_w)) +
-    geom_histogram(boundary = 0) +
+    stat_ecdf() +
   theme_bw() +
   xlim(-.2, 1.2) +
   facet_wrap(vars(sim), scales = "free_y")
@@ -140,16 +140,12 @@ overlapped_overlaps_n_weighted <- data.frame(
   overlap_w = rep(overlapped_overlaps$overlap, times = round(overlapped_overlaps$total_n))
 )
 o_s_w_n_h <- ggplot(data = overlapped_overlaps_n_weighted, aes(x = overlap_w)) +
-    geom_histogram(boundary = 0) +
+    stat_ecdf() +
   theme_bw() +
   xlim(-.2, 1.2) +
   facet_wrap(vars(sim), scales = "free_y")
 o_s_h
 ```
-
-    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-
-    ## Warning: Removed 50 rows containing missing values (geom_bar).
 
 ![](portal_files/figure-markdown_github/complete%20overlap-3.png)
 
@@ -157,19 +153,11 @@ o_s_h
 o_s_w_h
 ```
 
-    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-
-    ## Warning: Removed 50 rows containing missing values (geom_bar).
-
 ![](portal_files/figure-markdown_github/complete%20overlap-4.png)
 
 ``` r
 o_s_w_n_h
 ```
-
-    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-
-    ## Warning: Removed 50 rows containing missing values (geom_bar).
 
 ![](portal_files/figure-markdown_github/complete%20overlap-5.png)
 
@@ -178,17 +166,14 @@ overlapped_overlaps_p_weighted <- data.frame(
   sim = rep(overlapped_overlaps$sim, times = round(overlapped_overlaps$prod_n)),
   overlap_w = rep(overlapped_overlaps$overlap, times = round(overlapped_overlaps$prod_n))
 )
-o_s_w_p_h <- ggplot(data = overlapped_overlaps_p_weighted, aes(x = overlap_w)) +
-    geom_histogram(boundary = 0) +
+o_s_w_p_h <- ggplot(data = overlapped_overlaps_p_weighted, aes(x = overlap_w, color = as.factor(sim))) +
+    stat_ecdf() +
   theme_bw() +
   xlim(-.2, 1.2) +
-  facet_wrap(vars(sim), scales = "free_y")
+  stat_ecdf(data = real_overlap_p_weighted, aes(x = weighted_overlap), color = "black")
+  #facet_wrap(vars(sim), scales = "free_y")
 o_s_h
 ```
-
-    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-
-    ## Warning: Removed 50 rows containing missing values (geom_bar).
 
 ![](portal_files/figure-markdown_github/complete%20overlap-6.png)
 
@@ -196,28 +181,16 @@ o_s_h
 o_s_w_h
 ```
 
-    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-
-    ## Warning: Removed 50 rows containing missing values (geom_bar).
-
 ![](portal_files/figure-markdown_github/complete%20overlap-7.png)
 
 ``` r
 o_s_w_n_h
 ```
 
-    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-
-    ## Warning: Removed 50 rows containing missing values (geom_bar).
-
 ![](portal_files/figure-markdown_github/complete%20overlap-8.png)
 
 ``` r
 o_s_w_p_h
 ```
-
-    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-
-    ## Warning: Removed 50 rows containing missing values (geom_bar).
 
 ![](portal_files/figure-markdown_github/complete%20overlap-9.png)
