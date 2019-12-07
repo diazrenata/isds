@@ -63,7 +63,8 @@ sad <- sample_community %>%
   group_by(species) %>%
   summarize(abund = dplyr::n(),
             meanwgt = mean(wgt)) %>%
-  ungroup()
+  ungroup() %>%
+  mutate(abund = round(nrow(sample_community) / length(unique(species))))
 
 sample_overlapped <- function(sad) {
   mean_size <- runif(n = 1, min = min(sad$meanwgt), max = max(sad$meanwgt))
@@ -171,3 +172,52 @@ o_s_w_n_h
     ## Warning: Removed 50 rows containing missing values (geom_bar).
 
 ![](portal_files/figure-markdown_github/complete%20overlap-5.png)
+
+``` r
+overlapped_overlaps_p_weighted <- data.frame(
+  sim = rep(overlapped_overlaps$sim, times = round(overlapped_overlaps$prod_n)),
+  overlap_w = rep(overlapped_overlaps$overlap, times = round(overlapped_overlaps$prod_n))
+)
+o_s_w_p_h <- ggplot(data = overlapped_overlaps_p_weighted, aes(x = overlap_w)) +
+    geom_histogram(boundary = 0) +
+  theme_bw() +
+  xlim(-.2, 1.2) +
+  facet_wrap(vars(sim), scales = "free_y")
+o_s_h
+```
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+    ## Warning: Removed 50 rows containing missing values (geom_bar).
+
+![](portal_files/figure-markdown_github/complete%20overlap-6.png)
+
+``` r
+o_s_w_h
+```
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+    ## Warning: Removed 50 rows containing missing values (geom_bar).
+
+![](portal_files/figure-markdown_github/complete%20overlap-7.png)
+
+``` r
+o_s_w_n_h
+```
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+    ## Warning: Removed 50 rows containing missing values (geom_bar).
+
+![](portal_files/figure-markdown_github/complete%20overlap-8.png)
+
+``` r
+o_s_w_p_h
+```
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+    ## Warning: Removed 50 rows containing missing values (geom_bar).
+
+![](portal_files/figure-markdown_github/complete%20overlap-9.png)

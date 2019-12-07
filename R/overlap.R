@@ -100,12 +100,26 @@ pair_total_abund <- function(species_vects) {
   return(total_abund)
 }
 
+#' Product abundance of two species
+#'
+#' @param species_vects wgt vectors
+#'
+#' @return product n
+#' @export
+#'
+pair_prod_abund <- function(species_vects) {
+  total_abund <- prod(unlist(lapply(species_vects, FUN = length)))
+
+  return(total_abund)
+}
+
 #' Community level overlap
 #'
 #' @param community_df full community df
 #'
 #' @return df of overlap values for all species pairs + harmonic mean of abundances
 #' @export
+#'
 community_overlap <- function(community_df) {
 
   all_pairings <- get_pairs(max(community_df$species))
@@ -121,6 +135,8 @@ community_overlap <- function(community_df) {
   all_pairings$hm <- unlist(all_pair_hms)
 
   all_pairings$total_n <- unlist(lapply(all_species_pairs, FUN = pair_total_abund))
+
+  all_pairings$prod_n <- unlist(lapply(all_species_pairs, FUN = pair_prod_abund))
 
   return(all_pairings)
 }
