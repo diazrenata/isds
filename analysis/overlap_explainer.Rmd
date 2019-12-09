@@ -57,19 +57,49 @@ abunds <- c(50, 50, 50, 50)
 set.seed(1)
 scenario_communities <- lapply(scenarios, FUN = sample_community, abunds = abunds)
 
-scenario_plots <- lapply(scenario_communities, FUN = function(community_df) return(list(plot_isd(community_df), plot_sbsds(community_df))))
-
-scenario_overlaps <- lapply(scenario_communities, FUN = community_overlap)
-
-overlap_plots <- lapply(scenario_overlaps, FUN = plot_overlaps)
+scenario_plots <- lapply(scenario_communities, FUN = plot_pipeline)
 ```
 
 ```{r show plots, echo = F, fig.dim=c(6,2)}
 for(i in 1:length(scenario_plots)) {
   
-  these_plots <- list(scenario_plots[[i]][[1]], scenario_plots[[i]][[2]], overlap_plots[[i]])
-  
-  suppressWarnings(gridExtra::grid.arrange(grobs = these_plots, nrow = 1, top = grid::textGrob(names(scenarios)[i],gp=grid::gpar(fontsize=20))))
+  suppressWarnings(gridExtra::grid.arrange(grobs = scenario_plots[[i]], nrow = 1, top = grid::textGrob(names(scenarios)[i],gp=grid::gpar(fontsize=16))))
 }
 
+```
+
+## Demo SAD distortions
+
+```{r sample with SAD, include = F}
+
+ls_abunds <- unlist(scads::sample_METE(s = 4, n = 200, nsamples = 1))
+
+ls_abunds[ which(ls_abunds == 1)] <- 2
+
+ls_abunds <- sample(ls_abunds, size = 4, replace = F)
+
+ls_communities <- lapply(scenarios, FUN = sample_community, abunds = ls_abunds)
+
+ls_plots <- lapply(ls_communities, FUN = plot_pipeline)
+
+```
+
+Let's add this SAD, drawn from the METE logseries: 
+
+```{r plot sad, fig.dim = c(2,2), echo = F}
+
+sad_plot <- ggplot(data = data.frame(abund = sort(ls_abunds), rank = 1:4), aes(x = rank, y = abund)) +
+  geom_line() +
+  theme_bw()
+
+sad_plot
+```
+
+We're assigning abundance to species at random.
+
+```{r plot ls outcomes, fig.dim = c(6, 2), echo = F}
+for(i in 1:length(ls_plots)) {
+  
+  suppressWarnings(gridExtra::grid.arrange(grobs = ls_plots[[i]], nrow = 1, top = grid::textGrob(paste0(names(scenarios)[i], " + logseries SAD"),gp=grid::gpar(fontsize=16))))
+}
 ```

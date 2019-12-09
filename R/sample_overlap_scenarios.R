@@ -96,3 +96,22 @@ plot_overlaps <- function(overlap_df, weighting_col = NULL) {
     theme_bw()
 
 }
+
+#' Plot ISD, SBSD, and overlap
+#'
+#' @param community_df df
+#' @param weighting_col weighting col to pass to overlap plot
+#'
+#' @return list of isd, sbsd, overlap plots
+#' @export
+#'
+plot_pipeline <- function(community_df, weighting_col = NULL) {
+
+  isd_plot <- plot_isd(community_df)
+  sbsd_plot <- plot_sbsds(community_df)
+  overlaps <- community_overlap(community_df)
+  overlap_plot <- plot_overlaps(overlaps, weighting_col = weighting_col)
+
+  return(list(isd_plot, sbsd_plot, overlap_plot))
+
+}

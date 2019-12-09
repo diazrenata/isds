@@ -39,3 +39,14 @@ For now, we will give all species an equal, reasonably large, number of individu
 We will assume all species' SBSDs are normal distributions, and that the standard deviation scales with the mean according to some coefficient. `.15` seems like a plausible coefficient to me.
 
 ![](overlap_explainer_files/figure-markdown_github/show%20plots-1.png)![](overlap_explainer_files/figure-markdown_github/show%20plots-2.png)![](overlap_explainer_files/figure-markdown_github/show%20plots-3.png)![](overlap_explainer_files/figure-markdown_github/show%20plots-4.png)
+
+Demo SAD distortions
+--------------------
+
+Let's add this SAD, drawn from the METE logseries:
+
+![](overlap_explainer_files/figure-markdown_github/plot%20sad-1.png)
+
+We're assigning abundance to species at random.
+
+![](overlap_explainer_files/figure-markdown_github/plot%20ls%20outcomes-1.png)![](overlap_explainer_files/figure-markdown_github/plot%20ls%20outcomes-2.png)![](overlap_explainer_files/figure-markdown_github/plot%20ls%20outcomes-3.png)![](overlap_explainer_files/figure-markdown_github/plot%20ls%20outcomes-4.png)
