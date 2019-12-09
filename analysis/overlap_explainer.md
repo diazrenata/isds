@@ -71,15 +71,6 @@ This has gotten us back to our expected outcomes. Now let's fold in the error pr
 Upsample with error propagation
 -------------------------------
 
-``` r
-ls_new_means <- lapply(ls_communities, FUN = function(community_df) 
-  return((community_df %>% group_by(species) %>% summarize(meanwgt = mean(wgt)) %>% ungroup())$meanwgt))
-
-ls_up_error_communities <- lapply(ls_new_means, FUN = sample_community, abunds = ls_abunds_up)
-
-ls_up_error_plots <- lapply(ls_up_error_communities, FUN = plot_pipeline)
-```
-
 Here's how well we recovered the true means: (actually pretty well)
 
 ![](overlap_explainer_files/figure-markdown_github/show%20mean%20recovery-1.png)
@@ -89,3 +80,5 @@ And here's the outcomes:
 ![](overlap_explainer_files/figure-markdown_github/show%20error%20prop%20outcomes-1.png)![](overlap_explainer_files/figure-markdown_github/show%20error%20prop%20outcomes-2.png)![](overlap_explainer_files/figure-markdown_github/show%20error%20prop%20outcomes-3.png)![](overlap_explainer_files/figure-markdown_github/show%20error%20prop%20outcomes-4.png)
 
 **We have gotten drift**, most visible in the complete\_overlap scenario.
+
+But, for the first time we have the latitude to generate *distributions* of our expectations for 1) the means and 2) the resulting upsampled overlap distributions.

@@ -159,7 +159,7 @@ ls_up_error_plots <- lapply(ls_up_error_communities, FUN = plot_pipeline)
 
 Here's how well we recovered the true means: (actually pretty well)
 
-```{r show mean recovery, echo = F, fig.dim = c(4,4)}
+```{r show mean recovery, echo = F, fig.dim = c(5,4)}
 
 mean_recovery <- left_join(
   bind_rows(ls_new_means) %>%
@@ -169,13 +169,15 @@ mean_recovery <- left_join(
     mutate(species = row_number()) %>%
     tidyr::gather(-species, key = "source", value = "original_mean"),
   by = c("source", "species")
-) 
+) %>%
+  left_join(data.frame(species = 1:4, abund = ls_abunds), by = "species")
 
-mean_recovery_plot <- ggplot(data = mean_recovery, aes(x = original_mean, y = recovered_mean)) +
+mean_recovery_plot <- ggplot(data = mean_recovery, aes(x = original_mean, y = recovered_mean, color = log(abund))) +
   geom_point() +
   geom_abline(intercept = 0, slope = 1) +
   facet_wrap(vars(source), scales = "free") +
-  theme_bw()
+  theme_bw() +
+  scale_color_viridis_c(option = "magma", direction = -1,  end = .9)
 mean_recovery_plot
 ```
 
@@ -190,3 +192,5 @@ for(i in 1:length(ls_up_error_plots)) {
 ```
 
 __We have gotten drift__, most visible in the complete_overlap scenario.
+
+But, for the first time we have the latitude to generate *distributions* of our expectations for 1) the means and 2) the resulting upsampled overlap distributions.
