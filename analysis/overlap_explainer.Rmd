@@ -47,8 +47,8 @@ We will assume all species' SBSDs are normal distributions, and that the standar
 ```{r draw communities, include = F}
 
 scenarios <- list(
-  complete_overlap = c(50, 51, 52, 53),
-  two_clusters = c(20, 21, 90, 91),
+  complete_overlap = c(50, 50, 50, 50),
+  two_clusters = c(20, 20, 90, 90),
   all_distinct = c(15, 40, 120, 250),
   partial_overlap = c(30, 45, 60, 75)
 )
@@ -146,7 +146,7 @@ This has gotten us back to our expected outcomes. Now let's fold in the error pr
 
 ## Upsample with error propagation
 
-```{r upsample with error}
+```{r upsample with error, include = F}
 
 ls_new_means <- lapply(ls_communities, FUN = function(community_df) 
   return((community_df %>% group_by(species) %>% summarize(meanwgt = mean(wgt)) %>% ungroup())$meanwgt))
