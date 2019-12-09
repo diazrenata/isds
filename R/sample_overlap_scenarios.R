@@ -3,15 +3,16 @@
 #' @param means Vector of species means
 #' @param sds Vector of standard deviations
 #' @param abunds Vector of abundanaces
+#' @param sd_coefficient if sds is not specified, sds = sd_coefficient * means
 #'
 #' @return data frame of simulated community
 #' @export
 #' @importFrom dplyr bind_rows
 #'
-sample_community <- function(means, sds = NULL, abunds) {
+sample_community <- function(means, sds = NULL, abunds, sd_coefficient = .15) {
 
   if(is.null(sds)) {
-    sds <- .15 * means
+    sds <- sd_coefficient * means
   }
 
   comm <- list()

@@ -4,7 +4,7 @@
 \alias{sample_community}
 \title{Sample a community}
 \usage{
-sample_community(means, sds = NULL, abunds)
+sample_community(means, sds = NULL, abunds, sd_coefficient = 0.15)
 }
 \arguments{
 \item{means}{Vector of species means}
@@ -12,6 +12,8 @@ sample_community(means, sds = NULL, abunds)
 \item{sds}{Vector of standard deviations}
 
 \item{abunds}{Vector of abundanaces}
+
+\item{sd_coefficient}{if sds is not specified, sds = sd_coefficient * means}
 }
 \value{
 data frame of simulated community
