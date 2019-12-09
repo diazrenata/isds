@@ -1,0 +1,75 @@
+---
+title: "Measuring overlap in SBSDs"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(isds)
+library(dplyr)
+library(ggplot2)
+```
+
+SBSD = species body size distribution. The frequency/probability density of body sizes across all individuals of a species.
+
+## Rationale & background of using overlap
+
+The ISD (the size distribution across all individuals of all species) is...slippery and often subject to interpretation.
+
+Both Holling and ESS would predict polarized/bimodal distribution of overlap among all pairings of species. Species should either be quite similar or quite different, so high or low, but not intermediate, overlap.
+
+I've imported the SBSD overlap metric from [Read et al 2018](https://onlinelibrary.wiley.com/doi/full/10.1111/ecog.03641): 
+
+1. For all pairs of species in a community, construct the KDEs across the entire body size range and standardize so each KDE integrates to 1. 
+2. Integrate the minimum of the two KDEs at each evaluation point. 
+
+In principle this varies from 0 to 1 for each pair of species.
+
+## Foreshadowing artefacts from rare species
+
+1. Pointy KDEs
+2. Higher uncertainty wrt the true SBSD mean, sd, and indeed entire distribution.
+3. We may inherently want to downweight rare species, but *this is separate from* the above.
+
+## Demo with simple cases
+
+Let's leave rare species aside for the moment, and focus on how we expect the overlap distributions to come out under a few toy scenarios: 
+
+1. All species are essentially the same; complete overlap
+2. Two clusters of species. Within clusters, species are essentially the same. The clusters do not overlap.
+3. All species are distinct and do not overlap.
+4. All species are different but overlap significantly.
+
+For now, we will give all species an equal, reasonably large, number of individuals (50). This is wildly unrealistic for real communities.
+
+We will assume all species' SBSDs are normal distributions, and that the standard deviation scales with the mean according to some coefficient. `.15` seems like a plausible coefficient to me. 
+
+```{r draw communities, include = F}
+
+scenarios <- list(
+  complete_overlap = c(50, 51, 52, 53),
+  two_clusters = c(20, 21, 90, 91),
+  all_distinct = c(15, 40, 120, 250),
+  partial_overlap = c(30, 45, 60, 75)
+)
+abunds <- c(50, 50, 50, 50)
+
+set.seed(1)
+scenario_communities <- lapply(scenarios, FUN = sample_community, abunds = abunds)
+
+scenario_plots <- lapply(scenario_communities, FUN = function(community_df) return(list(plot_isd(community_df), plot_sbsds(community_df))))
+
+scenario_overlaps <- lapply(scenario_communities, FUN = community_overlap)
+
+overlap_plots <- lapply(scenario_overlaps, FUN = plot_overlaps)
+```
+
+```{r show plots, echo = F, fig.dim=c(6,2)}
+for(i in 1:length(scenario_plots)) {
+  
+  these_plots <- list(scenario_plots[[i]][[1]], scenario_plots[[i]][[2]], overlap_plots[[i]])
+  
+  suppressWarnings(gridExtra::grid.arrange(grobs = these_plots, nrow = 1, top = grid::textGrob(names(scenarios)[i],gp=grid::gpar(fontsize=20))))
+}
+
+```
