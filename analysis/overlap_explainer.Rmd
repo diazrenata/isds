@@ -63,12 +63,14 @@ scenario_plots <- lapply(scenario_communities, FUN = plot_pipeline)
 ```{r show plots, echo = F, fig.dim=c(6,2)}
 for(i in 1:length(scenario_plots)) {
   
-  suppressWarnings(gridExtra::grid.arrange(grobs = scenario_plots[[i]], nrow = 1, top = grid::textGrob(names(scenarios)[i],gp=grid::gpar(fontsize=16))))
+  suppressWarnings(gridExtra::grid.arrange(grobs = scenario_plots[[i]], nrow = 1, top = grid::textGrob(names(scenarios)[i],gp=grid::gpar(fontsize=12))))
 }
 
 ```
 
-## Demo SAD distortions
+In these scenarios, the overlap metric behaves as expected. We have high overlap values when we have species we think should overlap fully, near 0 when there are either clumps that do not overlap or when there's no overlap between any species, and a spectrum of intermediate values when all the species overlap partially.
+
+## Adding a logseries SAD
 
 ```{r sample with SAD, include = F}
 
@@ -84,7 +86,8 @@ ls_plots <- lapply(ls_communities, FUN = plot_pipeline)
 
 ```
 
-Let's add this SAD, drawn from the METE logseries: 
+Let's add this SAD, drawn from the METE logseries. We'll assign abundance to species at random.
+ 
 
 ```{r plot sad, fig.dim = c(2,2), echo = F}
 
@@ -95,11 +98,95 @@ sad_plot <- ggplot(data = data.frame(abund = sort(ls_abunds), rank = 1:4), aes(x
 sad_plot
 ```
 
-We're assigning abundance to species at random.
-
 ```{r plot ls outcomes, fig.dim = c(6, 2), echo = F}
 for(i in 1:length(ls_plots)) {
   
-  suppressWarnings(gridExtra::grid.arrange(grobs = ls_plots[[i]], nrow = 1, top = grid::textGrob(paste0(names(scenarios)[i], " + logseries SAD"),gp=grid::gpar(fontsize=16))))
+  suppressWarnings(gridExtra::grid.arrange(grobs = ls_plots[[i]], nrow = 1, top = grid::textGrob(paste0(names(scenarios)[i], " + logseries SAD"),gp=grid::gpar(fontsize=12))))
 }
 ```
+
+Just adding the SAD - and drawing all our samples from the *same distributions as above* - turns up unexpected overlap results. We get unexpectedly low values for the complete overlap scenario, because we are constructing kdes for low abundance species based on very few samples. Those samples may be off the "true" mean, and the resulting kde is much pointier than one constructed off of more samples. I think the complete_overlap purple species illustrates being off the mean, and the complete_overlap purple species illustrates the pointy kde. We also got some overlaps pushed downards in the partial_overlap scenario, again because of artifiically pointy kdes. 
+
+## Upsampling the logseries SAD
+
+We can potentially get around the artificial pointiness by *up*-sampling our logseries SAD. Let's say the least abundant species now has 50 individuals, and everyone else increases proportionally.
+
+For now we will dodge the error in estimating the mean by doing the upsampling with knowledge of the "true" distribution. Next we will go after the error in the mean.
+
+```{r upsample sad no correction, include = F}
+
+ls_abunds_up <- ceiling(ls_abunds * 50 / min(ls_abunds))
+
+ls_up_communities <- lapply(scenarios, FUN = sample_community, abunds = ls_abunds_up)
+
+ls_up_plots <- lapply(ls_up_communities, FUN = plot_pipeline)
+
+```
+
+Note the new axes for the SAD:
+
+```{r show new sad, fig.dim = c(2, 2), echo = F}
+
+new_sad_plot <- ggplot(data = data.frame(abund = sort(ls_abunds_up), rank = 1:4), aes(x = rank, y = abund)) +
+  geom_line() +
+  theme_bw()
+
+new_sad_plot
+
+```
+
+```{r show upsampled LS outcomes, echo = F, fig.dim = c(6, 2)}
+for(i in 1:length(ls_plots)) {
+  
+  suppressWarnings(gridExtra::grid.arrange(grobs = ls_up_plots[[i]], nrow = 1, top = grid::textGrob(paste0(names(scenarios)[i], " + logseries SAD + increased N"),gp=grid::gpar(fontsize=12))))
+}
+```
+
+This has gotten us back to our expected outcomes. Now let's fold in the error propagation we expect from low abundances.
+
+## Upsample with error propagation
+
+```{r upsample with error}
+
+ls_new_means <- lapply(ls_communities, FUN = function(community_df) 
+  return((community_df %>% group_by(species) %>% summarize(meanwgt = mean(wgt)) %>% ungroup())$meanwgt))
+
+ls_up_error_communities <- lapply(ls_new_means, FUN = sample_community, abunds = ls_abunds_up)
+
+ls_up_error_plots <- lapply(ls_up_error_communities, FUN = plot_pipeline)
+
+```
+
+Here's how well we recovered the true means: (actually pretty well)
+
+```{r show mean recovery, echo = F, fig.dim = c(4,4)}
+
+mean_recovery <- left_join(
+  bind_rows(ls_new_means) %>%
+    mutate(species = row_number()) %>%
+    tidyr::gather(-species, key = "source", value = "recovered_mean"),
+  bind_rows(scenarios) %>%
+    mutate(species = row_number()) %>%
+    tidyr::gather(-species, key = "source", value = "original_mean"),
+  by = c("source", "species")
+) 
+
+mean_recovery_plot <- ggplot(data = mean_recovery, aes(x = original_mean, y = recovered_mean)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1) +
+  facet_wrap(vars(source), scales = "free") +
+  theme_bw()
+mean_recovery_plot
+```
+
+
+And here's the outcomes:
+
+```{r show error prop outcomes, echo = F, fig.dim = c(6,2)}
+for(i in 1:length(ls_up_error_plots)) {
+  
+  suppressWarnings(gridExtra::grid.arrange(grobs = ls_up_error_plots[[i]], nrow = 1, top = grid::textGrob(paste0(names(scenarios)[i], " + logseries SAD + upsampled N based on logseries means"),gp=grid::gpar(fontsize=12))))
+}
+```
+
+__We have gotten drift__, most visible in the complete_overlap scenario.
