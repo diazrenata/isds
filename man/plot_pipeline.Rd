@@ -4,12 +4,14 @@
 \alias{plot_pipeline}
 \title{Plot ISD, SBSD, and overlap}
 \usage{
-plot_pipeline(community_df, weighting_col = NULL)
+plot_pipeline(community_df, weighting_col = NULL, overlap_type)
 }
 \arguments{
 \item{community_df}{df}
 
 \item{weighting_col}{weighting col to pass to overlap plot}
+
+\item{overlap_type}{"histogram" or "ecdf"}
 }
 \value{
 list of isd, sbsd, overlap plots

@@ -77,11 +77,11 @@ plot_sbsds <- function(community_df) {
 #'
 #' @param overlap_df df with overlap, optionally a column to weight by
 #' @param weighting_col optional name of column to weight by
-#'
+#' @param type "histogram" or "ecdf"
 #' @return histogram
 #' @export
-#' @importFrom ggplot2 ggplot geom_histogram xlim geom_vline theme_bw
-plot_overlaps <- function(overlap_df, weighting_col = NULL) {
+#' @importFrom ggplot2 ggplot geom_histogram xlim geom_vline theme_bw stat_ecdf
+plot_overlaps <- function(overlap_df, weighting_col = NULL, type = "histogram") {
 
   if(!is.null(weighting_col)) {
     overlap_df <- data.frame(
@@ -89,28 +89,37 @@ plot_overlaps <- function(overlap_df, weighting_col = NULL) {
     )
   }
 
-  overlap_plot <- ggplot(data = overlap_df, aes(x = overlap)) +
-    geom_histogram(boundary = 0, closed = "left", binwidth = .1) +
-    xlim(-.2, 1.2) +
-    geom_vline(xintercept = c(0, 1), color = "red") +
-    theme_bw()
+  if(type == "histogram") {
+    overlap_plot <- ggplot(data = overlap_df, aes(x = overlap)) +
+      geom_histogram(boundary = 0, closed = "left", binwidth = .1) +
+      xlim(-.2, 1.2) +
+      geom_vline(xintercept = c(0, 1), color = "red") +
+      theme_bw()
+  } else {
+    overlap_plot <- ggplot(data = overlap_df, aes(x = overlap)) +
+      stat_ecdf() +
+      xlim(-.2, 1.2) +
+      geom_vline(xintercept = c(0, 1), color = "red") +
+      theme_bw()
+  }
 
+  return(overlap_plot)
 }
 
 #' Plot ISD, SBSD, and overlap
 #'
 #' @param community_df df
 #' @param weighting_col weighting col to pass to overlap plot
-#'
+#' @param overlap_type "histogram" or "ecdf"
 #' @return list of isd, sbsd, overlap plots
 #' @export
 #'
-plot_pipeline <- function(community_df, weighting_col = NULL) {
+plot_pipeline <- function(community_df, weighting_col = NULL, overlap_type = "histogram") {
 
   isd_plot <- plot_isd(community_df)
   sbsd_plot <- plot_sbsds(community_df)
   overlaps <- community_overlap(community_df)
-  overlap_plot <- plot_overlaps(overlaps, weighting_col = weighting_col)
+  overlap_plot <- plot_overlaps(overlaps, weighting_col = weighting_col, type= overlap_type)
 
   return(list(isd_plot, sbsd_plot, overlap_plot))
 

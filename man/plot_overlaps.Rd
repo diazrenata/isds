@@ -4,12 +4,14 @@
 \alias{plot_overlaps}
 \title{Plot histogram of overlap values}
 \usage{
-plot_overlaps(overlap_df, weighting_col = NULL)
+plot_overlaps(overlap_df, weighting_col = NULL, type = "histogram")
 }
 \arguments{
 \item{overlap_df}{df with overlap, optionally a column to weight by}
 
 \item{weighting_col}{optional name of column to weight by}
+
+\item{type}{"histogram" or "ecdf"}
 }
 \value{
 histogram

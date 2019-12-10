@@ -1,0 +1,139 @@
+---
+title: "Bootstrapping the mean"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(isds)
+library(dplyr)
+library(ggplot2)
+```
+
+## Demo with simple cases
+
+1. All species are essentially the same; complete overlap
+2. Two clusters of species. Within clusters, species are essentially the same. The clusters do not overlap.
+3. All species are distinct and do not overlap.
+4. All species are different but overlap significantly.
+
+We will assume all species' SBSDs are normal distributions, and that the standard deviation scales with the mean according to some coefficient. `.15` seems like a plausible coefficient to me. 
+
+```{r draw communities, include = F}
+
+scenarios <- list(
+  complete_overlap = c(50, 50, 50, 50),
+  two_clusters = c(20, 20, 90, 90),
+  all_distinct = c(15, 40, 120, 250),
+  partial_overlap = c(30, 45, 60, 75)
+)
+
+set.seed(1)
+
+ls_abunds <- unlist(scads::sample_METE(s = 4, n = 200, nsamples = 1))
+
+ls_abunds[ which(ls_abunds == 1)] <- 2
+
+ls_abunds <- sample(ls_abunds, size = 4, replace = F)
+
+ls_communities <- lapply(scenarios, FUN = sample_community, abunds = ls_abunds)
+
+ls_plots <- lapply(ls_communities, FUN = plot_pipeline)
+```
+
+
+```{r plot sad, fig.dim = c(2,2), echo = F}
+
+sad_plot <- ggplot(data = data.frame(abund = sort(ls_abunds), rank = 1:4), aes(x = rank, y = abund)) +
+  geom_line() +
+  theme_bw()
+
+sad_plot
+
+ls_abunds
+```
+
+```{r plot ls outcomes, fig.dim = c(6, 2), echo = F}
+for(i in 1:length(ls_plots)) {
+  
+  suppressWarnings(gridExtra::grid.arrange(grobs = ls_plots[[i]], nrow = 1, top = grid::textGrob(paste0(names(scenarios)[i], " + logseries SAD"),gp=grid::gpar(fontsize=12))))
+}
+```
+
+```{r resample community fxn}
+
+resample_community <- function(community_df) {
+  
+  obs_means <- community_df %>%
+    dplyr::group_by(species) %>%
+    dplyr::summarize(meanwgt = mean(wgt),
+                     nind = dplyr::n()) %>%
+    dplyr::ungroup()
+  
+  obs_means_lown <- filter(obs_means, nind <= 50) %>%
+    group_by(species) %>%
+    mutate(meanwgt = rnorm(n= 1, mean = meanwgt, sd = .15 * meanwgt)) %>%
+    ungroup()
+  
+  obs_means[ which(obs_means$nind <= 50), "meanwgt"] <- obs_means_lown$meanwgt
+  
+  new_abunds <- obs_means$nind * 50 / min(obs_means$nind)
+  
+  new_community <- sample_community(means = obs_means$meanwgt, abunds = new_abunds)
+}
+
+```
+
+```{r do the resampling} 
+
+resampled_communities <- lapply(ls_communities, FUN = function(a_community) 
+  return(replicate(n = 100, expr = community_overlap(resample_community(a_community)), simplify = F)))
+
+resampled_communities <- lapply(resampled_communities, FUN = function(resamples)
+  return(bind_rows(resamples, .id = "sim")))
+
+resampled_communities <- bind_rows(resampled_communities, .id = "source") %>%
+  mutate(sim_source = paste0(source, sim))
+
+original_communities <- lapply(ls_communities, FUN = community_overlap)
+
+original_communities <- bind_rows(original_communities, .id = "source") %>%
+  mutate(sim = -99, sim_source =paste0(source, sim))
+
+```
+
+```{r plot ecdfs}
+
+ecdfs_plots <- ggplot(data = resampled_communities, aes(x = overlap, color = source, group = sim_source)) +
+  stat_ecdf(alpha = .05) +
+  theme_bw() +
+  #facet_wrap(vars(source)) +
+  scale_color_viridis_d(option = "magma", end = .7) +
+  guides(color = guide_legend(override.aes = list(alpha = 1))) +
+  stat_ecdf(data = original_communities, aes(x = overlap, group = sim_source), alpha = 1, linetype = 2)
+
+
+ecdfs_plots
+
+ecdfs_plots_facetted <- ecdfs_plots +
+  facet_wrap(vars(source))
+
+ecdfs_plots_facetted
+```
+
+
+```{r plot hists}
+
+hists_plots <- ggplot(data = resampled_communities, aes(x = overlap, color = source, fill = source, group = sim_source)) +
+ geom_density(alpha = 0, size = .05) +
+  theme_bw()+
+  facet_wrap(vars(source), scales = "free_y") +
+  scale_color_viridis_d(option = "magma", end = .7) +
+    scale_fill_viridis_d(option = "magma", end = .7) +
+  guides(color = guide_legend(override.aes = list(alpha = 1))) +
+  geom_density(alpha = 0, data = original_communities, aes(x = overlap, group = sim_source), linetype = 2)
+
+
+hists_plots
+
+```
