@@ -13,8 +13,8 @@ We will assume all species' SBSDs are normal distributions, and that the standar
 
 ![](bootstrap_means_files/figure-markdown_github/plot%20sad-1.png)
 
-    ## V12 V13 V14 V11 
-    ##   3  82 114   2
+    ## V11 V14 V12 V13 
+    ##   2 192   3   4
 
 ![](bootstrap_means_files/figure-markdown_github/plot%20ls%20outcomes-1.png)![](bootstrap_means_files/figure-markdown_github/plot%20ls%20outcomes-2.png)![](bootstrap_means_files/figure-markdown_github/plot%20ls%20outcomes-3.png)![](bootstrap_means_files/figure-markdown_github/plot%20ls%20outcomes-4.png)
 
@@ -34,7 +34,9 @@ resample_community <- function(community_df) {
   
   obs_means[ which(obs_means$nind <= 50), "meanwgt"] <- obs_means_lown$meanwgt
   
-  new_abunds <- obs_means$nind * 50 / min(obs_means$nind)
+  #new_abunds <- obs_means$nind * 50 / min(obs_means$nind)
+  
+  new_abunds <- rep(100, times = nrow(obs_means))
   
   new_community <- sample_community(means = obs_means$meanwgt, abunds = new_abunds)
 }
@@ -57,7 +59,7 @@ original_communities <- bind_rows(original_communities, .id = "source") %>%
 
 ls_new_means <- lapply(ls_communities, FUN = function(community_df) 
   return((community_df %>% group_by(species) %>% summarize(meanwgt = mean(wgt)) %>% ungroup())$meanwgt))
-new_abunds <- ls_abunds * 50 / min(ls_abunds)
+new_abunds <- rep(100, times = 4)
 
 ls_up_error_communities <- lapply(ls_new_means, FUN = sample_community, abunds = new_abunds)
 
@@ -141,11 +143,11 @@ dice_density <- function(community_overlap_df, npieces = 10) {
 ```
 
 ``` r
-diced_resamples <- lapply(resampled_communities_raw, FUN = function(list_of_community_df) return(lapply(list_of_community_df, FUN = function(community_df) return(dice_density((community_df))))))
+diced_resamples <- lapply(resampled_communities_raw, FUN = function(list_of_community_df) return(lapply(list_of_community_df, FUN = function(community_df) return(dice_density(community_df, npieces = 20)))))
 
-diced_original <- lapply(ls_communities, FUN = function(community_df) return(dice_density(community_overlap(community_df))))
+diced_original <- lapply(ls_communities, FUN = function(community_df) return(dice_density(community_overlap(community_df), npieces = 20)))
 
-diced_up <- lapply(ls_up_error_communities, FUN = function(community_df) return(dice_density(community_overlap(community_df))))
+diced_up <- lapply(ls_up_error_communities, FUN = function(community_df) return(dice_density(community_overlap(community_df), npieces = 20)))
 
 
 diced_resamples <- lapply(diced_resamples, FUN = function(diced) return(bind_rows(diced, .id = "sim")))
