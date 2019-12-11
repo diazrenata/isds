@@ -140,3 +140,21 @@ community_overlap <- function(community_df) {
 
   return(all_pairings)
 }
+
+
+#' Get edge proportion
+#'
+#' @param overlap_df df of overlap vals
+#'
+#' @return prop greater than .7 less than .2
+#' @export
+#' @importFrom dplyr mutate group_by row_number ungroup
+edge_proportion <- function(overlap_df) {
+  overlap_df <- overlap_df %>%
+    dplyr::mutate(rown = dplyr::row_number()) %>%
+    dplyr::group_by(rown) %>%
+    dplyr::mutate(edge = any(overlap >= .7, overlap <= .2)) %>%
+    dplyr::ungroup()
+  return(mean(overlap_df$edge))
+}
+

@@ -4,7 +4,8 @@
 \alias{plot_pipeline}
 \title{Plot ISD, SBSD, and overlap}
 \usage{
-plot_pipeline(community_df, weighting_col = NULL, overlap_type)
+plot_pipeline(community_df, weighting_col = NULL,
+  overlap_type = "histogram")
 }
 \arguments{
 \item{community_df}{df}

@@ -80,8 +80,10 @@ plot_sbsds <- function(community_df) {
 #' @param type "histogram" or "ecdf"
 #' @return histogram
 #' @export
-#' @importFrom ggplot2 ggplot geom_histogram xlim geom_vline theme_bw stat_ecdf
+#' @importFrom ggplot2 ggplot geom_histogram xlim geom_vline theme_bw stat_ecdf ggtitle
 plot_overlaps <- function(overlap_df, weighting_col = NULL, type = "histogram") {
+
+  edge_prop <- edge_proportion(overlap_df)
 
   if(!is.null(weighting_col)) {
     overlap_df <- data.frame(
@@ -102,6 +104,9 @@ plot_overlaps <- function(overlap_df, weighting_col = NULL, type = "histogram") 
       geom_vline(xintercept = c(0, 1), color = "red") +
       theme_bw()
   }
+
+  overlap_plot <- overlap_plot +
+    ggtitle(paste0("Edge prop = ", round(edge_prop, digits = 2)))
 
   return(overlap_plot)
 }
