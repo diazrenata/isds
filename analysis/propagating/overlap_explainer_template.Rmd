@@ -119,7 +119,7 @@ For now we will dodge the error in estimating the mean by doing the upsampling w
 
 ```{r upsample sad no correction, include = F}
 
-ls_abunds_up <- ceiling(ls_abunds * 50 / min(ls_abunds))
+ls_abunds_up <- ceiling(ls_abunds * 200 / min(ls_abunds))
 
 ls_up_communities <- lapply(scenarios, FUN = sample_community, abunds = ls_abunds_up)
 
