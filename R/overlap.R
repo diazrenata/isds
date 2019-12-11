@@ -145,16 +145,27 @@ community_overlap <- function(community_df) {
 #' Get edge proportion
 #'
 #' @param overlap_df df of overlap vals
+#' @param weight_col "hm", "total_n", "prod_n", NULL
 #'
 #' @return prop greater than .7 less than .2
 #' @export
 #' @importFrom dplyr mutate group_by row_number ungroup
-edge_proportion <- function(overlap_df) {
+edge_proportion <- function(overlap_df, weight_col = NULL) {
   overlap_df <- overlap_df %>%
     dplyr::mutate(rown = dplyr::row_number()) %>%
     dplyr::group_by(rown) %>%
     dplyr::mutate(edge = any(overlap >= .7, overlap <= .2)) %>%
     dplyr::ungroup()
-  return(mean(overlap_df$edge))
+
+  edges <- overlap_df$edge
+
+  if(!is.null(weight_col)) {
+    edges <- vector()
+    for(i in 1:nrow(overlap_df)) {
+      edges <- c(edges, rep(overlap_df$edge[i], times = overlap_df[i, weight_col]))
+    }
+  }
+
+  return(mean(edges))
 }
 

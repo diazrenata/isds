@@ -4,10 +4,12 @@
 \alias{edge_proportion}
 \title{Get edge proportion}
 \usage{
-edge_proportion(overlap_df)
+edge_proportion(overlap_df, weight_col = NULL)
 }
 \arguments{
 \item{overlap_df}{df of overlap vals}
+
+\item{weight_col}{"hm", "total_n", "prod_n", NULL}
 }
 \value{
 prop greater than .7 less than .2
