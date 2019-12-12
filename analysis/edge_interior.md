@@ -85,7 +85,7 @@ Now let's take the same pipeline as above, run it many times, and report the edg
 For now we'll retain all the intermediate samples. This will be unwieldly eventually, but for now I suspect I'll want to look closely at some of them.
 
 ``` r
-replicate_samples <- function(means_vect, abunds_vect, times = 200) {
+replicate_samples <- function(means_vect, abunds_vect, times = 100) {
   return(replicate(sample_community(means = means_vect, abunds = abunds_vect), n = times, simplify = F))
 }
 
@@ -188,3 +188,60 @@ overlaps_w_plot
     ## Warning: Removed 12 rows containing missing values (geom_bar).
 
 ![](edge_interior_files/figure-markdown_github/show%20all%20overlaps-2.png)
+
+#### Overlaps density plots
+
+This might give a better picture than the edge prop, in that it isn't as sensitive to where you put the cutoffs. But, potentially also computationally intensive and tough to make sense of.
+
+``` r
+extract_overlap <- function(sims_list) {
+  overlaps <- lapply(sims_list, FUN = community_overlap)
+  names(overlaps) <- 1:length(sims_list)
+  overlaps <- bind_rows(overlaps, .id = "sim")
+}
+
+even_overlaps_r <- lapply(even_sims, FUN = extract_overlap)
+ls_overlaps_r <- lapply(ls_sims, FUN = extract_overlap)
+ls_up_overlaps_r <- lapply(ls_upsampled_sims, FUN = extract_overlap)
+
+even_overlaps_r <- bind_rows(even_overlaps_r, .id = "source")
+ls_overlaps_r <- bind_rows(ls_overlaps_r, .id = "source")
+ls_up_overlaps_r <- bind_rows(ls_up_overlaps_r, .id = "source")
+
+all_overlaps_r <- bind_rows(list(even = even_overlaps_r, ls = ls_overlaps_r, ls_up = ls_up_overlaps_r), .id = "sampling")
+
+all_overlaps_r <- all_overlaps_r %>%
+  mutate(sim_source_even = paste0(source, sampling, sim),
+         prod_n = floor(prod_n/46))
+
+raw_density_plot <- ggplot(data = all_overlaps_r, aes(x = overlap, y = stat(scaled), color = source, group = sim_source_even)) +
+  geom_density(alpha = 0, size = .03, n = 16) +
+  xlim(-.2, 1.2) +
+  theme_bw() +
+  facet_wrap(vars(sampling, source), scales = "free_y", strip.position = "top") + 
+  scale_fill_viridis_d(option = "plasma", end = .8) +
+  geom_vline(xintercept = c(.2, .7), color = "black")
+raw_density_plot
+```
+
+![](edge_interior_files/figure-markdown_github/overlap%20density%20plots-1.png)
+
+``` r
+all_overlaps_scaled <- data.frame(
+  sampling = rep(all_overlaps_r$sampling, times = all_overlaps_r$total_n),
+  source = rep(all_overlaps_r$source, times = all_overlaps_r$total_n),
+  sim_source_sampling = rep(all_overlaps_r$sim_source_even, times = all_overlaps_r$total_n),
+  overlap = rep(all_overlaps_r$overlap, times = all_overlaps_r$total_n)
+)
+
+scaled_density_plot <-  ggplot(data = all_overlaps_scaled, aes(x = overlap, y = stat(scaled), color = source, group = sim_source_sampling)) +
+  geom_density(alpha = 0, size = .03, n = 16) +
+  xlim(-.2, 1.2) +
+  theme_bw() +
+  facet_wrap(vars(sampling, source), scales = "free_y", strip.position = "top") + 
+  scale_fill_viridis_d(option = "plasma", end = .8) +
+  geom_vline(xintercept = c(.2, .7), color = "black")
+scaled_density_plot
+```
+
+![](edge_interior_files/figure-markdown_github/overlap%20density%20plots-2.png)

@@ -47,12 +47,12 @@ We will assume all species' SBSDs are normal distributions, and that the standar
 ```{r draw communities, include = F}
 
 scenarios <- list(
-  complete_overlap = c(50, 50, 50, 50),
-  two_clusters = c(20, 20, 90, 90),
-  all_distinct = c(15, 40, 120, 250),
-  partial_overlap = c(30, 45, 60, 75)
+  complete_overlap = c(50, 50, 50, 50, 50, 50),
+  two_clusters = c(20, 20, 20, 90, 90, 90),
+  all_distinct = c(15, 25, 40, 80, 120, 250),
+  partial_overlap = c(30, 45, 60, 75, 90, 105)
 )
-abunds <- c(50, 50, 50, 50)
+abunds <- c(50, 50, 50, 50, 50, 50)
 
 set.seed(2)
 scenario_communities <- lapply(scenarios, FUN = sample_community, abunds = abunds)
@@ -82,11 +82,11 @@ edge_proportion(overlap_dfs[[4]])
 
 ```{r sample with SAD, include = F}
 
-ls_abunds <- unlist(scads::sample_METE(s = 4, n = 200, nsamples = 1))
+ls_abunds <- unlist(scads::sample_METE(s = 6, n = 300, nsamples = 1))
 
 ls_abunds[ which(ls_abunds == 1)] <- 2
 
-ls_abunds <- sample(ls_abunds, size = 4, replace = F)
+ls_abunds <- sample(ls_abunds, size = 6, replace = F)
 
 ls_communities <- lapply(scenarios, FUN = sample_community, abunds = ls_abunds)
 
@@ -99,7 +99,7 @@ Let's add this SAD, drawn from the METE logseries. We'll assign abundance to spe
 
 ```{r plot sad, fig.dim = c(2,2), echo = F}
 
-sad_plot <- ggplot(data = data.frame(abund = sort(ls_abunds), rank = 1:4), aes(x = rank, y = abund)) +
+sad_plot <- ggplot(data = data.frame(abund = sort(ls_abunds), rank = 1:6), aes(x = rank, y = abund)) +
   geom_line() +
   theme_bw()
 
@@ -121,7 +121,7 @@ Just adding the SAD - and drawing all our samples from the *same distributions a
 ## Upsample with error propagation
 
 ```{r upsample with error, include = F}
-ls_abunds_up <- ceiling(ls_abunds * 200 / min(ls_abunds))
+ls_abunds_up <- rep(200, times = 6)
 
 ls_new_means <- lapply(ls_communities, FUN = function(community_df) 
   return((community_df %>% group_by(species) %>% summarize(meanwgt = mean(wgt)) %>% ungroup())$meanwgt))
@@ -145,7 +145,7 @@ mean_recovery <- left_join(
     tidyr::gather(-species, key = "source", value = "original_mean"),
   by = c("source", "species")
 ) %>%
-  left_join(data.frame(species = 1:4, abund = ls_abunds), by = "species")
+  left_join(data.frame(species = 1:6, abund = ls_abunds), by = "species")
 
 mean_recovery_plot <- ggplot(data = mean_recovery, aes(x = original_mean, y = recovered_mean, color = log(abund))) +
   geom_point() +
@@ -214,22 +214,22 @@ ls_up_overlaps <- bind_rows(ls_up_overlaps, .id = "source")
 all_overlaps <- bind_rows(list(even = even_overlaps, ls = ls_overlaps, ls_up = ls_up_overlaps), .id = "sampling")
 
 head(all_overlaps)
-
-extract_edge_prop_w <- function(sims_list, wcol = "prod_n") {
-  return(data.frame(sim = 1:length(sims_list), edge_prop = vapply(sims_list, FUN = function(community_df) return(edge_proportion(community_overlap(community_df), weight_col = wcol)), FUN.VALUE = 1)))
-}
-
-even_overlaps_w <- lapply(even_sims, FUN = extract_edge_prop_w)
-ls_overlaps_w <- lapply(ls_sims, FUN = extract_edge_prop_w)
-ls_up_overlaps_w <- lapply(ls_upsampled_sims, FUN = extract_edge_prop_w)
-
-even_overlaps_w <- bind_rows(even_overlaps_w, .id = "source")
-ls_overlaps_w <- bind_rows(ls_overlaps_w, .id = "source")
-ls_up_overlaps_w <- bind_rows(ls_up_overlaps_w, .id = "source")
-
-all_overlaps_w <- bind_rows(list(even = even_overlaps_w, ls = ls_overlaps_w, ls_up = ls_up_overlaps_w), .id = "sampling")
-
-head(all_overlaps_w)
+# 
+# extract_edge_prop_w <- function(sims_list, wcol = "prod_n") {
+#   return(data.frame(sim = 1:length(sims_list), edge_prop = vapply(sims_list, FUN = function(community_df) return(edge_proportion(community_overlap(community_df), weight_col = wcol)), FUN.VALUE = 1)))
+# }
+# 
+# even_overlaps_w <- lapply(even_sims, FUN = extract_edge_prop_w)
+# ls_overlaps_w <- lapply(ls_sims, FUN = extract_edge_prop_w)
+# ls_up_overlaps_w <- lapply(ls_upsampled_sims, FUN = extract_edge_prop_w)
+# 
+# even_overlaps_w <- bind_rows(even_overlaps_w, .id = "source")
+# ls_overlaps_w <- bind_rows(ls_overlaps_w, .id = "source")
+# ls_up_overlaps_w <- bind_rows(ls_up_overlaps_w, .id = "source")
+# 
+# all_overlaps_w <- bind_rows(list(even = even_overlaps_w, ls = ls_overlaps_w, ls_up = ls_up_overlaps_w), .id = "sampling")
+# 
+# head(all_overlaps_w)
 ```
 ```{r show all overlaps}
 
@@ -237,67 +237,15 @@ overlaps_plot <- ggplot(data = all_overlaps, aes(x = edge_prop, fill = source)) 
   geom_histogram(binwidth = .1, boundary = 0) +
   xlim(-.2, 1.2) +
   theme_bw() +
-  facet_grid(rows = vars(sampling), cols = vars(source), scales = "free_y", switch = "y") + 
+  facet_wrap(vars(sampling,source), scales = "free_y", strip.position = "top") + 
   scale_fill_viridis_d(option = "plasma", end = .8)
 overlaps_plot
-
-overlaps_w_plot <- ggplot(data = all_overlaps_w, aes(x = edge_prop, fill = source)) +
-  geom_histogram(binwidth = .1, boundary = 0) +
-  xlim(-.2, 1.2) +
-  theme_bw() +
-  facet_grid(rows = vars(sampling), cols = vars(source), scales = "free_y", switch = "y") + 
-  scale_fill_viridis_d(option = "plasma", end = .8)
-overlaps_w_plot
-```
-
-#### Overlaps density plots
-
-This might give a better picture than the edge prop, in that it isn't as sensitive to where you put the cutoffs. But, potentially also computationally intensive and tough to make sense of. 
-
-```{r overlap density plots}
-
-extract_overlap <- function(sims_list) {
-  overlaps <- lapply(sims_list, FUN = community_overlap)
-  names(overlaps) <- 1:length(sims_list)
-  overlaps <- bind_rows(overlaps, .id = "sim")
-}
-
-even_overlaps_r <- lapply(even_sims, FUN = extract_overlap)
-ls_overlaps_r <- lapply(ls_sims, FUN = extract_overlap)
-ls_up_overlaps_r <- lapply(ls_upsampled_sims, FUN = extract_overlap)
-
-even_overlaps_r <- bind_rows(even_overlaps_r, .id = "source")
-ls_overlaps_r <- bind_rows(ls_overlaps_r, .id = "source")
-ls_up_overlaps_r <- bind_rows(ls_up_overlaps_r, .id = "source")
-
-all_overlaps_r <- bind_rows(list(even = even_overlaps_r, ls = ls_overlaps_r, ls_up = ls_up_overlaps_r), .id = "sampling")
-
-all_overlaps_r <- all_overlaps_r %>%
-  mutate(sim_source_even = paste0(source, sampling, sim),
-         prod_n = floor(prod_n/46))
-
-raw_density_plot <- ggplot(data = all_overlaps_r, aes(x = overlap, y = stat(scaled), color = source, group = sim_source_even)) +
-  geom_density(alpha = 0, size = .03, n = 16) +
-  xlim(-.2, 1.2) +
-  theme_bw() +
-  facet_wrap(vars(sampling, source), scales = "free_y", strip.position = "top") + 
-  scale_fill_viridis_d(option = "plasma", end = .8) +
-  geom_vline(xintercept = c(.2, .7), color = "black")
-raw_density_plot
-
-all_overlaps_scaled <- data.frame(
-  sampling = rep(all_overlaps_r$sampling, times = all_overlaps_r$total_n),
-  source = rep(all_overlaps_r$source, times = all_overlaps_r$total_n),
-  sim_source_sampling = rep(all_overlaps_r$sim_source_even, times = all_overlaps_r$total_n),
-  overlap = rep(all_overlaps_r$overlap, times = all_overlaps_r$total_n)
-)
-
-scaled_density_plot <-  ggplot(data = all_overlaps_scaled, aes(x = overlap, y = stat(scaled), color = source, group = sim_source_sampling)) +
-  geom_density(alpha = 0, size = .03, n = 16) +
-  xlim(-.2, 1.2) +
-  theme_bw() +
-  facet_wrap(vars(sampling, source), scales = "free_y", strip.position = "top") + 
-  scale_fill_viridis_d(option = "plasma", end = .8) +
-  geom_vline(xintercept = c(.2, .7), color = "black")
-scaled_density_plot
+# 
+# overlaps_w_plot <- ggplot(data = all_overlaps_w, aes(x = edge_prop, fill = source)) +
+#   geom_histogram(binwidth = .1, boundary = 0) +
+#   xlim(-.2, 1.2) +
+#   theme_bw() +
+#   facet_wrap(vars(sampling,source), scales = "free_y", strip.position = "top") + 
+#   scale_fill_viridis_d(option = "plasma", end = .8)
+# overlaps_w_plot
 ```
