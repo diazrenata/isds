@@ -1,0 +1,71 @@
+---
+title: "Measuring overlap in SBSDs"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(isds)
+library(dplyr)
+library(ggplot2)
+```
+
+SBSD = species body size distribution. The frequency/probability density of body sizes across all individuals of a species.
+
+## Rationale & background of using overlap
+
+The ISD (the size distribution across all individuals of all species) is...slippery and often subject to interpretation.
+
+Both Holling and ESS would predict polarized/bimodal distribution of overlap among all pairings of species. Species should either be quite similar or quite different, so high or low, but not intermediate, overlap.
+
+I've imported the SBSD overlap metric from [Read et al 2018](https://onlinelibrary.wiley.com/doi/full/10.1111/ecog.03641): 
+
+1. For all pairs of species in a community, construct the KDEs across the entire body size range and standardize so each KDE integrates to 1. 
+2. Integrate the minimum of the two KDEs at each evaluation point. 
+
+In principle this varies from 0 to 1 for each pair of species.
+
+
+## Portal data
+```{r draw communities, include = F}
+portal94 <- get_toy_portal_data(years = c(1990:1994))
+
+portal_singletons <- portal94 %>%
+  group_by(species) %>%
+  summarize(nind = dplyr::n()) %>%
+  ungroup() %>%
+  filter(nind >= 2)
+
+portal94 <- filter(portal94, species %in% portal_singletons$species) %>%
+  mutate(species = species - 1)
+
+portal_plots <- plot_pipeline(portal94)
+
+```
+
+```{r show plots, echo = F, fig.dim=c(6,2)}
+  suppressWarnings(gridExtra::grid.arrange(grobs = portal_plots, nrow = 1, top = grid::textGrob( "Portal",gp=grid::gpar(fontsize=12))))
+
+```
+
+## Upsample with error propagation
+
+```{r upsample with error, include = F}
+
+sad <- portal94 %>%
+  group_by(species) %>%
+  summarize(abund = dplyr::n(),
+            meanwgt = mean(wgt))  %>%
+  ungroup()
+
+portalup <- sample_community(sad$meanwgt, abunds = rep(200, times = nrow(sad))) 
+
+portalup_plots <- plot_pipeline(portalup)
+
+```
+Here's the outcomes:
+
+```{r show error prop outcomes, echo = F, fig.dim = c(6,2)}
+
+  suppressWarnings(gridExtra::grid.arrange(grobs = portalup_plots, nrow = 1, top = grid::textGrob("Portal, upsampled",gp=grid::gpar(fontsize=12))))
+```
