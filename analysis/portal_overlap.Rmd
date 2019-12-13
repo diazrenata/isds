@@ -58,7 +58,7 @@ sad <- portal94 %>%
             meanwgt = mean(wgt))  %>%
   ungroup()
 
-portalup <- sample_community(sad$meanwgt, abunds = rep(200, times = nrow(sad))) 
+portalup <- sample_community(sad$meanwgt, abunds = rep(200, times = nrow(sad)), sd_coefficient = .1) 
 
 portalup_plots <- plot_pipeline(portalup)
 

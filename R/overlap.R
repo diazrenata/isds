@@ -119,8 +119,25 @@ pair_prod_abund <- function(species_vects) {
 #'
 #' @return df of overlap values for all species pairs + harmonic mean of abundances
 #' @export
+#' @importFrom dplyr group_by summarize n ungroup filter mutate
 #'
 community_overlap <- function(community_df) {
+
+  sad <- community_df %>%
+    dplyr::group_by(species) %>%
+    dplyr::summarize(abund =  dplyr::n()) %>%
+    dplyr::ungroup()
+
+  if(any(sad$abund == 1)) {
+    nremoved <- length(which(sad$abund == 1))
+    sad <- dplyr::filter(sad, abund > 1)
+    community_df <- community_df %>%
+      dplyr::filter(species %in% sad$species) %>%
+      dplyr::mutate(species = species - nremoved)
+  }
+
+
+
 
   all_pairings <- get_pairs(max(community_df$species))
 
