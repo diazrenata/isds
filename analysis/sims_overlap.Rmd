@@ -87,7 +87,7 @@ up_plots <- lapply(up_communities, FUN = plot_pipeline)
 ```
 Here's the outcomes:
 
-```{r show error prop outcomes, echo = F, fig.dim = c(6,2)}
+```{r show error prop outcomes, echo = F, fig.dim = c(12,4)}
 for(i in 1:length(up_plots)) {
   
   suppressWarnings(gridExtra::grid.arrange(grobs = up_plots[[i]], nrow = 1, top = grid::textGrob(paste0(names(scenario_communities)[i], " + upsampled N"),gp=grid::gpar(fontsize=12))))
